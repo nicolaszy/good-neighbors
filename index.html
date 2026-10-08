@@ -278,6 +278,31 @@ b { font-weight: 800; }
 .htown.compact .htw-p em { display: none; }
 #bubbles .tag.watch .nm { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7); }
 @media (max-width: 420px) { #panel .pmood { display: none; } .pn-grid { gap: 8px 10px; } .htabs button { font-size: 11.5px; padding: 0 3px; } }
+/* phones: a tab on the panel's top edge folds it down to the name line and back; an open panel keeps to part of the screen
+   (the media query matches HUD_PHONE_MQ in 08k) */
+#panel .pfold { display: none; }
+@media (max-width: 600px), (max-height: 500px) {
+  #panel .pfold { display: flex; position: absolute; left: 50%; top: -17px; transform: translateX(-50%); align-items: center; justify-content: center; min-width: 84px; height: 34px; padding: 0 16px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); box-shadow: 0 -2px 10px rgba(50, 30, 10, 0.22); font: 800 12.5px var(--f-body); color: var(--ink); white-space: nowrap; cursor: pointer; }
+  #panel .pfold:active { transform: translateX(-50%) scale(0.96); }
+  #panel .pfold:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #panel { padding-top: 16px; }
+  #panel .hbody { max-height: 26vh; overflow-y: auto; overscroll-behavior: contain; }
+  #panel.folded { padding-top: 14px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+  #panel.folded .pq, #panel.folded .htabs, #panel.folded .hbody, #panel.folded .hdetails { display: none; }
+  #panel.folded .ph { padding-bottom: 0; }
+  #panel.folded .ci-open { min-height: 40px; }
+  #panel.folded .hp-img { width: 34px; height: 34px; }
+}
+/* phones on their side: little height, so less of everything */
+@media (max-height: 500px) {
+  #panel { width: min(100%, 560px); }
+  #panel .ci-open { min-height: 40px; }
+  #panel .hp-img { width: 34px; height: 34px; }
+  #panel .ph { padding-bottom: 4px; }
+  #panel .htabs { margin-bottom: 6px; }
+  #panel .htabs button { min-height: 28px; }
+  #panel .hbody { min-height: 0; max-height: 26vh; }
+}
 
 /* name tags + speech bubbles */
 #bubbles { position: absolute; inset: 0; overflow: hidden; }
@@ -752,8 +777,16 @@ const deg = (d) => (d * Math.PI) / 180;
    core game never reads a module's data directly. Build with
    `python3 build.py --no-vampire` and the core game runs without it.
    ============================================================ */
-const GAME = { name: 'Good Neighbors', version: '0.6.1', schema: 4, date: '2026-10-08' };
+const GAME = { name: 'Good Neighbors', version: '0.6.2', schema: 4, date: '2026-10-08' };
 const CHANGELOG = [
+  { v: '0.6.2', date: '2026-10-08', title: 'Walking together, Continue online, phones', notes: [
+    'In a shared neighbourhood you see other players’ people walk or run the whole way to where they were sent, including a spot tapped on the ground. They no longer pop up there when they arrive.',
+    'Continue on the title screen takes you back to the shared neighbourhood when that is what you played last, straight onto your household with the same person selected. Your single-player game is still under Load.',
+    'Phones: the panel at the bottom has a ▾ Hide tab on its top edge that folds it down to one name line. ▴ Show, or tapping the name line, brings it back, and the phone remembers which you like. An open panel keeps to part of the screen and scrolls inside; on a phone held sideways it is slimmer.',
+    'Fixed: a house without a shower or bath stopped the game with “undefined is not an object (evaluating node.bld)” and a black screen when someone needed a wash. Until there is a shower, they simply wait.',
+    'Sound no longer crackles: volumes now glide instead of stepping when the camera moves or a sound fades, and a sound making room for another fades out instead of being cut off.',
+    'If something does go wrong, the town stays on screen and the buttons keep working.',
+    'People visiting the clinic from out of town no longer leave traces in the town’s gossip or in anyone’s wishes after they go home.' ] },
   { v: '0.6.1', date: '2026-10-08', title: 'Building on an empty plot', notes: [
     'Build mode works on an empty plot: First room puts a room at the front door, where the garden path ends. Tap the ground to slide it along the front, drag the handles to size it, then build. Everything else grows from there.',
     'On an empty plot, the build bar says where the first room goes, and New storey waits until there is a ground floor to stand on.' ] },
@@ -2696,7 +2729,7 @@ function actionForRaw(s, kind) {
     case 'snack': return foodAction(s, 'snack');
     case 'toilet': return [{ node: H('bath'), act: 'bathroom', remain: 8, label: 'Bathroom', need: ['bladder', 98] }];
     case 'shower': {
-      const node = H('shower'), bath = nodeKind(NAV.nodes[node]) === 'bath';
+      const node = H('shower'), bath = !!NAV.nodes[node] && nodeKind(NAV.nodes[node]) === 'bath';   // no shower or bath yet: actionFor drops it
       return [{ node, act: bath ? 'bath' : 'shower', remain: bath ? 45 : 20, label: bath ? 'Take a bath' : 'Shower', need: ['hygiene', 98] }];
     }
     case 'tv': return [{ node: H('tv'), act: 'tv', remain: 60, label: 'Watch TV', need: ['fun', 96] }];
@@ -14005,11 +14038,14 @@ UI.title = function () {
   const fams = famList();
   const cont = readSaveInfo('auto') || ['1', '2', '3'].map(readSaveInfo).find(Boolean);
   const slot = readSaveInfo('auto') ? 'auto' : ['1', '2', '3'].find((s) => readSaveInfo(s));
+  /* the shared town, when that is what you played last (15c) */
+  const shared = typeof netContinueRec === 'function' ? netContinueRec(cont) : null;
   const el = h('div', { id: 'title' },
     h('div', { class: 'logo' }, h('small', null, 'Hawthorn Lane · population twenty-odd'), h('h1', null, 'Good Neighbors'), h('p', null, hookFirst('tagline') || 'A warm little street. Twenty-odd neighbours.')),
     h('div', { class: 'tbtn' },
-      cont ? h('button', { class: 'btn primary big', onclick: () => { Sound.unlock(); Sound.click(); UI.layer.textContent = ''; loadGame(slot); } }, 'Continue', h('em', null, `${cont.name} · Day ${dayOf(cont.t) + 1}`)) : null,
-      h('button', { class: 'btn ' + (cont ? '' : 'primary ') + 'big', onclick: () => { Sound.unlock(); Sound.click(); CAS.members = []; UI.cas(); TITLE.on = false; } }, 'New household', fams.length ? h('em', null, fams[0].name + ' · or someone new') : null),
+      shared ? h('button', { class: 'btn primary big tcont-net', onclick: () => { Sound.unlock(); Sound.click(); netUiContinue(shared); } }, 'Continue', h('em', null, `${shared.hh || shared.name || 'Shared neighbourhood'} · ${shared.t != null ? 'Day ' + (dayOf(shared.t) + 1) + ' · ' : ''}shared neighbourhood`))
+        : cont ? h('button', { class: 'btn primary big', onclick: () => { Sound.unlock(); Sound.click(); UI.layer.textContent = ''; loadGame(slot); } }, 'Continue', h('em', null, `${cont.name} · Day ${dayOf(cont.t) + 1}`)) : null,
+      h('button', { class: 'btn ' + (cont || shared ? '' : 'primary ') + 'big', onclick: () => { Sound.unlock(); Sound.click(); CAS.members = []; UI.cas(); TITLE.on = false; } }, 'New household', fams.length ? h('em', null, fams[0].name + ' · or someone new') : null),
       h('button', { class: 'btn ghost', onclick: () => { Sound.unlock(); UI.menu('save'); } }, cont ? 'Load, import or settings' : 'Import a save code'),
       cont ? null : h('button', { class: 'btn ghost', onclick: () => { Sound.unlock(); UI.menu('set'); } }, 'Settings')),
     h('div', { class: 'tfoot' }, `Version ${GAME.version} · `, h('a', { href: '#', onclick: (e) => { e.preventDefault(); UI.menu('about'); } }, 'what’s new')));
@@ -14333,7 +14369,9 @@ const Sound = {
     try {
       if (!this.ctx) {
         const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
-        const c = this.ctx = new AC(); this.master = c.createGain(); this.master.connect(c.destination);
+        // a slightly larger output buffer than the smallest ("interactive"): no dropouts while a heavy frame draws
+        let c; try { c = new AC({ latencyHint: 'balanced' }); } catch (e) { c = new AC(); }
+        this.ctx = c; this.master = c.createGain(); this.master.connect(c.destination);
         this.buses = {};
         for (const name of ['sfx', 'music', 'ambience']) { const b = c.createGain(); b.connect(this.master); this.buses[name] = b; }
         this.apply();
@@ -14347,9 +14385,10 @@ const Sound = {
     for (const k of ['sfx', 'music', 'ambience']) this.target(this.buses[k].gain, clamp(a[k], 0, 1), 0.05);
   },
   target(param, value, seconds) {
-    const t = this.ctx.currentTime;
-    // cancelAndHold is not needed (older Safari); current computed value is safe.
-    param.cancelScheduledValues(t); param.setValueAtTime(param.value, t); param.linearRampToValueAtTime(value, t + seconds);
+    // A glide from wherever the value is now: nothing is cancelled, so it can never jump. Cancelling a ramp and
+    // restarting it from a value read back (or cancelAndHold) let the gain step for one render block now and
+    // then, and ten updates a second made that an audible crackle. Most of the way there after `seconds`.
+    param.setTargetAtTime(value, this.ctx.currentTime, Math.max(0.002, seconds / 5));
   },
   bus(d) { return this.buses[d.category === 'MUSIC' ? 'music' : ['AMBIENT', 'WEATHER'].includes(d.category) ? 'ambience' : 'sfx']; },
   speed() { return MODE === 'play' && !UI.isPaused() && !BM.on && !CAS.active && !CHARACTER_LAB.active && !MATERIAL_STUDY.active ? clamp(G.speed, 0, 3) : 0; },
@@ -14457,14 +14496,15 @@ const Sound = {
       if (weakest.priority + weakest.audible >= priority + audible) { this.stats.skipped++; return null; }
       this.stop(weakest, 0.04); this.stats.stolen++;
     }
-    if (this.voices.length >= AUDIO_ART.maxVoicesIncludingFades) {
+    if (this.voices.filter(v => !v.retired).length >= AUDIO_ART.maxVoicesIncludingFades) {
       // Admission has already chosen a stronger candidate. Retire the weakest
-      // fading tail rather than dropping important feedback at the node bound.
-      const tails = this.voices.filter(v => v.stopping);
+      // fading tail rather than dropping important feedback at the node bound:
+      // a 15 ms fade, not a cut mid-wave (a click); it is released when it ends.
+      const tails = this.voices.filter(v => v.stopping && !v.retired);
       if (!tails.length) { this.stats.skipped++; return null; }
       const tail = tails.reduce((a, b) => a.priority < b.priority ? a : b);
-      try { tail.sourceNode.stop(now); } catch (e) { /* already ended */ }
-      this.release(tail);
+      tail.retired = true; this.target(tail.gain.gain, 0, 0.015);
+      try { tail.sourceNode.stop(now + 0.02); } catch (e) { this.release(tail); }
     }
     const sourceNode = c.createBufferSource(), gain = c.createGain();
     sourceNode.buffer = this.buffer(id, d, Math.floor(this.random() * d.variants), o.frequency);
@@ -14476,7 +14516,7 @@ const Sound = {
     if (typeof c.createStereoPanner === 'function' && d.zoom !== 'none') { pan = c.createStereoPanner(); pan.pan.value = sp.pan; gain.connect(pan); pan.connect(this.bus(d)); }
     else gain.connect(this.bus(d)); // older Safari: mono is a graceful fallback
     gain.gain.setValueAtTime(d.loop ? 0 : audible * variation, now);
-    if (d.loop) gain.gain.linearRampToValueAtTime(audible * variation, now + ((d.policy === 'water' || d.recipe === 'water') ? AUDIO_ART.waterFadeIn : AUDIO_ART.fade));
+    if (d.loop) gain.gain.setTargetAtTime(audible * variation, now, ((d.policy === 'water' || d.recipe === 'water') ? AUDIO_ART.waterFadeIn : AUDIO_ART.fade) / 5);
     const v = { id, def: d, sourceNode, gain, pan, priority, audible, lastTarget: audible * variation, lastPan: sp.pan, base: base * variation, character: o.character, position: pos, source, owner: o.owner, spatialObject: !!o.spatialObject, goal: o.goal, initialMultiplier: o.volume == null ? 1 : o.volume, stopping: false, wanted: true, multiplier: o.volume == null ? 1 : o.volume };
     this.voices.push(v); sourceNode.onended = () => this.release(v);
     sourceNode.start(now + Math.max(0, o.delay || 0));
@@ -15667,9 +15707,25 @@ function hudPetAbout(p) {
     hudMore('All about ' + p.name, () => UI.petPanel(p)));
 }
 
+/* ---------- phones: the panel folds down to its name line (the tab on its top edge), and this phone remembers it ---------- */
+const HUD_PHONE_MQ = '(max-width: 600px), (max-height: 500px)';
+function hudPhone() { try { return matchMedia(HUD_PHONE_MQ).matches; } catch (e) { return false; } }
+function hudFold(on, keep) {
+  UI._fold = !!on;
+  if (!keep) { try { localStorage.setItem('gn.panelFolded', on ? '1' : ''); } catch (e) { /* a convenience only */ } }
+  if (!UI.panel) return;
+  UI.panel.classList.toggle('folded', UI._fold);
+  if (UI.pFold) {
+    UI.pFold.textContent = UI._fold ? '▴ Show' : '▾ Hide';
+    UI.pFold.setAttribute('aria-label', UI._fold ? 'Show the panel' : 'Fold the panel down');
+    UI.pFold.setAttribute('aria-expanded', String(!UI._fold));
+  }
+}
+
 /* ---------- the panel ---------- */
 Object.assign(UI, {
   _hudTab: {},
+  _fold: (() => { try { return localStorage.getItem('gn.panelFolded') === '1'; } catch (e) { return false; } })(),
   refreshPanel() {
     const pet = typeof selectedPet === 'function' ? selectedPet() : null;
     const s = G.byId[G.player.sel];
@@ -15685,8 +15741,9 @@ Object.assign(UI, {
       ciStyles();
       this.pImg = h('img', { class: 'hp-img', alt: '' });
       this.pRing = h('span', { class: 'hp-ring' }, this.pImg);
+      this.pFold = h('button', { class: 'pfold', onclick: () => { Sound.click(); hudFold(!this._fold); } });
       this.pHead = h('div', { class: 'ph' },
-        h('button', { class: 'ci-open', 'aria-label': (pet ? 'Pet information for ' + pet.name : 'Character information for ' + simName(s)), onclick: () => { Sound.click(); if (pet) UI.petPanel(pet); else this.characterPanel(s); } },
+        h('button', { class: 'ci-open', 'aria-label': (pet ? 'Pet information for ' + pet.name : 'Character information for ' + simName(s)), onclick: () => { Sound.click(); if (this._fold && hudPhone()) { hudFold(false); return; } if (pet) UI.petPanel(pet); else this.characterPanel(s); } },
           this.pRing, h('span', { class: 'ph-t' }, h('span', { class: 'pname' }, pet ? pet.name : simName(s)), h('span', { class: 'pact' }))),
         h('span', { class: 'pmood' }),
         h('button', { class: 'hdetails', 'aria-label': 'Details', onclick: () => { Sound.click(); if (pet) UI.petPanel(pet); else this.characterPanel(s, { needs: 'overview', mood: 'overview', skills: 'skills', work: s.school ? 'school' : 'career', people: 'relationships' }[this._hudTab.sim] || 'overview'); } }, h('span', null, 'Details'), ' ›'));
@@ -15700,7 +15757,8 @@ Object.assign(UI, {
       this.pDuty = h('div', { class: 'pduty' });
       if (!pet) hook('panelBuild', this.pExtra, s);
       this.pNeedsWrap = h('div', { class: 'hneeds' }, this.pNeeds, this.pExtra, this.pDuty);
-      this.panel.append(this.pHead, this.pQueue, this.pTabs, this.pBody);
+      this.panel.append(this.pFold, this.pHead, this.pQueue, this.pTabs, this.pBody);
+      hudFold(this._fold, true);
     }
     const tab = this._hudTab[kind];
     Array.from(this.pTabs.children).forEach((b) => { const on = b.dataset.tab === tab; b.setAttribute('aria-selected', String(on)); b.classList.toggle('on', on); });
@@ -16095,6 +16153,7 @@ function selectSim(id, focus) {
   UI.refresh(true);
 }
 function nodeKind(node) {
+  if (!node) return null;                                                          // a spot that isn't there (a house still being built)
   if (isLotBld(node.bld)) return node.dead ? null : (node.kind || null);         // a house: what stands at a spot decides
   const k = (node.name || '').split('.')[1]; return ANCHOR_KIND[k] || null;
 }
@@ -17325,8 +17384,11 @@ function update(dt, now) {
   if (CAS.active) { casFrame(dt); return; }
   if (MODE === 'play') {
     /* a shared neighbourhood keeps the shared clock: menus and Build mode don't stop the town for everyone (15c) */
-    if (NET.on) { netAdvance(); netFrame(dt); }
-    else if (!UI.isPaused() && G.speed > 0) advance(RATE[G.speed] * dt);
+    /* if the town's clock stumbles, it is still drawn and the buttons still work (an error here used to leave a black screen) */
+    try {
+      if (NET.on) { netAdvance(); netFrame(dt); }
+      else if (!UI.isPaused() && G.speed > 0) advance(RATE[G.speed] * dt);
+    } catch (e) { showError(e); }
   } else if (MODE === 'title') {
     advance(dt * 2);
   }
@@ -17356,12 +17418,12 @@ function update(dt, now) {
   W.stars.position.set(CAM.tx, 0, CAM.tz);
   updateMarkers(_clock);
   if (MODE === 'play') {
-    lifeFrame();
+    try { lifeFrame(); } catch (e) { showError(e); }
     UI.refresh(false);
     updateTags();
     if (now - _hintAt > 800) { _hintAt = now; updateHints(); }
     const newDay = dayOf(G.t) !== _autoDay, noted = G.noteSeq !== _autoNote && now - _autoAt > AUTOSAVE.afterNote;
-    if (newDay || noted || (now - _autoAt > AUTOSAVE.every && (!UI.isPaused() || UI.menuOpen))) { _autoAt = now; _autoDay = dayOf(G.t); _autoNote = G.noteSeq; if (!NET.on) saveGame('auto'); }
+    if (newDay || noted || (now - _autoAt > AUTOSAVE.every && (!UI.isPaused() || UI.menuOpen))) { _autoAt = now; _autoDay = dayOf(G.t); _autoNote = G.noteSeq; if (!NET.on) saveGame('auto'); else if (NET.ready) sharedTouch(); }
   } else if (TAGS) updateTags();
   if (now - _setAt > 2500) { _setAt = now; saveSettings(); }
   reflectionFrame(dt);
@@ -23580,6 +23642,8 @@ function patientGone(s) {
 /* someone who was only passing through leaves nothing behind: no feelings, memories or relationship records about them */
 function forgetPasserby(id) {
   G.sims.forEach((o) => { if (o.rel && o.rel[id]) delete o.rel[id]; if (o.mem && o.mem.some((m) => m.w === id)) o.mem = o.mem.filter((m) => m.w !== id); if (o.know && o.know[id]) delete o.know[id]; if (o.cool) for (const k in o.cool) if (k.startsWith(id + ':')) delete o.cool[k]; });
+  G.sims.forEach((o) => { if (o.wants && o.wants.some((w) => w.ref === id)) o.wants = o.wants.filter((w) => w.ref !== id); });   // "get to know …" them
+  (G.rumors || []).forEach((r) => { if (r.know && r.know[id] !== undefined) delete r.know[id]; });                         // they heard the news, then left
   Object.keys(G.relationships || {}).forEach((k) => { if (k.includes('"' + id + '"')) delete G.relationships[k]; });
   if (typeof RELATIONSHIP_INDEX !== 'undefined' && RELATIONSHIP_INDEX.people) RELATIONSHIP_INDEX.people.delete(id);
 }
@@ -29515,11 +29579,35 @@ const presentUids = () => Object.keys(NET.presence).filter((u) => NET.presence[u
 /* ---------- remembered neighbourhoods (this browser only) ---------- */
 function sharedList() { try { return JSON.parse(localStorage.getItem('gn.shared') || '[]'); } catch (e) { return []; } }
 function sharedRemember(rec) {
-  const list = sharedList().filter((r) => r.wid !== rec.wid);
-  list.unshift(Object.assign({ last: Date.now() }, rec));
+  const all = sharedList(), prev = all.find((r) => r.wid === rec.wid) || {}, list = all.filter((r) => r.wid !== rec.wid);
+  list.unshift(Object.assign({}, prev, { last: Date.now() }, rec));     // what is not said this time (the lot, the household) is kept
   try { localStorage.setItem('gn.shared', JSON.stringify(list.slice(0, 12))); } catch (e) { /* private mode: the code still works when typed */ }
 }
 function sharedForget(wid) { try { localStorage.setItem('gn.shared', JSON.stringify(sharedList().filter((r) => r.wid !== wid))); } catch (e) { /* nothing */ } }
+/* where you are in the shared town, for Continue on the title screen (in place of an autosave, which a shared town never makes) */
+function sharedTouch() {
+  if (!NET.on || !NET.wid || !NET.code) return;
+  const rec = { code: NET.code, wid: NET.wid, name: NET.name, mode: NET.mode, t: G.t };
+  if (G.player.members.length) Object.assign(rec, { lot: homeLot(), hh: G.player.name, sel: G.player.sel });
+  sharedRemember(rec);
+}
+/* Continue goes back to the shared town when that is what you played last */
+function netContinueRec(local) {
+  const rec = sharedList()[0];
+  if (!rec || !rec.code || !netModeAvailable()) return null;
+  if ((rec.mode === 'tab') !== (netDefaultMode() === 'tab') || rec.mode === 'memory') return null;
+  if (local && (local.savedAt || 0) >= (rec.last || 0)) return null;
+  return rec;
+}
+/* rejoin it and take your household again; false: it is not free, choose another */
+async function netContinue(rec, mode) {
+  await netJoin(rec.code, { mode });
+  if (!rec.lot || !lotResidents(rec.lot).length) return false;
+  if (!(await netTakeHousehold(rec.lot))) return false;
+  if (rec.sel && G.player.members.includes(rec.sel)) G.player.sel = rec.sel;
+  sharedTouch();
+  return true;
+}
 
 /* ---------- transports ---------- */
 function netMakeTransport(mode) {
@@ -29635,6 +29723,7 @@ function netListen(after) {
 function netLeave(quiet) {
   if (!NET.on) return;
   const T = NET.transport;
+  if (NET.ready) sharedTouch();
   try {
     if (NET.isAuth && NET.ready && !NET.frozen) netSnapshot(true).catch(() => {});
     if (G.player.members.length) T.releaseLease(homeLot(), NET.uid).catch(() => {});
@@ -30002,6 +30091,7 @@ function netPublishGoals() {
     if (s.offmap) o.off = 1;
     if (gn) {
       o.n = gn.name; o.a = g.act || 'idle';
+      if (gn.tap) o.tp = [r2(gn.x), r2(gn.z)];          // a spot tapped on the ground has no name: where it is
       if (g.remain != null) o.r = Math.round(g.remain * 10) / 10;
       if (g.label) o.l = g.label;
       if (g.place) o.p = g.place;
@@ -30068,7 +30158,7 @@ function netSimRecord(s) {
   if (o.mem && o.mem.length > 30) o.mem = o.mem.slice(-30);
   const n = NAV.nodes[s.node], g = s.goal;
   Object.assign(o, { x: s.x, y: s.y, z: s.z, yaw: s.yaw, nn: n ? n.name : null, act: s.act, pose: s.pose, state: s.state });
-  if (g && NAV.nodes[g.node]) o.goal = { n: NAV.nodes[g.node].name, a: g.act, r: g.remain, l: g.label, p: g.place, w: g.walkOnly, j: g.jog, ty: g.type, tg: g.target };
+  if (g && NAV.nodes[g.node]) { const gn = NAV.nodes[g.node]; o.goal = { n: gn.name, a: g.act, r: g.remain, l: g.label, p: g.place, w: g.walkOnly, j: g.jog, ty: g.type, tg: g.target }; if (gn.tap) o.goal.tp = [gn.x, gn.z]; }
   return netClone(o);
 }
 function netPublishRoster() {
@@ -30283,20 +30373,38 @@ function netApplySimFields(s, f, key) {
 /* follow where the owner sent them: from about the same place, along the same path */
 function netFollowGoal(s, d) {
   const from = d.f != null ? NAV.byName[d.f] : undefined;
-  const far = Math.hypot(s.x - d.x, s.z - d.z) > 3 || Math.abs(s.y - (d.y || 0)) > 1.5 || !!s.offmap !== !!d.off;
+  const walking = s.state === 'walking' && s.path.length > 0 && !s.offmap;
+  /* they got there on the other screen: a copy still on its way finishes the walk (it is seen walking, not arriving by magic) */
+  if (d.n == null && !d.off && walking && s.goal) {
+    const gn = NAV.nodes[s.goal.node];
+    if (gn && Math.hypot(gn.x - d.x, gn.z - d.z) < 1.2 && Math.abs(gn.y - (d.y || 0)) < 1.5) { s.goal.act = d.ac || 'idle'; return; }
+  }
+  /* only a real gap (another part of town, another floor, away or back) is closed by putting them there; otherwise they walk from where they are */
+  const dist = Math.hypot(s.x - d.x, s.z - d.z);
+  const far = dist > 12 || Math.abs(s.y - (d.y || 0)) > 1.5 || !!s.offmap !== !!d.off;
   if (far) { if (from !== undefined) placeAtNode(s, from); s.x = d.x; s.y = d.y; s.z = d.z; }
-  else if (from !== undefined && s.state !== 'walking') s.node = from;
+  else if (from !== undefined && !walking && dist < 1) s.node = from;
   s.offmap = !!d.off;
-  s.queue = []; s.goal = null; s.path = [];
+  /* mid-walk, the new way starts from the next step, not back where they last were */
+  const next = !far && walking && d.n != null && !d.off ? s.path[0] : undefined;
+  s.queue = []; s.goal = null; s.path = next !== undefined ? [next] : [];
   if (d.off) { s.goal = null; s.state = 'doing'; s.act = 'idle'; return; }
   if (d.n == null) {
     s.state = 'doing'; s.act = d.ac || 'idle';
     if (d.po && d.po !== s.pose) { s.pose = d.po; if (d.po === 'stand') s.dy = 0; }
     return;
   }
-  const node = NAV.byName[d.n];
-  if (node === undefined) return;
+  const node = d.tp ? netTapSpot(d.tp[0], d.tp[1]) : NAV.byName[d.n];
+  if (node === undefined) { s.path = []; return; }
   setGoal(s, { node, act: d.a, remain: d.r == null ? undefined : d.r, label: d.l || undefined, place: d.p || undefined, walkOnly: !!d.w, jog: !!d.j, type: d.ty || undefined, target: d.tg || undefined, net: true });
+}
+/* the same spot on this screen's ground (its own tap spot), or the nearest place outdoors when none is free */
+function netTapSpot(x, z) {
+  const id = tapNode(x, z, -1);
+  if (id >= 0) return id;
+  let best, bd = Infinity;
+  NAV.nodes.forEach((n, i) => { if (!n || !n.out || n.dead || n.tap || n.legacy) return; const dd = Math.hypot(n.x - x, n.z - z); if (dd < bd) { bd = dd; best = i; } });
+  return best;
 }
 function netAddSim(r) {
   const clean = Object.assign({}, r); delete clean.parents; delete clean.goal; delete clean.nn; delete clean.override;
@@ -30308,7 +30416,7 @@ function netAddSim(r) {
   if (Number.isFinite(r.x)) { s.x = r.x; s.y = r.y; s.z = r.z; s.yaw = r.yaw || 0; }
   s.state = 'doing'; s.act = r.act || 'idle'; s.pose = 'stand';
   if (r.override) s.override = Object.assign({}, r.override);
-  if (r.goal) netFollowGoal(s, { n: r.goal.n, a: r.goal.a, r: r.goal.r, l: r.goal.l, p: r.goal.p, w: r.goal.w, j: r.goal.j, ty: r.goal.ty, tg: r.goal.tg, f: r.nn, x: s.x, y: s.y, z: s.z, off: r.offmap });
+  if (r.goal) netFollowGoal(s, { n: r.goal.n, tp: r.goal.tp, a: r.goal.a, r: r.goal.r, l: r.goal.l, p: r.goal.p, w: r.goal.w, j: r.goal.j, ty: r.goal.ty, tg: r.goal.tg, f: r.nn, x: s.x, y: s.y, z: s.z, off: r.offmap });
   return s;
 }
 /* ---------- the people someone else runs: walk where they were sent, act it out, decide nothing ---------- */
@@ -30651,7 +30759,8 @@ function netCopy(text, btn) {
     const t = typeof document !== 'undefined' && document.getElementById && document.getElementById('title');
     const box = t && t.querySelector && t.querySelector('.tbtn');
     if (!box || !box.prepend) return;
-    box.prepend(h('small', null, 'Single player'));
+    const back = box.querySelector && box.querySelector('.tcont-net');
+    if (back) back.after(h('small', null, 'Single player')); else box.prepend(h('small', null, 'Single player'));
     const list = sharedList();
     box.append(h('div', { class: 'tnet' }, h('small', null, 'Play together'),
       h('button', { class: 'btn big', onclick: () => { Sound.unlock(); Sound.click(); netUiCreateStart(); } }, 'Create shared neighbourhood', h('em', null, 'One town, with the people you invite')),
@@ -30744,6 +30853,24 @@ function netUiJoin(prefill) {
       err.textContent = ['notfound', 'version', 'badcode', 'nosnap', 'snapparse'].includes(e.code) ? e.message : netErrorText(e);
       err.hidden = false; busy = false; go.disabled = false; go.textContent = 'Join';
     }
+  }
+}
+/* Continue on the title screen, when the shared town is what you played last: straight back in, on your household */
+async function netUiContinue(rec) {
+  if (!netModeAvailable()) { netUiUnavailable(); return; }
+  const m = netModal('Back to ' + (rec.name || 'the neighbourhood'), [h('p', { class: 'note' }, 'Rejoining the shared town. This takes a few seconds.')], { sticky: true });
+  try {
+    const mine = await netContinue(rec, netDefaultMode());
+    m.close();
+    UI.closeMenu();
+    if (!mine) { netUiWatchOnly(true); UI.netChooseHousehold(true); }
+    else UI.toast('Welcome back to ' + (NET.name || 'the neighbourhood') + '.', 2600);
+  } catch (e) {
+    console.warn(e);
+    m.close();
+    if (NET.on) netLeave(true);
+    if (MODE === 'play' && !G.player.members.length) quitToTitle();
+    netUiError('Couldn’t rejoin ' + (rec.name || 'the neighbourhood'), (['notfound', 'version', 'badcode', 'nosnap', 'snapparse'].includes(e.code) ? e.message : netErrorText(e)) + (readSaveInfo('auto') ? ' Your single-player game is still there under Load.' : ''));
   }
 }
 /* pick a household to play (after joining, after losing yours, or to switch) */
