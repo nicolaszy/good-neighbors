@@ -752,8 +752,11 @@ const deg = (d) => (d * Math.PI) / 180;
    core game never reads a module's data directly. Build with
    `python3 build.py --no-vampire` and the core game runs without it.
    ============================================================ */
-const GAME = { name: 'Good Neighbors', version: '0.6.0', schema: 4, date: '2026-10-07' };
+const GAME = { name: 'Good Neighbors', version: '0.6.1', schema: 4, date: '2026-10-08' };
 const CHANGELOG = [
+  { v: '0.6.1', date: '2026-10-08', title: 'Building on an empty plot', notes: [
+    'Build mode works on an empty plot: First room puts a room at the front door, where the garden path ends. Tap the ground to slide it along the front, drag the handles to size it, then build. Everything else grows from there.',
+    'On an empty plot, the build bar says where the first room goes, and New storey waits until there is a ground floor to stand on.' ] },
   { v: '0.6.0', date: '2026-10-07', title: 'Shared neighbourhoods', notes: [
     'Play together: Create shared neighbourhood turns your town (or a new one) into a town your friends can join with a code. Everyone plays their own household in the same town, at the same time; the neighbours carry on around you all.',
     'Watch anyone: other players’ people walk the streets, chat, work and visit, with a small mark in the Town tab and on the map. Ring a friend’s bell and you are let in.',
@@ -24530,7 +24533,9 @@ const OPS = {
     /* one door to the longest shared wall so the new room is part of the house */
     if (!connectFix(home)) {
       /* try a door to any neighbour even if the neighbour is not yet reachable (it may be reachable after fixes) */
-      return NO(f === 0 ? 'A new room has to touch another room so people can walk in. Build it next to the house, with room for a door.' : 'A room upstairs needs a way up: either next to a room that is already upstairs, so a door can join them, or with room for a staircase (5 m by 1.5 m, upstairs and down).');
+      const first = f === 0 && home.rooms.every((q) => q.f !== 0 || q === room);
+      return NO(first ? 'The first room has to be at the front door, where the garden path ends, with its front wall along the front of the plot.'
+        : f === 0 ? 'A new room has to touch another room so people can walk in. Build it next to the house, with room for a door.' : 'A room upstairs needs a way up: either next to a room that is already upstairs, so a door can join them, or with room for a staircase (5 m by 1.5 m, upstairs and down).');
     }
     void S;
     return { ok: true, id: room.id };
@@ -27979,11 +27984,17 @@ function rsTouches(f, r) {
     return false;
   });
 }
+/* an empty plot: the first room has no house to lean on, so it goes at the front door, where the garden path ends */
+const rsFirst = (f) => f === 0 && !G.home.rooms.some((q) => q.f === 0);
+function rsAtDoor(r) {
+  const d = frontOpening(G.home) || FRONT;
+  return Math.abs(r.z1 - HB.zFront) < 1e-6 && r.x0 <= d.c - d.w / 2 - 0.25 + 1e-6 && r.x1 >= d.c + d.w / 2 + 0.25 - 1e-6;
+}
 /* where a new room could go: next to the house on the ground, over the rooms below upstairs, near the middle of the screen.
    The best few candidates are tried for real, so the first one shown is one that can actually be built. */
 function rsDefaultRect(f) {
   const c = bmLocal(VIEW.w / 2, VIEW.h * 0.36, FLOOR_Y[f]) || { x: 0, z: -3 };
-  const n = G.home.floors;
+  const n = G.home.floors, first = rsFirst(f);
   const sizes = f === 0 ? [[4, 3], [3, 4], [3, 3], [2.5, 2.5], [2, 3], [3, 2], [2, 2]]
     : f >= n ? [[5, 3], [3, 5], [5, 4], [4, 5], [6, 3], [3, 6], [5, 5]]           // a staircase has to come up into it: 5 m of room
       : [[4, 3], [3, 4], [3, 3], [5, 3], [3, 5], [2, 3], [3, 2], [2, 2]];
@@ -27992,7 +28003,7 @@ function rsDefaultRect(f) {
     for (let x = HB.x0; x + w <= HB.x1 + 1e-6; x += 0.5) for (let z = HB.zBack; z + d <= HB.zFront + 1e-6; z += 0.5) {
       const r = { x0: x, x1: x + w, z0: z, z1: z + d };
       if (rsQuick(f, r, null)) continue;
-      if (f === 0 && !rsTouches(0, r)) continue;
+      if (f === 0 && !(first ? rsAtDoor(r) : rsTouches(0, r))) continue;
       cands.push({ sc: Math.hypot((r.x0 + r.x1) / 2 - c.x, (r.z0 + r.z1) / 2 - c.z) + si * 1.2, r, key: rsContactKey(f, r) });
     }
   });
@@ -28004,7 +28015,7 @@ function rsDefaultRect(f) {
     const cd = cands[i], r = cd.r;
     if (f === 0) {
       seen[cd.key] = (seen[cd.key] || 0) + 1;
-      if (seen[cd.key] > 3) continue;
+      if (seen[cd.key] > 3 && !first) continue;
     } else if (!rsTouches(f, r)) {                       // upstairs, not next to another room: it needs its own staircase
       if (Math.max(rectW(r), rectD(r)) < 5 - 1e-6 || stairLooks++ >= 60) continue;
       if (!findStairSpot(G.home, S, f - 1, r, null)) continue;
@@ -28074,6 +28085,7 @@ function rsSelect(id) {
 function rsNew() {
   const f = BM.floor;
   if (f > G.home.floors) return;
+  if (f > 0 && !G.home.rooms.length) { UI.toast('Build a room on the ground floor first.', 3600); return; }
   const rect = rsDefaultRect(f);
   if (!rect) { UI.toast(f === 0 ? 'There is no free space left next to the house.' : 'There is no free floor below to build this room on.', 3600); return; }
   RS.mode = 'new'; RS.id = null; RS.pop = null; RS.newName = f === G.home.floors ? 'Bedroom' : 'Room';
@@ -28132,7 +28144,12 @@ function rsMoveCand(cx, cz) {
   const c = RS.cand;
   if (!c || c.kind !== 'new') return;
   const r = c.rect, w = rectW(r), d = rectD(r);
-  const x0 = clamp(snap2(cx - w / 2), HB.x0, HB.x1 - w), z0 = clamp(snap2(cz - d / 2), HB.zBack, HB.zFront - d);
+  let x0 = clamp(snap2(cx - w / 2), HB.x0, HB.x1 - w), z0 = clamp(snap2(cz - d / 2), HB.zBack, HB.zFront - d);
+  if (rsFirst(c.f)) {                 // the first room slides along the front and keeps the front door in its wall
+    const dr = frontOpening(G.home) || FRONT;
+    z0 = HB.zFront - d;
+    x0 = clamp(x0, Math.max(HB.x0, Math.ceil((dr.c + dr.w / 2 + 0.25 - w) * 2) / 2), Math.min(HB.x1 - w, Math.floor((dr.c - dr.w / 2 - 0.25) * 2) / 2));
+  }
   Object.assign(r, { x0, x1: x0 + w, z0, z1: z0 + d });
   rsPreview();
 }
@@ -28257,7 +28274,7 @@ function rsBar(root) {
       h('div', { class: 'bi' }, h('span', { class: 'thumb sm' }, '➕'), h('div', { class: 'bt2' }, h('b', null, f === n ? 'New storey · first room' : 'New room'), RS.ui.sub = h('span', null, ''))),
       RS.ui.msg = h('div', { class: 'bmsg', hidden: true }));
     if (RS.pop === 'name') root.append(h('div', { class: 'stabs' }, RS_NAMES.map((nm) => h('button', { class: 'stab' + (RS.newName === nm ? ' on' : ''), onclick: () => { Sound.click(); RS.newName = nm; RS.pop = null; bmRender(); } }, nm))));
-    else root.append(h('div', { class: 'bhint sub' }, 'Drag the ⇔ handles to size it, or tap the ground to move it.'));
+    else root.append(h('div', { class: 'bhint sub' }, rsFirst(c.f) ? 'Drag the ⇔ handles to size it, or tap the ground to slide it along the front. The front door stays in its wall.' : 'Drag the ⇔ handles to size it, or tap the ground to move it.'));
     root.append(h('div', { class: 'brow' },
       bbtn('✎', RS.newName === 'Room' ? 'Name' : RS.newName.split(' ')[0], () => { RS.pop = RS.pop === 'name' ? null : 'name'; bmRender(); }),
       bbtn('✕', 'Cancel', () => rsCancelCand()),
@@ -28319,12 +28336,14 @@ function rsBar(root) {
     return;
   }
   /* nothing chosen */
-  const top = f === n - 1 && n > 1;
-  root.append(h('div', { class: 'bhint' }, h('b', null, f >= n ? 'A new storey' : 'Tap a room to change it'),
+  const top = f === n - 1 && n > 1, bare = !home.rooms.length;
+  if (bare) root.append(h('div', { class: 'bhint' }, h('b', null, 'An empty plot'),
+    f === 0 ? 'Start with the first room. It goes at the front door, where the garden path ends. Tap First room, drag the handles to size it, then build it.' : 'Build a room on the ground floor first. Upper storeys stand on the rooms below.'));
+  else root.append(h('div', { class: 'bhint' }, h('b', null, f >= n ? 'A new storey' : 'Tap a room to change it'),
     f >= n ? 'Add a room here to build a new storey. It has to stand on rooms below, and a staircase is added for you.' : 'Drag the handles to make it bigger or smaller, or add a new room. Rooms can grow out the back and up.'));
   root.append(h('div', { class: 'brow scroll' },
-    bbtn('➕', 'New room', () => rsNew()),
-    f < n && n < HB.maxFloors ? bbtn('🏗️', 'New storey', () => { bmSetFloor(n); rsNew(); }) : null,
+    bbtn('➕', bare ? 'First room' : 'New room', () => rsNew()),
+    !bare && f < n && n < HB.maxFloors ? bbtn('🏗️', 'New storey', () => { bmSetFloor(n); rsNew(); }) : null,
     top ? bbtn('🗑️', 'Remove storey', () => rsRemoveStorey(), 'sell') : null));
 }
 
