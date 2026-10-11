@@ -177,6 +177,10 @@ b { font-weight: 800; }
 .hsk-i { font-size: 17px; text-align: center; }
 .hsk-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .hsk-t b { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hsk-t em { font-size: 11px; font-style: normal; font-weight: 700; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hskill.none { opacity: 0.72; }
+.hrow.hjsk { grid-template-columns: minmax(70px, auto) 1fr minmax(44px, auto); row-gap: 1px; }
+.hrow.hjsk > i { grid-column: 1 / -1; font-style: normal; font-size: 11.5px; color: var(--ink2); margin-top: -2px; }
 .hsk-l { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--paper); border: 1.5px solid var(--good); font: 600 13px var(--f-head); }
 .hwork-top { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-bottom: 4px; font-size: 12.5px; font-weight: 700; color: var(--ink2); }
 .hwork-top b { font: 600 16px var(--f-head); color: var(--ink); }
@@ -544,7 +548,7 @@ b { font-weight: 800; }
 #bleft { left: 12px; top: 108px; display: flex; flex-direction: column; gap: 10px; }
 #bleft .bdone { width: 54px; height: 54px; font-size: 26px; background: linear-gradient(180deg, var(--accent-2), var(--accent)); color: var(--accent-ink); border: 0; box-shadow: 0 3px 0 rgba(120, 40, 20, 0.28), var(--shadow); font-weight: 800; }
 #bleft .ib[disabled] { opacity: 0.38; }
-#hud > #bdock { left: 0; right: 0; bottom: 0; margin: 0 auto; width: min(100%, 620px); display: flex; flex-direction: column; gap: 6px; padding: 0 10px calc(8px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+#hud > #bdock { left: 0; right: 0; bottom: 0; margin: 0 auto; width: min(100%, 800px); display: flex; flex-direction: column; gap: 6px; padding: 0 10px calc(8px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
 #hud > #bdock > * { pointer-events: auto; }
 #bctx, #bshop { background: var(--glass); border: 1px solid var(--line); border-radius: 18px; padding: 8px 10px; box-shadow: var(--shadow); backdrop-filter: blur(6px); }
 #bctx { display: flex; flex-direction: column; gap: 7px; }
@@ -571,7 +575,7 @@ b { font-weight: 800; }
 .bhint { font-size: 13px; font-weight: 700; color: var(--ink2); line-height: 1.35; }
 .bhint b { display: block; color: var(--ink); font: 600 15px var(--f-head); }
 .bhint.sub { font-size: 12px; }
-#btools { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 1px 1px 2px; }
+#btools { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 1px 1px 2px; touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
 #btools::-webkit-scrollbar { display: none; }
 .bt { flex: 1 0 auto; min-width: 52px; height: 52px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
 .bt i { font-style: normal; font-size: 19px; line-height: 1; }
@@ -583,7 +587,7 @@ b { font-weight: 800; }
 .shead b { font: 600 18px var(--f-head); }
 .shead .smoney { margin-left: auto; font: 600 14px var(--f-head); color: var(--ink2); font-variant-numeric: tabular-nums; }
 .sback { width: 32px; height: 32px; border-radius: 50%; font-size: 22px; line-height: 1; background: var(--paper2); border: 1px solid var(--line); }
-.stabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: none; padding-bottom: 2px; }
+.stabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: none; padding-bottom: 2px; touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
 .stabs::-webkit-scrollbar { display: none; }
 .stab { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; background: var(--paper2); border: 1.5px solid var(--line); font-weight: 800; font-size: 12.5px; white-space: nowrap; }
 .stab i { font-style: normal; }
@@ -606,7 +610,7 @@ b { font-weight: 800; }
 .svar b { font-size: 13px; }
 .svar em { font: 700 12px var(--f-body); font-style: normal; color: var(--ink2); }
 .svar.on { border-color: var(--accent); background: var(--paper); box-shadow: 0 0 0 1.5px var(--accent) inset; }
-.svars.line, .sw.line { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.svars.line, .sw.line { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
 .svars.line::-webkit-scrollbar, .sw.line::-webkit-scrollbar { display: none; }
 .svars.line .svar, .sw.line > * { flex: none; }
 .swc { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(0, 0, 0, 0.2); flex: none; }
@@ -626,6 +630,12 @@ b { font-weight: 800; }
 .hlab.ic { padding: 1px 6px; font-size: 14px; border-radius: 999px; background: rgba(30, 22, 16, 0.72); }
 .hlab.ic.sel { background: #b8860b; }
 .hlab.ic.ok { background: #2f8a4a; }
+.dszs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
+.dsz { display: flex; align-items: center; gap: 6px; background: var(--paper2); border: 1px solid var(--line); border-radius: 12px; padding: 4px 6px; }
+.dsz span { flex: 1; font-size: 12px; font-weight: 800; color: var(--ink2); }
+.dsz b { min-width: 60px; text-align: center; font: 600 14px var(--f-head); font-variant-numeric: tabular-nums; }
+.dsz button { width: 34px; height: 34px; border-radius: 10px; background: var(--glass); border: 1px solid var(--line); font-size: 19px; font-weight: 800; line-height: 1; }
+.dsz button:active { transform: scale(0.94); }
 .brow.scroll { overflow-x: auto; scrollbar-width: none; }
 .brow.scroll::-webkit-scrollbar { display: none; }
 .brow.scroll .bb { flex: none; }
@@ -777,8 +787,21 @@ const deg = (d) => (d * Math.PI) / 180;
    core game never reads a module's data directly. Build with
    `python3 build.py --no-vampire` and the core game runs without it.
    ============================================================ */
-const GAME = { name: 'Good Neighbors', version: '0.6.2', schema: 4, date: '2026-10-08' };
+const GAME = { name: 'Good Neighbors', version: '0.6.3', schema: 4, date: '2026-10-11' };
 const CHANGELOG = [
+  { v: '0.6.3', date: '2026-10-11', title: 'Building, kitchens, windows, skills', notes: [
+    'Buy mode: tap something in the catalogue and it is in your house straight away. Change its size and colour right there, move it, turn it; you pay when you put it down with ✓ Buy.',
+    'A bath can face either way along a wall, and turning a piece next to a wall slides it back into the room, so it turns through all four sides even in a corner. Showers and everything else can no longer be pushed into a wall.',
+    'Kitchens line up: counters, sinks, stoves, washing machines, the freezer and the fridge have one depth, one worktop height and one tiled splashback, in widths of 60, 90 and 120 cm. Every kitchen piece takes the same colours, so a whole kitchen can match. The starter kitchen stands unit against unit.',
+    'Windows: make a window wider or narrower in 10 cm steps, set its sill and top in 5 cm steps (or pick Low, Standard, Over a worktop or High) and slide it in 5 cm steps, so it lines up with what stands under it.',
+    'Roof shape: tap a shape to see it on the house for free, then Buy this roof pays once. Trying shapes back and forth no longer costs anything.',
+    'The Buy and Build bars scroll sideways with a mouse wheel or by dragging, and are wider on big screens.',
+    'A tap picks what you see first, so a tall piece standing on a rug (like the easel) can be dragged again instead of the rug under it.',
+    'Details: each need’s ring shows how full the need really is. They all showed half full.',
+    'Continue: a shared neighbourhood is never saved over your own single-player game, even when the browser cuts the connection on the way out. Continue goes back to whichever you played last, with the other just below it. A game you left paused comes back paused, with no time gone by.',
+    'Skills say what to do to get better (Charisma: talk to other people), in the Skills tab and in Details, with the careers they count in. The Work tab and the career page show the two skills a job needs, how far they are from the next promotion and how to train them; job listings name them too.',
+    'Gardening is a skill: tending a flower bed or the new vegetable patch (🌳 Garden) builds it, and a vegetable patch brings in a harvest worth more as the skill grows. People tend the garden on their own on dry days.',
+    'University: a study day counts whenever the student is at the college for lectures, even if they walked over themselves or came late, and a walk to college that was interrupted can just be sent again instead of counting as missed. The Work tab says how many study days are left.' ] },
   { v: '0.6.2', date: '2026-10-08', title: 'Walking together, Continue online, phones', notes: [
     'In a shared neighbourhood you see other players’ people walk or run the whole way to where they were sent, including a spot tapped on the ground. They no longer pop up there when they arrive.',
     'Continue on the title screen takes you back to the shared neighbourhood when that is what you played last, straight onto your household with the same person selected. Your single-player game is still under Load.',
@@ -1581,7 +1604,7 @@ const PLAN = {
   /* exterior walls: wall id -> per-floor openings. front z=+4.5, back z=-4.5, left x=-6, right x=+6 */
   ext: {
     front: { 0: [{ c: 1.2, w: 1.1, t: 'door' }, { c: -3.5, w: 2.0, t: 'window' }, { c: 4.0, w: 1.4, t: 'window' }], 1: [{ c: -3.5, w: 2.0, t: 'window' }, { c: 4.0, w: 1.4, t: 'window' }, { c: 0.5, w: 0.8, t: 'window' }] },
-    back: { 0: [{ c: -3.5, w: 1.6, t: 'window' }, { c: 0.5, w: 0.8, t: 'window' }, { c: 4.0, w: 0.8, t: 'window' }], 1: [{ c: -3.5, w: 1.6, t: 'window' }, { c: 4.0, w: 0.8, t: 'window' }] },
+    back: { 0: [{ c: -3.5, w: 1.6, t: 'window', sy: 1.35 }, { c: 0.5, w: 0.8, t: 'window' }, { c: 4.0, w: 0.8, t: 'window' }], 1: [{ c: -3.5, w: 1.6, t: 'window' }, { c: 4.0, w: 0.8, t: 'window' }] },
     left: { 0: [{ c: 2.2, w: 1.4, t: 'window' }, { c: -2.2, w: 1.4, t: 'window' }], 1: [{ c: 2.2, w: 1.4, t: 'window' }, { c: -2.2, w: 1.4, t: 'window' }] },
     right: { 0: [{ c: -2.5, w: 0.8, t: 'window' }, { c: 2.0, w: 1.4, t: 'window' }], 1: [{ c: -2.5, w: 0.8, t: 'window' }, { c: 2.0, w: 1.4, t: 'window' }] },
   },
@@ -1592,8 +1615,8 @@ const PLAN = {
     ['dine1', 'g_living', -4.1, 2.85, 0, 'sit'], ['dine2', 'g_living', -3.1, 2.85, 0, 'sit'],
     ['dine3', 'g_living', -4.1, 4.15, 180, 'sit'], ['dine4', 'g_living', -3.1, 4.15, 180, 'sit'],
     ['play', 'g_living', -3.4, 1.4, 0, 'stand'], ['lvWindow', 'g_living', -3.5, 4.05, 0, 'stand'],
-    ['stove', 'g_kitchen', -3.65, -3.55, 180, 'stand'], ['fridge', 'g_kitchen', -1.75, -3.55, 180, 'stand'],
-    ['sinkK', 'g_kitchen', -2.75, -3.55, 180, 'stand'], ['kitchenMid', 'g_kitchen', -4.0, -1.3, 0, 'stand'],
+    ['stove', 'g_kitchen', -3.735, -3.4, 180, 'stand'], ['fridge', 'g_kitchen', -1.545, -3.5, 180, 'stand'],
+    ['sinkK', 'g_kitchen', -2.385, -3.4, 180, 'stand'], ['kitchenMid', 'g_kitchen', -4.0, -1.3, 0, 'stand'],
     ['toilet', 'g_bath', 5.4, -3.1, -90, 'sit'], ['sinkB', 'g_bath', 3.6, -3.55, 180, 'stand'], ['shower', 'g_bath', 5.2, -1.3, 0, 'stand'],
     ['desk_util', 'g_util', 4.7, 2.2, 90, 'sit'], ['util', 'g_util', 4.1, 0.9, 0, 'stand'],
     // upper floor
@@ -2125,8 +2148,7 @@ function houseFurniture(h) {
   add(0, 'bookshelf', -5.75, 3.4, 90, { w: 1.2, h: 1.4 });
   add(0, 'lamp', -1.35, 0.35, 0, {}); add(0, 'plant', -5.5, 0.5, 0, {});
   /* kitchen */
-  add(0, 'fridge', -1.75, -4.07, 0); add(0, 'sink', -2.75, -4.2, 0); add(0, 'stove', -3.65, -4.19, 0);
-  add(0, 'kCounter', -4.55, -4.2, 0, { w: 0.9, c: '#e8dcc0' }); add(0, 'kCounter', -5.45, -4.2, 0, { w: 0.9, c: '#e8dcc0' });
+  KITCHEN_RUN.forEach(([t, x, o]) => add(0, { counter: 'kCounter', kitchenSink: 'sink' }[t] || t, x, KITCHEN_Z, 0, Object.assign({}, o || {}, t === 'counter' || t === 'kitchenSink' ? { c: '#e8dcc0' } : {})));
   add(0, 'rug', -3.6, -2.2, 0, { w: 2.4, d: 1.0, c: '#c9b28a' });
   /* hall */
   add(0, 'plant', 0.85, 4.1, 0, {});
@@ -4225,57 +4247,80 @@ P.rug = (b, o) => {
   b.box(0, 0, 0, w, 0.025, d, o.c || '#b5645a', { ao: 1 });
   b.box(0, 0.025, 0, w - 0.3, 0.005, d - 0.3, shade(o.c || '#b5645a', 1.18), { ao: 1 });
 };
+/* kitchen units share one module, so a run of them lines up whatever is in it: 0.6 m deep
+   cabinets on a plinth, a 0.64 m worktop whose top is at 0.93 m, the same tiled splashback,
+   widths of 0.6, 0.9 or 1.2 m. Each takes a cabinet colour (o.c) from PAL.kitchen. */
+const KIT = { top: 0.88, th: 0.05, d: 0.6, dt: 0.64, splash: 0.4, worktop: '#5b6068', tile: '#e6ddd0' };
+const FRIDGE_DOOR_Z = 0.3;                         // the hinge line of the fridge's lower door (07g swings it)
+function kitWorktop(b, w) { b.box(0, KIT.top, 0, w, KIT.th, KIT.dt, KIT.worktop); }
+function kitSplash(b, w) {
+  b.box(0, KIT.top + KIT.th, -KIT.dt / 2 + 0.01, w, KIT.splash, 0.02, KIT.tile, { ao: 1 });
+  for (let i = 1; i < 3; i++) b.box(0, KIT.top + KIT.th + i * 0.13, -KIT.dt / 2 + 0.022, w, 0.006, 0.005, '#cfc6b8', { ao: 1 });
+}
+function kitCabinet(b, w, c) {
+  b.box(0, 0, 0.02, w - 0.04, 0.08, KIT.d - 0.04, shade(c, 0.6), { ao: 1 });                     // plinth
+  b.box(0, 0.08, 0, w, KIT.top - 0.08, KIT.d, c);
+}
+/* cupboard doors across the front: n of them, each with a handle by the middle */
+function kitDoors(b, w, c, y0, y1, n) {
+  const z = KIT.d / 2;
+  for (let i = 1; i < n; i++) b.box(-w / 2 + (w * i) / n, y0, z + 0.001, 0.012, y1 - y0, 0.005, shade(c, 0.72), { ao: 1 });
+  for (let i = 0; i < n; i++) { const cx = -w / 2 + (w * (i + 0.5)) / n, hx = n === 1 ? cx : cx + (i < n / 2 ? 1 : -1) * (w / n / 2 - 0.06); b.box(hx, y1 - 0.2, z + 0.01, 0.02, 0.1, 0.02, '#9aa4ab'); }
+}
 P.kCounter = (b, o) => {
   const w = o.w || 0.9, c = o.c || PC.cream;
-  b.box(0, 0, 0.02, w - 0.04, 0.08, 0.56, shade(c, 0.6), { ao: 1 });                   // plinth
-  b.box(0, 0.08, 0, w, 0.8, 0.6, c);
-  b.box(0, 0.88, 0, w + 0.02, 0.05, 0.64, '#5b6068');
-  b.box(0, 0.62, 0.302, w - 0.06, 0.005, 0.005, shade(c, 0.8), { ao: 1 });            // drawer line
-  b.box(-w / 4, 0.3, 0.301, 0.015, 0.5, 0.005, '#9a8f7a'); b.box(w / 4, 0.3, 0.301, 0.015, 0.5, 0.005, '#9a8f7a');
-  b.box(0, 0.72, 0.31, 0.14, 0.02, 0.02, '#9aa4ab'); b.box(-w / 4 + 0.06, 0.5, 0.31, 0.02, 0.1, 0.02, '#9aa4ab'); b.box(w / 4 - 0.06, 0.5, 0.31, 0.02, 0.1, 0.02, '#9aa4ab');
-  b.box(0, 0.93, -0.31, w, 0.4, 0.02, '#e6ddd0', { ao: 1 });                           // tiled splashback
-  for (let i = 1; i < 3; i++) b.box(0, 0.93 + i * 0.13, -0.298, w, 0.006, 0.005, '#cfc6b8', { ao: 1 });
+  kitCabinet(b, w, c); kitWorktop(b, w);
+  b.box(0, 0.62, KIT.d / 2 + 0.002, w - 0.06, 0.005, 0.005, shade(c, 0.8), { ao: 1 });            // drawer line
+  b.box(0, 0.72, KIT.d / 2 + 0.01, Math.min(0.14, w * 0.3), 0.02, 0.02, '#9aa4ab');
+  kitDoors(b, w, c, 0.1, 0.6, w >= 1.1 ? 3 : w >= 0.75 ? 2 : 1);
+  kitSplash(b, w);
 };
 P.fridgeDoor = (b, o) => {
-  b.soft(.39, .025, .014, .76, 1.17, .035, o && o.steel ? '#c4cad0' : '#e6eaec', .012, { bot: true });
+  b.soft(.39, .025, .014, .76, 1.17, .035, (o && o.c) || (o && o.steel ? '#c4cad0' : '#e6eaec'), .012, { bot: true });
   b.box(.69, .9, .034, .03, .28, .03, '#9aa4ab');
   b.box(.21, 1, .035, .18, .18, .005, '#f6f0dc', { ao: 1 });
   b.box(.25, 1.06, .039, .1, .08, .005, '#e76f51', { ao: 1 });
 };
 P.fridge = (b, o) => {
-  const c = o && o.steel ? '#c4cad0' : '#e6eaec';
-  // A real recess behind the hinged lower door; closed dimensions stay the same.
-  b.box(0, 0, -.332, .78, 1.82, .035, c);
-  b.box(-.367, 0, 0, .045, 1.82, .7, c); b.box(.367, 0, 0, .045, 1.82, .7, c);
-  b.box(0, 0, 0, .7, .04, .7, c); b.box(0, 1.775, 0, .7, .045, .7, c);
-  b.box(0, 1.2, 0, .7, .62, .7, c);
-  b.box(0, .06, -.31, .67, 1.1, .006, '#c4d1d0', { ao: 1 });
-  [.44, .82].forEach(y => b.box(0, y, -.025, .68, .025, .55, '#f4f2e8'));
-  b.box(-.19, .47, -.10, .16, .20, .14, '#f6f0dc'); b.box(-.19, .65, -.10, .16, .035, .14, '#72a8c0');
-  b.cyl(.15, .47, -.07, .075, .14, '#b4ce7f', 8); b.sph(.13, .91, -.05, .065, '#d87b3d', 8);
-  if (!b.foodInteractive) { b.push(-.39, 0, .35, 0); P.fridgeDoor(b, o); b.pop(); }
-  b.box(0, 1.2, 0.351, 0.76, 0.012, 0.005, '#9aa4ab');
-  b.box(0.3, 1.3, 0.36, 0.03, 0.4, 0.03, '#9aa4ab');
-  b.box(-0.2, 1.4, 0.358, 0.05, 0.05, 0.01, '#4a78b5', { ao: 1 }); b.box(0.02, 1.5, 0.358, 0.05, 0.05, 0.01, '#e9c46a', { ao: 1 });     // magnets
+  const c = (o && o.c) || (o && o.steel ? '#c4cad0' : '#e6eaec'), d = KIT.d, zf = FRIDGE_DOOR_Z;
+  // A real recess behind the hinged lower door; as deep as the worktops, so its front lines up with them.
+  b.box(0, 0, -d / 2 + .018, .78, 1.82, .035, c);
+  b.box(-.367, 0, 0, .045, 1.82, d, c); b.box(.367, 0, 0, .045, 1.82, d, c);
+  b.box(0, 0, 0, .7, .04, d, c); b.box(0, 1.775, 0, .7, .045, d, c);
+  b.box(0, 1.2, 0, .7, .62, d, c);
+  b.box(0, .06, -d / 2 + .04, .67, 1.1, .006, '#c4d1d0', { ao: 1 });
+  [.44, .82].forEach(y => b.box(0, y, .01, .68, .025, d - .12, '#f4f2e8'));
+  b.box(-.19, .47, -.07, .16, .20, .14, '#f6f0dc'); b.box(-.19, .65, -.07, .16, .035, .14, '#72a8c0');
+  b.cyl(.15, .47, -.04, .075, .14, '#b4ce7f', 8); b.sph(.13, .91, -.02, .065, '#d87b3d', 8);
+  if (!b.foodInteractive) { b.push(-.39, 0, zf, 0); P.fridgeDoor(b, o); b.pop(); }
+  b.box(0, 1.2, zf + 0.001, 0.76, 0.012, 0.005, '#9aa4ab');
+  b.box(0.3, 1.3, zf + 0.01, 0.03, 0.4, 0.03, '#9aa4ab');
+  b.box(-0.2, 1.4, zf + 0.008, 0.05, 0.05, 0.01, '#4a78b5', { ao: 1 }); b.box(0.02, 1.5, zf + 0.008, 0.05, 0.05, 0.01, '#e9c46a', { ao: 1 });     // magnets
 };
-P.stove = (b) => {
-  b.box(0, 0, 0, 0.7, 0.9, 0.62, '#dfe2e4');
-  b.box(0, 0.9, 0, 0.7, 0.03, 0.62, '#2b2f38');
-  [[-0.17, -0.14], [0.17, -0.14], [-0.17, 0.14], [0.17, 0.14]].forEach(([x, z]) => b.cyl(x, 0.93, z, 0.09, 0.015, '#575c66', 8));
-  b.box(0, 0.93, -0.28, 0.7, 0.12, 0.06, '#cfd3d6');                                   // back panel with knobs
-  [-0.24, -0.08, 0.08, 0.24].forEach((x) => b.cyl(x, 0.97, -0.24, 0.025, 0.03, '#2b2f38', 6));
-  b.box(0, 0.22, 0.315, 0.56, 0.44, 0.01, '#2b2f38');
-  b.box(0, 0.3, 0.322, 0.4, 0.22, 0.005, '#4a5260');                                   // oven window
-  b.box(0, 0.7, 0.33, 0.46, 0.03, 0.03, '#b8bec3');                                    // oven handle
+P.stove = (b, o) => {
+  o = o || {};
+  const w = o.w || 0.6, c = o.c || '#dfe2e4', z = KIT.d / 2, cols = w >= 0.85 ? 3 : 2;
+  b.box(0, 0, 0, w, 0.9, KIT.d, c);
+  b.box(0, 0.9, 0, w, 0.03, KIT.dt, '#2b2f38');                                        // the hob, level with the worktops
+  for (let i = 0; i < cols; i++) [-0.14, 0.14].forEach((bz) => b.cyl((i - (cols - 1) / 2) * (w / cols), 0.93, bz, 0.085, 0.015, '#575c66', 8));
+  b.box(0, 0.93, -0.28, w, 0.12, 0.06, shade(c, 0.93));                                // back panel with knobs
+  for (let i = 0; i < cols * 2; i++) b.cyl((i - (cols * 2 - 1) / 2) * (w / (cols * 2)) * 0.9, 0.97, -0.24, 0.022, 0.03, '#2b2f38', 6);
+  b.box(0, 0.22, z + 0.005, w - 0.14, 0.44, 0.01, '#2b2f38');
+  b.box(0, 0.3, z + 0.012, w - 0.3, 0.22, 0.005, '#4a5260');                           // oven window
+  b.box(0, 0.7, z + 0.02, w - 0.24, 0.03, 0.03, '#b8bec3');                            // oven handle
   b.cyl(0.12, 0.95, 0.12, 0.08, 0.1, '#8a9aa6', 8);                                    // a pan
+  kitSplash(b, w);
 };
-P.sink = (b) => {
-  b.box(0, 0, 0, 0.9, 0.88, 0.6, PC.cream);
-  b.box(0, 0.88, 0, 0.94, 0.05, 0.64, '#5b6068');
-  b.box(0, 0.93, 0.02, 0.5, 0.01, 0.36, '#8fa3ad');
+P.sink = (b, o) => {
+  o = o || {};
+  const w = o.w || 0.9, c = o.c || PC.cream;
+  kitCabinet(b, w, c); kitWorktop(b, w);
+  kitDoors(b, w, c, 0.1, 0.84, w >= 0.75 ? 2 : 1);
+  b.box(0, 0.93, 0.02, Math.min(0.5, w - 0.3), 0.01, 0.36, '#8fa3ad');
   b.box(0, 0.93, -0.22, 0.05, 0.2, 0.05, PC.metal);
   b.box(0, 1.10, -.08, .045, .035, .28, PC.metal);
   b.box(0, 1.05, .04, .045, .06, .045, PC.metal);
+  kitSplash(b, w);
 };
 P.bed = (b, o) => {
   const w = o.w || 1.0, c = o.c || '#c9d6e2', L = 2.2;
@@ -4385,12 +4430,23 @@ P.shower = (b) => {       // tray & curtain around the person
   b.box(0, SHOWER_FIXTURE.height, -.12, .035, .035, .72, PC.metal);
   b.cyl(0, SHOWER_FIXTURE.height, SHOWER_FIXTURE.headZ, .1, .035, PC.metal, 10);
 };
-P.washer = (b) => { b.box(0, 0, 0, 0.66, 0.9, 0.66, '#eceff1'); b.cyl(0, 0.35, 0.34, 0.2, 0.02, '#4d5a66', 9); };
-P.freezer = (b) => {      // chest freezer
-  b.box(0, 0, 0, 1.1, 0.9, 0.68, '#dfe7ea');
-  b.box(0, 0.9, 0, 1.12, 0.05, 0.7, '#c1ccd1');
-  b.box(0, 0.75, 0.35, 0.5, 0.05, 0.03, '#8a939a');
-  b.box(0.4, 0.95, 0.1, 0.16, 0.02, 0.16, '#a33c46');       // a small red sticker: "handle with care"
+P.washer = (b, o) => {     // under the worktop, like the cupboards beside it
+  o = o || {};
+  const w = o.w || 0.6, c = o.c || '#eceff1', z = KIT.d / 2;
+  b.box(0, 0, 0, w, KIT.top, KIT.d, c);
+  kitWorktop(b, w);
+  b.box(0, 0.74, z + 0.003, w - 0.06, 0.1, 0.006, shade(c, 0.9), { ao: 1 });                  // control strip
+  b.cyl(w * 0.3, 0.79, z + 0.01, 0.025, 0.02, '#4d5a66', 6);
+  b.box(0, 0.16, z + 0.004, 0.44, 0.44, 0.01, '#9aa4ab', { ao: 1 });                           // the porthole
+  b.box(0, 0.2, z + 0.01, 0.34, 0.36, 0.008, '#4d5a66', { ao: 1 });
+};
+P.freezer = (b, o) => {      // chest freezer, its lid level with the worktops
+  o = o || {};
+  const w = o.w || 1.1, c = o.c || '#dfe7ea', z = KIT.d / 2;
+  b.box(0, 0, 0, w, KIT.top, KIT.d, c);
+  b.box(0, KIT.top, 0, w, KIT.th, KIT.dt, shade(c, 0.9));
+  b.box(0, 0.75, z + 0.015, 0.5, 0.05, 0.03, '#8a939a');
+  b.box(w * 0.36, KIT.top + KIT.th, 0.1, 0.16, 0.02, 0.16, '#a33c46');       // a small red sticker: "handle with care"
 };
 P.shelfUnit = (b, o) => {
   const w = o.w || 1.2;
@@ -4665,10 +4721,14 @@ function cutawayModeFor(group) {
   const sd = (v) => (v > 0.3 ? 1 : v < -0.3 ? -1 : 0);
   return 'room:' + sd(lx) + ':' + sd(lz);
 }
+/* a window's sill and top, above its floor (each window can have its own; Build mode → Windows) */
+const WIN_SILL = 0.9, WIN_TOP = 2.1;
+const winSill = (o) => (o && Number.isFinite(o.sy) ? o.sy : WIN_SILL);
+const winTop = (o) => (o && Number.isFinite(o.ty) ? o.ty : WIN_TOP);
 /* wall run along local x (axis 'x', at z=p) or along local z (axis 'z', at x=p) */
 function wallRun(b, axis, p, a0, a1, opens, y0, hh, th, cols, onWin) {
   if (hh <= 0.001) return;
-  const ops = (opens || []).map((o) => ({ a: o.c - o.w / 2, b: o.c + o.w / 2, t: o.t, c: o.c, w: o.w })).sort((u, v) => u.a - v.a);
+  const ops = (opens || []).map((o) => ({ a: o.c - o.w / 2, b: o.c + o.w / 2, t: o.t, c: o.c, w: o.w, sy: o.sy, ty: o.ty })).sort((u, v) => u.a - v.a);
   const F = { px: cols.pos, nx: cols.neg, pz: cols.pos, nz: cols.neg, py: cols.top };
   const top = y0 + hh;
   const seg = (s0, s1, yb, yt) => {
@@ -4683,7 +4743,7 @@ function wallRun(b, axis, p, a0, a1, opens, y0, hh, th, cols, onWin) {
     const isWin = o.t === 'window' || o.t === 'windowS' || o.t === 'windowW';
     if (o.t === 'door' || o.t === 'extDoor') seg(o.a, o.b, y0 + 2.2, top);
     else if (o.t === 'open' || o.t === 'arch') seg(o.a, o.b, y0 + 2.3, top);
-    else { seg(o.a, o.b, y0, Math.min(top, y0 + 0.9)); seg(o.a, o.b, y0 + 2.1, top); }
+    else { seg(o.a, o.b, y0, Math.min(top, y0 + winSill(o))); seg(o.a, o.b, y0 + winTop(o), top); }
     if (onWin && isWin) onWin(o);
     cur = o.b;
   }
@@ -4752,14 +4812,14 @@ function frameBox(b, axis, c, p, y, len, hgt, th, col) {
   if (axis === 'x') b.box(c, y, p, len, hgt, th, col, { ao: 1 }); else b.box(p, y, c, th, hgt, len, col, { ao: 1 });
 }
 function addWindow(b, gb, axis, p, sign, o, y0, trim) {
-  const w = o.w, c = o.c, th = 0.3 + 0.07;
-  frameBox(b, axis, c - w / 2 - 0.04, p, y0 + 0.86, 0.09, 1.33, th, trim);
-  frameBox(b, axis, c + w / 2 + 0.04, p, y0 + 0.86, 0.09, 1.33, th, trim);
-  frameBox(b, axis, c, p, y0 + 2.1, w + 0.26, 0.1, th + 0.018, trim);             // the head sits a hair proud of the jambs
-  frameBox(b, axis, c, p + sign * 0.08, y0 + 0.82, w + 0.4, 0.07, th + 0.12, trim);
-  frameBox(b, axis, c, p, y0 + 0.9, 0.05, 1.2, th - 0.02, trim);
-  frameBox(b, axis, c, p, y0 + 1.46, w, 0.05, th - 0.036, trim);                   // the transom a hair behind the mullion
-  frameBox(gb, axis, c, p, y0 + 0.9, w, 1.2, 0.05, '#ffffff');
+  const w = o.w, c = o.c, th = 0.3 + 0.07, sy = winSill(o), ty = winTop(o), hh = ty - sy;
+  frameBox(b, axis, c - w / 2 - 0.04, p, y0 + sy - 0.04, 0.09, hh + 0.13, th, trim);
+  frameBox(b, axis, c + w / 2 + 0.04, p, y0 + sy - 0.04, 0.09, hh + 0.13, th, trim);
+  frameBox(b, axis, c, p, y0 + ty, w + 0.26, 0.1, th + 0.018, trim);             // the head sits a hair proud of the jambs
+  frameBox(b, axis, c, p + sign * 0.08, y0 + sy - 0.08, w + 0.4, 0.07, th + 0.12, trim);
+  if (w >= 0.7) frameBox(b, axis, c, p, y0 + sy, 0.05, hh, th - 0.02, trim);
+  if (hh >= 0.7) frameBox(b, axis, c, p, y0 + sy + hh * 0.467, w, 0.05, th - 0.036, trim);   // the transom a hair behind the mullion
+  frameBox(gb, axis, c, p, y0 + sy, w, hh, 0.05, '#ffffff');
 }
 function addDoor(b, h, st, y0) {
   const trim = st.trim, dc = st.door;
@@ -6994,7 +7054,7 @@ function miniatureWindows(H) {
   if (!H.dataHome) return [];
   return lotHome(H.h.no).opens.filter(o => o.t.startsWith('window')).map(o => ({
     x: o.a === 'h' ? o.c : o.p, z: o.a === 'h' ? o.p : o.c,
-    y: FLOOR_Y[o.f] + 1.6, f: o.f, width: o.w,
+    y: FLOOR_Y[o.f] + (winSill(o) + winTop(o)) / 2 + .1, f: o.f, width: o.w,
   }));
 }
 function miniatureLampWeight(lt, x, y, z, nx, ny, nz) {
@@ -12874,7 +12934,7 @@ const FoodKitchen = {
     const material = materialLibraryMaterial(name.startsWith('door') ? 'paint' : role, WM.main, H);
     if (!this.geometry[name]) {
       const b = new Batch(); b.surfaceRole = name.startsWith('door') ? 'paint' : role;
-      if (name.startsWith('door')) P.fridgeDoor(b, { steel: name === 'doorSteel' }); else this.recipes[name](b);
+      if (name.startsWith('door')) P.fridgeDoor(b, { steel: name === 'doorSteel', c: name.startsWith('door:') ? name.slice(5) : undefined }); else this.recipes[name](b);
       const source = b.build(material); this.geometry[name] = source.geometry;
     }
     const m = new THREE.Mesh(this.geometry[name], material);
@@ -12916,9 +12976,9 @@ const FoodKitchen = {
     let d = this.doors.get(f.key); if (d) return d;
     const group = new THREE.Group(), pivot = new THREE.Group();
     group.position.set(f.x, f.y, f.z); group.rotation.y = f.rot;
-    pivot.position.set(-.39, 0, .35); group.add(pivot);
-    const steel = isLotBld(f.bld) && itemOpts(f.item).steel;
-    pivot.add(this.mesh(steel ? 'doorSteel' : 'door', f.H)); f.H.group.add(group);
+    pivot.position.set(-.39, 0, FRIDGE_DOOR_Z); group.add(pivot);
+    const o = isLotBld(f.bld) ? itemOpts(f.item) : {};
+    pivot.add(this.mesh(o.c ? 'door:' + o.c : o.steel ? 'doorSteel' : 'door', f.H)); f.H.group.add(group);
     d = { fixture: f, group, pivot, angle: 0, user: null, sounded: false }; this.doors.set(f.key, d); return d;
   },
   workspace(s, f) {
@@ -13240,7 +13300,7 @@ function h(tag, props, ...kids) {
     const v = props[k];
     if (v === false || v == null) continue;
     if (k === 'class') el.className = v;
-    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k === 'style' && typeof v === 'object') { for (const p in v) { if (p.startsWith('--')) el.style.setProperty(p, v[p]); else el.style[p] = v[p]; } }   // custom properties (--v) only take setProperty
     else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
     else if (k === 'html') el.innerHTML = v;
     else el.setAttribute(k, v === true ? '' : v);
@@ -13248,6 +13308,37 @@ function h(tag, props, ...kids) {
   kids.flat(9).forEach((c) => { if (c != null && c !== false) el.append(c.nodeType ? c : document.createTextNode(String(c))); });
   return el;
 }
+/* sideways strips (the Buy and Build bars, shop departments, sizes, colours): fingers swipe them on
+   their own; a mouse wheel or a click-and-drag scrolls them too, and a drag never counts as a click */
+const HSCROLL_SEL = '#btools, .stabs, .svars.line, .sw.line, .brow.scroll';
+function hscrollBind() {
+  if (typeof document === 'undefined' || !document.addEventListener) return;
+  const strip = (t) => { const el = t && t.closest ? t.closest(HSCROLL_SEL) : null; return el && el.scrollWidth > el.clientWidth + 1 ? el : null; };
+  document.addEventListener('wheel', (e) => {
+    const el = strip(e.target);
+    if (!el || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;          // a trackpad's sideways swipe scrolls by itself
+    el.scrollLeft += e.deltaY * (e.deltaMode === 1 ? 18 : 1);
+    e.preventDefault();
+  }, { passive: false });
+  let drag = null;
+  document.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button !== 0) return; const el = strip(e.target); drag = el ? { el, x: e.clientX, s: el.scrollLeft, moved: false } : null; });
+  document.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    if (!(e.buttons & 1)) { drag = null; return; }
+    const dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) < 6) return;
+    drag.moved = true; drag.el.scrollLeft = drag.s - dx;
+  });
+  document.addEventListener('pointerup', () => {
+    if (drag && drag.moved) {
+      const eat = (e) => { e.stopPropagation(); e.preventDefault(); };
+      window.addEventListener('click', eat, { capture: true, once: true });
+      setTimeout(() => window.removeEventListener('click', eat, { capture: true }), 120);
+    }
+    drag = null;
+  });
+}
+hscrollBind();
 const money = (n) => '§' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const WX_ICON = { sunny: '☀️', partly: '⛅', cloudy: '☁️', drizzle: '🌦️', rain: '🌧️', storm: '⛈️', fog: '🌫️', snow: '🌨️' };
 const NEED_ICON = { hunger: '🍽️', energy: '🌙', bladder: '🚽', hygiene: '🚿', social: '💬', fun: '🎲' };
@@ -14038,13 +14129,16 @@ UI.title = function () {
   const fams = famList();
   const cont = readSaveInfo('auto') || ['1', '2', '3'].map(readSaveInfo).find(Boolean);
   const slot = readSaveInfo('auto') ? 'auto' : ['1', '2', '3'].find((s) => readSaveInfo(s));
-  /* the shared town, when that is what you played last (15c) */
+  /* the shared town, when that is what you played last (15c); the other kind of game is offered just below */
   const shared = typeof netContinueRec === 'function' ? netContinueRec(cont) : null;
+  const sharedToo = !shared && cont && typeof netContinueRec === 'function' ? netContinueRec(null) : null;
   const el = h('div', { id: 'title' },
     h('div', { class: 'logo' }, h('small', null, 'Hawthorn Lane · population twenty-odd'), h('h1', null, 'Good Neighbors'), h('p', null, hookFirst('tagline') || 'A warm little street. Twenty-odd neighbours.')),
     h('div', { class: 'tbtn' },
       shared ? h('button', { class: 'btn primary big tcont-net', onclick: () => { Sound.unlock(); Sound.click(); netUiContinue(shared); } }, 'Continue', h('em', null, `${shared.hh || shared.name || 'Shared neighbourhood'} · ${shared.t != null ? 'Day ' + (dayOf(shared.t) + 1) + ' · ' : ''}shared neighbourhood`))
         : cont ? h('button', { class: 'btn primary big', onclick: () => { Sound.unlock(); Sound.click(); UI.layer.textContent = ''; loadGame(slot); } }, 'Continue', h('em', null, `${cont.name} · Day ${dayOf(cont.t) + 1}`)) : null,
+      shared && cont ? h('button', { class: 'btn ghost tcont-other', onclick: () => { Sound.unlock(); Sound.click(); UI.layer.textContent = ''; loadGame(slot); } }, 'Or your own game', h('em', null, `${cont.name} · Day ${dayOf(cont.t) + 1} · single player`)) : null,
+      sharedToo ? h('button', { class: 'btn ghost tcont-other', onclick: () => { Sound.unlock(); Sound.click(); netUiContinue(sharedToo); } }, 'Or back to ' + (sharedToo.name || 'the shared neighbourhood'), h('em', null, (sharedToo.hh ? sharedToo.hh + ' · ' : '') + 'shared neighbourhood')) : null,
       h('button', { class: 'btn ' + (cont || shared ? '' : 'primary ') + 'big', onclick: () => { Sound.unlock(); Sound.click(); CAS.members = []; UI.cas(); TITLE.on = false; } }, 'New household', fams.length ? h('em', null, fams[0].name + ' · or someone new') : null),
       h('button', { class: 'btn ghost', onclick: () => { Sound.unlock(); UI.menu('save'); } }, cont ? 'Load, import or settings' : 'Import a save code'),
       cont ? null : h('button', { class: 'btn ghost', onclick: () => { Sound.unlock(); UI.menu('set'); } }, 'Settings')),
@@ -14245,7 +14339,8 @@ UI.careerSheet = function (me, searched) {
   const items = Object.keys(CAREER_DEF).map((tr) => {
     const D = CAREER_DEF[tr], p = fitChance(me, tr), lv = careerStartLevel(me, tr), why = careerStartLevel.why, L = D.levels[lv - 1];
     const fit = p > 0.72 ? 'Good fit' : p > 0.5 ? 'Reasonable' : p > 0.35 ? 'Long shot' : 'Unlikely';
-    return { icon: lv > 1 ? '🎓' : '📄', label: `${tr} · ${L[0]}`, sub: `${money(L[1])}/h · ${schedText(careerSched(tr, lv))} · ${fit}` + (lv > 1 ? ` · starts at level ${lv} (${why})` : D.degree && D.degree > 1 ? ` · a ${tr} degree starts at ${D.levels[D.degree - 1][0]}` : ''), disabled: waiting, why: 'You are still waiting to hear back from the last application.', fn: () => applyForJob(me, tr) };
+    const sk = (CAREER_SKILLS[tr] || []).map((k) => { const S = SKILLS.find((x) => x[0] === k); return `${S[2]} ${S[1]} ${Math.floor(skillOf(me, k))}`; }).join(' & ');
+    return { icon: lv > 1 ? '🎓' : '📄', label: `${tr} · ${L[0]}`, sub: `${money(L[1])}/h · ${schedText(careerSched(tr, lv))} · ${fit}` + (sk ? ` · skills: ${sk}` : '') + (lv > 1 ? ` · starts at level ${lv} (${why})` : D.degree && D.degree > 1 ? ` · a ${tr} degree starts at ${D.levels[D.degree - 1][0]}` : ''), disabled: waiting, why: 'You are still waiting to hear back from the last application.', fn: () => applyForJob(me, tr) };
   });
   items.push({ icon: '🎓', label: 'Or go to university', sub: 'A degree starts a career a rung or two up', fn: () => UI.uniSheet(me) });
   this.sheet({ title: 'Job listings', sub: waiting ? 'An application is pending.' : `${me.first} is looking for work. Answers arrive the next morning. Skills, a degree and good school results all help.`, items, tall: true, foot: 'Underground work pays well and asks no questions.' });
@@ -15295,7 +15390,7 @@ function ciStyles() {
     .ci-close{width:44px;border:0;border-radius:50%;background:var(--paper2);color:var(--ink);font-size:22px}.ci-person{display:flex;align-items:center;gap:10px;padding:0 22px 10px;font-size:13px;color:var(--ink2)}.ci-person select{max-width:100%;min-width:0;flex:1;border:1px solid var(--line);border-radius:12px;background:var(--paper2);color:var(--ink);padding:0 12px;font:inherit}
     .ci-tabs{display:flex;gap:6px;overflow-x:auto;flex-shrink:0;padding:0 18px 12px;border-bottom:1px solid var(--line)}.ci-tabs button{flex-shrink:0;border:0;border-radius:16px;background:none;padding:0 15px;font:700 14px var(--f-head);color:var(--ink2)}.ci-tabs button[aria-selected=true]{background:var(--teal);color:var(--paper)}
     .ci-body{padding:18px 22px 24px;overflow:auto;overscroll-behavior:contain;min-height:0}.ci-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.ci-card{border:1px solid var(--line);background:var(--paper2);border-radius:18px;padding:16px;min-width:0}.ci-card h3{font:700 16px var(--f-head);margin:0 0 12px}.ci-card h4{font:700 15px var(--f-head);margin:0 0 4px}.ci-wide{grid-column:1/-1}.ci-big{font:700 26px var(--f-head)}
-    .ci-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:8px 0;font-size:14px}.ci-row>span:first-child{color:var(--ink2)}.ci-row strong{text-align:right;font-weight:600}.ci-meter{height:8px;background:var(--line);border-radius:6px;overflow:hidden}.ci-meter i{display:block;height:100%;background:var(--teal);border-radius:6px}.ci-danger{color:var(--bad)}.ci-meter.ci-danger i{background:var(--bad)}.ci-warning{color:var(--warn)}.ci-meter.ci-warning i{background:var(--warn)}
+    .ci-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:8px 0;font-size:14px}.ci-row>span:first-child{color:var(--ink2)}.ci-row strong{text-align:right;font-weight:600}.ci-how{margin:8px 0 2px;font-size:13.5px;line-height:1.4}.ci-how b{font-weight:800}.ci-jobskill+.ci-jobskill{margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}.ci-meter{height:8px;background:var(--line);border-radius:6px;overflow:hidden}.ci-meter i{display:block;height:100%;background:var(--teal);border-radius:6px}.ci-danger{color:var(--bad)}.ci-meter.ci-danger i{background:var(--bad)}.ci-warning{color:var(--warn)}.ci-meter.ci-warning i{background:var(--warn)}
     .ci-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.ci-pill{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:6px 10px;font-size:13px}.ci-effect{border-left:3px solid var(--teal);padding:10px 12px;margin:8px 0;border-radius:0 10px 10px 0;background:var(--paper)}.ci-effect.neg{border-color:var(--bad)}.ci-effect strong{font-size:14px}.ci-effect .ci-row{margin:5px 0 0}.ci-effect .ci-row strong{font-size:13px}
     .ci-relation{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--line);border-radius:18px;background:var(--paper2);color:var(--ink);padding:14px}.ci-relation img{width:52px;height:52px;border-radius:50%}.ci-relation .ci-sub{display:block;margin-top:3px}.ci-relation b{font:700 16px var(--f-head)}.ci-relation em{font-style:normal;margin-left:auto;color:var(--teal)}
     .ci-action{border:1px solid var(--line);border-radius:14px;padding:8px 14px;background:var(--paper);color:var(--ink);font:700 14px var(--f-head);margin-top:10px}.ci-action.primary{background:var(--teal);color:var(--paper)}.ci-dialog details{margin-top:12px}.ci-dialog summary{display:flex;align-items:center;font-weight:600;font-size:14px;cursor:pointer}.ci-dialog summary::before{content:"▸";margin-right:8px;color:var(--teal)}.ci-dialog details[open] summary::before{content:"▾"}.ci-dialog ul{padding-left:20px;margin:8px 0;line-height:1.6;font-size:14px}.ci-empty{padding:24px 4px;color:var(--ink2);line-height:1.6}.ci-recent{border-top:1px solid var(--line);padding:10px 0;font-size:14px;line-height:1.5}.ci-recent:first-of-type{border-top:0}.ci-live{font-size:13px;color:var(--teal);padding:0 22px}.ci-live:empty{display:none}.ci-feedback{animation:ciFeedback 1.6s ease-out}@keyframes ciFeedback{from{box-shadow:inset 0 0 0 2px var(--teal)}to{box-shadow:inset 0 0 0 0 transparent}}
@@ -15389,11 +15484,29 @@ function ciRelationships(s) {
   }).map(p=>ciRelationship(s,p)).sort((a,b)=>Number(b.person.id===G.player.sel)-Number(a.person.id===G.player.sel)||b.r.fri-a.r.fri||a.person.first.localeCompare(b.person.first));
 }
 const CI_SKILL_HELP = {
-  cooking:'Makes meals more nourishing. Helps Hospitality careers.',fitness:'Built through exercise; helps Fitness careers and several other jobs.',
-  charisma:'Improves chances in friendly conversation. Helps people-focused careers.',logic:'Helps school performance and many careers.',
-  creativity:'Increases painting sale values and helps creative careers.',handiness:'Practised by tinkering, gardening and cleaning; helps Creative careers.',
-  writing:'Increases writing speed and the expected value of completed novels.'
+  cooking:'Makes meals more nourishing and kitchen accidents rarer.',fitness:'Keeps people fit and steady at physical work.',
+  charisma:'Friendly conversations go better.',logic:'Helps at school and university.',
+  creativity:'Paintings sell for more.',handiness:'Repairs go quicker and more often right.',
+  writing:'Novels are written faster and sell for more.',gardening:'Vegetable patches grow faster and give bigger harvests.'
 };
+/* the careers a skill counts in, in words */
+function ciSkillCareers(k) {
+  const main = Object.keys(CAREER_SKILLS).filter((t) => CAREER_SKILLS[t][0] === k), side = Object.keys(CAREER_SKILLS).filter((t) => CAREER_SKILLS[t][1] === k);
+  const list = (a) => (a.length > 1 ? a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1] : a[0]);
+  return [main.length ? 'The main skill in ' + list(main) + '.' : '', side.length ? (main.length ? 'Also used in ' : 'Used in ') + list(side) + '.' : ''].filter(Boolean).join(' ');
+}
+/* the two skills a job leans on, against the next promotion, with how to train each */
+function ciJobSkills(s, track, gates) {
+  const ks = CAREER_SKILLS[track] || [];
+  if (!ks.length) return null;
+  const card = ciCard('Skills for this job', ks.map((k, i) => {
+    const [, label, icon] = SKILLS.find((x) => x[0] === k), v = skillOf(s, k), g = (gates || []).find((x) => x.key === 'skill:' + k);
+    return h('div', { class: 'ci-jobskill' }, ciRow(icon + ' ' + label + (i === 0 ? ' · main skill' : ''), Math.floor(v) + (g ? ' / ' + g.target + ' for the promotion' : ' / 10')),
+      ciMeter(g ? Math.min(100, (v / g.target) * 100) : v * 10, label, g && !g.met ? 'ci-warning' : ''), h('p', { class: 'ci-how' }, h('b', null, 'Train it: '), SKILL_HOW[k][1]));
+  }), ciNote('Each shift compares these two skills with what the job expects (the main one counts double), and every promotion asks for a level of both. They grow by practising at home, not at work.'));
+  card.classList.add('ci-wide');
+  return card;
+}
 function ciCard(title,...children) {return h('section',{class:'ci-card'},h('h3',null,title),children);}
 /* a ring gauge for one need: colour says how urgent it is */
 function ciGauge(v,label,icon) {const t=hudTone(v);return h('div',{class:'ci-gauge tone-'+t,role:'meter','aria-label':label+' '+Math.round(v)+'%','aria-valuenow':Math.round(v),'aria-valuemin':0,'aria-valuemax':100},h('span',{class:'ci-g-ring',style:{'--v':clamp(v,0,100)+'%'}},h('span',{class:'ci-g-i','aria-hidden':'true'},icon)),h('b',null,label),h('em',null,Math.round(v)+'%'+(v<14?' · Critical':v<30?' · Low':'')));}
@@ -15424,7 +15537,8 @@ function ciUniCard(s) {
   return ciCard('University · ' + U.field, h('div', { class: 'ci-big' }, 'Course grade ' + g), ciRow('Study days', U.done + ' / ' + U.need), ciMeter(U.done / U.need * 100, 'Degree progress'), ciRow('Course performance', Math.round(U.perf) + '%'), ciMeter(U.perf, 'Course performance'),
     ciRow('Timetable', `${daysText(UNI.days)}, ${hoursText(UNI.start)}–${hoursText(UNI.start + UNI.len)}`), ciRow('Fees', money(UNI.fee) + ' per study day'), ciRow('Way in', UNI_ROUTE[U.route]),
     ciNote(`Each study day builds ${SKILLS.find((x) => x[0] === (CAREER_SKILLS[U.field] || ['logic'])[0])[1].toLowerCase()} and the course grade. Afterwards a ${U.field} job starts as ${CAREER_DEF[U.field].levels[CAREER_DEF[U.field].degree - 1][0]}.`),
-    ciLastDay(U.last, 'Last study day'), ciFactors(s), ciAction('University options', () => UI.uniSheet(s)));
+    ciNote(`A study day counts when ${s.first} is at the college for the lectures; ${U.need - U.done} to go. ${dutyText(s)}`),
+    ciLastDay(U.last, 'Last study day'), ciFactors(s), ciAction('Go to lectures', () => { if (!sendToDuty(s)) UI.toast('No lectures to go to right now.'); }), ciAction('University options', () => UI.uniSheet(s)));
 }
 function ciEducation(s) {
   const E = s.edu || {}, rows = [];
@@ -15474,9 +15588,10 @@ function ciCareer(s) {
     gates.map((g) => h('div', { 'data-gate': g.label }, ciRow((g.met ? '✓ ' : '○ ') + g.label, g.degree ? (g.met ? 'Yes' : 'Not yet') : (g.unit === '%' ? Math.floor(g.current) : Number.isInteger(g.current) ? g.current : g.current.toFixed(1)) + g.unit + ' / ' + g.target + g.unit), g.degree ? null : ciMeter(Math.min(100, g.current / g.target * 100), g.label, g.met ? '' : 'ci-warning'))),
     next ? ciNote(gates.every((g) => g.met) ? 'Everything is met: the promotion comes at the end of the next completed shift.' : 'Meet every requirement and the promotion comes at the end of that shift. No luck involved.' + (gates.some((g) => g.degree && !g.met) ? ' The degree comes from university (open at any age).' : '')) : null);
   promotion.classList.add('ci-wide');
+  const jobSkills = ciJobSkills(s, c.track, gates);
   const ladder = ciCard('The ladder', D.levels.map((L, i) => h('div', { class: 'ci-row ci-rung' + (i + 1 === lv ? ' on' : '') }, h('span', null, (i + 1 < lv ? '✓ ' : i + 1 === lv ? '● ' : '○ ') + L[0] + (D.gate === i + 1 ? ' 🎓' : '')), h('strong', null, money(L[1]) + '/h'))), D.gate ? ciNote(`🎓 needs a ${c.track} degree.`) : null);
   const recent = ciCard('Recent shifts', (c.log || []).length ? (c.log || []).slice(-6).reverse().map((e) => ciRow('Day ' + (e.day + 1), e.promoted ? 'Promoted to ' + e.promoted : e.demoted ? 'Moved down to ' + e.demoted : e.missed ? 'Missed (−9%)' : `${ciSigned(e.gain)}% → ${e.perf}%`)) : ciNote('Nothing yet.'));
-  return [position, performance, promotion, ladder, recent, ciCard('Career choices', ciAction('Quit this job', () => UI.confirmQuit(s)), ciAction('University options', () => UI.uniSheet(s)))];
+  return [position, performance, promotion, jobSkills, ladder, recent, ciCard('Career choices', ciAction('Quit this job', () => UI.confirmQuit(s)), ciAction('University options', () => UI.uniSheet(s)))];
 }
 function ciSchoolTab(s) {
   const sc=s.school,v=ciSchool(s);
@@ -15490,9 +15605,11 @@ function ciSchoolTab(s) {
   return [school,homework,record,progress,cards];
 }
 function ciSkills(s) {
-  const has=SKILLS.filter(([k])=>skillOf(s,k)>=.05);
-  if(!has.length)return [ciCard('Skills start with practice',ciNote('Cook, read, exercise, paint, tinker, write or talk with someone. Skills appear here once practised.'))];
-  return has.map(([k,label,icon])=>{const v=skillOf(s,k),level=Math.floor(v),progress=Math.floor((v-level)*100);return ciCard(icon+' '+label,ciRow('Level',level+' / 10'),level<10?ciMeter(progress,label+' progress to level '+(level+1)):null,ciNote(level>=10?'Mastered':progress+'% toward level '+(level+1)),ciNote(CI_SKILL_HELP[k]));});
+  const all=SKILLS.slice().sort((a,b)=>skillOf(s,b[0])-skillOf(s,a[0])),gates=promotionGates(s),job=s.career&&s.career.level?CAREER_SKILLS[s.career.track]||[]:[];
+  return all.map(([k,label,icon])=>{const v=skillOf(s,k),level=Math.floor(v),progress=Math.floor((v-level)*100),started=v>=.05,g=gates.find(x=>x.key==='skill:'+k&&!x.met);
+    return ciCard(icon+' '+label,ciRow('Level',started?level+' / 10':'Not started yet'),started&&level<10?ciMeter(progress,label+' progress to level '+(level+1)):null,started?ciNote(level>=10?'Mastered':progress+'% toward level '+(level+1)):null,
+      h('p',{class:'ci-how'},h('b',null,'How to practise: '),SKILL_HOW[k][1]),ciNote(CI_SKILL_HELP[k]+' '+ciSkillCareers(k)),
+      job.includes(k)?h('p',{class:'ci-note'+(g?' ci-warning':'')},`Used in ${s.first}’s job (${s.career.track})`+(g?`: ${label} ${g.target} is needed for the next promotion.`:'.')):null);});
 }
 function ciRelationshipTab(s) {
   const rels=ciRelationships(s),chosen=rels.find(r=>r.person.id===CHARACTER_INFO.peer);
@@ -15507,7 +15624,7 @@ function ciLife(s) {
   const personality=ciCard('Personality',h('div',{class:'ci-pills'},s.traits.map(k=>{const t=TRAITS.find(t=>t.id===k);return h('span',{class:'ci-pill',title:t?.blurb||''},t?.label||k);})),AXES.map((a,i)=>ciRow(a.lo+' / '+a.hi,s.pers[i]<.35?a.lo:s.pers[i]>.65?a.hi:'Balanced')));
   const family=ciCard('Family & home',ciRelationships(s).filter(r=>ciFamily(s,r.person)||relationshipFacts(s,r.person).romance).map(r=>ciRow(r.person.first,r.type)),ciNote('Family ties describe who they are to each other; feelings are shown in Relationships.'),(G.player.pets||[]).map(p=>ciRow(p.kind==='cat'?'Cat':'Dog',p.name)),ciAction('Family tree',()=>UI.familyTree()));
   const project=ciCard('Wishes & projects',lifeWishLine(s)?h('p',null,lifeWishLine(s)):ciNote('No lifetime wish yet.'),(s.wants||[]).slice(0,5).map(w=>ciNote((w.done?'✓ ':'○ ')+w.text)),s.novel?h('div',null,h('h4',null,s.novel.title),ciRow('Novel',s.novel.completed?'Completed':Math.round(s.novel.progress)+'%'),s.novel.completed?ciRow('Sale value',money(s.novel.value)):ciMeter(s.novel.progress,'Novel progress')):null,
-    [['shifts','Work shifts completed'],['paintings','Paintings sold'],['novelsWritten','Novels finished'],['novelsSold','Novels sold']].filter(([k])=>s.stat?.[k]).map(([k,label])=>ciRow(label,s.stat[k])));
+    [['shifts','Work shifts completed'],['paintings','Paintings sold'],['novelsWritten','Novels finished'],['novelsSold','Novels sold'],['harvests','Harvests brought in']].filter(([k])=>s.stat?.[k]).map(([k,label])=>ciRow(label,s.stat[k])));
   const education=ciEducation(s);const events=G.events.filter(e=>e.sim===s.id).slice(-6).reverse();const memories=ciCard('Life moments',events.length?events.map(e=>h('div',{class:'ci-recent'},e.text,ciNote(ciDate(e.t)))):ciNote('Recorded milestones will appear here.'));memories.classList.add('ci-wide');return [identity,education,personality,family,project,memories];
 }
 function ciTabs(s) {return ['overview',...(s.school?['school']:s.age>=18?['career']:[]),'skills','relationships','life'];}
@@ -15646,14 +15763,21 @@ function hudMood(s) {
   if (eff.length > 4) box.append(hudMore(`${eff.length - 4} more`, () => UI.characterPanel(s)));
   return box;
 }
+/* every skill, the best first, each with what to do to practise it */
 function hudSkills(s) {
-  const has = SKILLS.filter(([k]) => skillOf(s, k) >= 0.05).sort((a, b) => skillOf(s, b[0]) - skillOf(s, a[0]));
-  if (!has.length) return hudEmpty('No skills yet. Cooking, reading, exercise, painting, tinkering, writing and good conversation all build them.');
-  return h('div', { class: 'hskills' }, has.slice(0, 6).map(([k, label, icon]) => {
+  const all = SKILLS.slice().sort((a, b) => skillOf(s, b[0]) - skillOf(s, a[0]));
+  return h('div', { class: 'hskills' }, all.map(([k, label, icon]) => {
     const v = skillOf(s, k), lv = Math.floor(v), pr = Math.floor((v - lv) * 100);
-    return h('button', { class: 'hskill', onclick: () => UI.characterPanel(s, 'skills'), title: `${label}: level ${lv}, ${pr}% to the next` },
-      h('span', { class: 'hsk-i' }, icon), h('span', { class: 'hsk-t' }, h('b', null, label), hudBar(lv >= 10 ? 100 : pr, label + ' progress', 'good')), h('span', { class: 'hsk-l' }, lv));
+    return h('button', { class: 'hskill' + (v < 0.05 ? ' none' : ''), onclick: () => UI.characterPanel(s, 'skills'), title: `${label}: level ${lv}, ${pr}% to the next. ${SKILL_HOW[k][1]}` },
+      h('span', { class: 'hsk-i' }, icon), h('span', { class: 'hsk-t' }, h('b', null, label), hudBar(lv >= 10 ? 100 : pr, label + ' progress', 'good'), h('em', null, SKILL_HOW[k][0])), h('span', { class: 'hsk-l' }, lv));
   }));
+}
+/* the two skills a career leans on: where they are against the next promotion, and how to train them */
+function hudJobSkills(s, track, gates) {
+  return (CAREER_SKILLS[track] || []).map((k) => {
+    const [, label, icon] = SKILLS.find((x) => x[0] === k), v = skillOf(s, k), g = gates.find((x) => x.key === 'skill:' + k);
+    return h('div', { class: 'hrow hjsk', title: SKILL_HOW[k][1] }, h('span', null, icon + ' ' + label), hudBar(g ? Math.min(100, (v / g.target) * 100) : Math.min(100, v * 10), label + ' for the job', g && !g.met ? 'mid' : 'good'), h('em', null, Math.floor(v) + (g ? ' / ' + g.target : '')), h('i', null, 'Train: ' + SKILL_HOW[k][0].toLowerCase()));
+  });
 }
 function hudWork(s) {
   if (s.school) {
@@ -15671,6 +15795,7 @@ function hudWork(s) {
       h('div', { class: 'hwork-top' }, h('span', { class: 'hbadge' }, '🎓 ' + gradeOf(U.n ? U.sum / U.n : U.perf)), h('b', null, U.field), h('span', null, dutyText(s))),
       h('div', { class: 'hrow' }, h('span', null, 'Degree'), hudBar(U.done / U.need * 100, 'Degree progress', 'good'), h('em', null, U.done + ' / ' + U.need)),
       h('div', { class: 'hrow' }, h('span', null, 'Course'), hudBar(U.perf, 'Course performance'), h('em', null, Math.round(U.perf) + '%')),
+      h('p', { class: 'hnote' }, `A study day counts when ${s.first} goes to lectures at the college (${daysText(UNI.days)} ${hoursText(UNI.start)}–${hoursText(UNI.start + UNI.len)}). ${U.need - U.done} to go.`),
       hudMore('University details', () => UI.characterPanel(s, 'career')));
   }
   const c = s.career;
@@ -15680,6 +15805,7 @@ function hudWork(s) {
     h('div', { class: 'hwork-top' }, h('span', { class: 'hbadge' }, 'Level ' + c.level), h('b', null, job[0]), h('span', null, c.track + ' · ' + money(job[1]) + '/h')),
     h('div', { class: 'hrow' }, h('span', null, 'Performance'), hudBar(c.perf, 'Work performance'), h('em', null, Math.round(c.perf) + '%')),
     gates.length ? h('div', { class: 'hrow' }, h('span', null, 'Promotion'), hudBar(met / gates.length * 100, 'Promotion requirements', met === gates.length ? 'good' : 'mid'), h('em', null, met + ' of ' + gates.length)) : null,
+    hudJobSkills(s, c.track, gates),
     c.poor >= 3 ? h('p', { class: 'hnote', style: { color: 'var(--bad)' } }, `Warning: ${c.poor} poor shifts in a row`) : h('p', { class: 'hnote' }, dutyText(s)),
     hudMore(met === gates.length && gates.length ? 'Promotion next shift' : gates.length ? 'What the promotion needs' : 'Career details', () => UI.characterPanel(s, 'career')));
 }
@@ -16614,7 +16740,7 @@ function quickMenu(me) {
   lifeQuickItems(me, items);
   hook('quickItems', me, items, mk);
   const duty = dutyText(me);
-  if (duty && !me.offmap) items.push({ icon: me.school ? '🎒' : '💼', label: me.school ? 'Go to school' : 'Go to work', sub: duty, fn: () => { if (!sendToDuty(me)) UI.toast('Nothing to go to right now.'); } });
+  if (duty && !me.offmap) items.push({ icon: me.school ? '🎒' : uniEnrolled(me) ? '🎓' : '💼', label: me.school ? 'Go to school' : uniEnrolled(me) ? 'Go to lectures' : 'Go to work', sub: duty, fn: () => { if (!sendToDuty(me)) UI.toast('Nothing to go to right now.'); } });
   UI.sheet({ title: simName(me), sub: `${moodWord(moodOf(me))}${pregLine(me) ? ' · ' + pregLine(me) : ''} · quick actions`, img: portraitOf(me, 64), items });
 }
 
@@ -16959,8 +17085,12 @@ function resetSims() {
   _planCache.clear();
   resetRelationships();
 }
+/* which kind of game was played last on this device: 'solo' or 'shared' (Continue on the title screen) */
+function markPlayed(kind) { try { localStorage.setItem('gn.last', kind); } catch (e) { /* private mode */ } }
+function lastPlayed() { try { return localStorage.getItem('gn.last'); } catch (e) { return null; } }
 function resetGame() {
   if (CHARACTER_INFO.root) UI.closeLayer();
+  NET.copy = false;
   releaseSocialApproach();
   PET_JUMPS.clear();
   Sound.resetWorld();
@@ -17110,13 +17240,15 @@ function fixSocialAfterLoad() {
 }
 function saveGame(slot) {
   if (!G.player.members.length) return false;
-  if (NET.on && slot === 'auto') return false;           // a shared town is kept in the shared neighbourhood, not over your own game
+  /* a shared town is kept in the shared neighbourhood, never over your own game, even after the line to it is gone */
+  if ((NET.on || NET.copy) && slot === 'auto') return false;
   try {
     const json = JSON.stringify(serializeGame(), roundJSON);
     const meta = { name: G.player.name, t: G.t, money: G.player.money, savedAt: Date.now(), size: G.player.members.length };
     const ok = store.set('gn.save.' + slot, json);
     store.set('gn.meta.' + slot, JSON.stringify(meta));
     if (!ok && !store.warned) { store.warned = true; UI.toast('Your browser is blocking saves. The game will keep going, but it can’t be continued later.', 5200); }
+    if (ok && slot === 'auto') markPlayed('solo');
     return ok;
   } catch (e) { console.warn('save failed', e); return false; }
 }
@@ -17164,7 +17296,7 @@ function relayoutSave(d) {
 }
 function applySave(d, wantAway) {
   resetGame();
-  G.t = d.t; G.speed = d.speed === 0 ? 1 : (d.speed || 1);
+  G.t = d.t; G.speed = d.speed === 0 ? 0 : (d.speed || 1);          // a game left paused comes back paused
   G.opts = d.opts && d.opts.mods ? d.opts : { mods: {} }; G.mod = d.mod || {};
   G.nx = d.nx || {}; G.appts = d.appts || []; G.rumors = d.rumors || []; G.apptSeq = d.apptSeq || 0; G.rumorSeq = d.rumorSeq || 0;
   G.passes = d.passes || {}; G.flags = d.flags || {};
@@ -17240,12 +17372,14 @@ function applySave(d, wantAway) {
   camSnap(G.byId[G.player.sel]);
   updateViews(); updateLighting(true); updateGlass();
   UI.refresh(true);
-  const awayMin = wantAway ? (Date.now() - d.savedAt) / 60000 : 0;
+  markPlayed('solo');
+  /* time went on while you were away, unless you had paused it */
+  const awayMin = wantAway && G.speed > 0 ? (Date.now() - d.savedAt) / 60000 : 0;
   if (awayMin >= 3) {
     const gm = Math.min(360, awayMin * 10);
     const rec = catchUp(gm);
     UI.recap(rec);
-  } else UI.toast('Welcome back.');
+  } else UI.toast(G.speed === 0 ? 'Welcome back. Paused, as you left it: ▶ carries on.' : 'Welcome back.', 3200);
 }
 
 /* ---------- a save as text, to keep outside the game (in Notes, an email to yourself…) ----------
@@ -17455,6 +17589,13 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 window.addEventListener('pagehide', () => { if (MODE === 'play' && !NET.on) saveGame('auto'); if (NET.on) netLeave(true); saveSettings(); });
+/* the browser kept the page and brings it back (Safari does this): a shared town left on the way out is
+   rejoined, rather than carrying on here as if it were a single-player game */
+window.addEventListener('pageshow', (e) => {
+  if (!e.persisted || MODE !== 'play' || NET.on || !NET.copy) return;
+  const rec = typeof netContinueRec === 'function' ? netContinueRec(null) : null;
+  if (rec) netUiContinue(rec); else quitToTitle();
+});
 
 /* ============================================================
    bootstrap
@@ -19090,8 +19231,16 @@ function careerTick(dt) {
     if (!d) continue;
     const key = d.kind + d.start;
     const toGo = d.start - G.t;
+    /* already there in time, however they got in (walked over themselves, or the walk was cut short at the door): it counts */
+    if (W.st !== 'away' && G.t >= d.start - 45 && G.t < d.end - 30 && !s.offmap && awake(s) && (NAV.nodes[s.node] || {}).bld === dutyBuilding(s, d.kind)) {
+      W.st = 'walking'; W.duty = { start: d.start, end: d.end, kind: d.kind };
+      beginDuty(s);
+      continue;
+    }
     if (W.st === 'walking') {
-      if (G.t > d.start + 100) { W.st = 'home'; s.holdControl = false; }
+      /* on the way, even running late: arriving still counts. Sent somewhere else instead: they can be sent again */
+      const onWay = (s.goal && s.goal.duty) || (s.queue || []).some((q) => q.duty);
+      if (!onWay || G.t > d.end - 30) { W.st = 'home'; s.holdControl = false; }
       continue;
     }
     if (W.missed === d.start) continue;
@@ -19104,7 +19253,7 @@ function careerTick(dt) {
       }
     }
     if (auto && toGo > 0 && toGo <= Math.min(75, dutyWalkMins(s, d.kind) + 12) && inOwnHome(s) && awake(s) && !s.offmap) { if (sendToDuty(s, true)) { if (!(typeof UI !== 'undefined' && UI.quiet)) uiToast(`${s.first} heads off to ${{ school: 'school', uni: 'university' }[d.kind] || 'work'}.`); } }
-    if (G.t > d.start + 100 && !(W.st === 'walking')) missedDuty(s, d);
+    if (G.t > d.start + 100 && !(W.st === 'walking') && W.missed !== d.start) missedDuty(s, d);
   }
 }
 
@@ -21754,15 +21903,26 @@ function addHomePhone(home) {
 const SKILLS = [
   ['cooking', 'Cooking', '🍳'], ['fitness', 'Fitness', '💪'], ['charisma', 'Charisma', '💬'],
   ['logic', 'Logic', '🧠'], ['creativity', 'Creativity', '🎨'], ['handiness', 'Handiness', '🔧'],
-  ['writing', 'Writing', '✍️'],
+  ['writing', 'Writing', '✍️'], ['gardening', 'Gardening', '🌱'],
 ];
+/* how each skill is practised, in plain words: the short form for the bottom panel, the long one for Details */
+const SKILL_HOW = {
+  cooking: ['Cook at the stove', 'Cook meals at a stove (tap the stove → Cook), or grill on a barbecue. Every meal cooked counts.'],
+  fitness: ['Treadmill, weights, yoga, jogging', 'Run on a treadmill, lift weights, stretch on a yoga mat, go jogging, or dance to the stereo.'],
+  charisma: ['Talk to other people', 'Talk to other people: friendly chats, jokes and compliments with family, neighbours and colleagues. Every friendly conversation counts; arguments don’t.'],
+  logic: ['Read, homework, telescope', 'Read at a bookshelf, do homework, look at the stars through a telescope, or study and browse at the computer.'],
+  creativity: ['Paint, piano, draw', 'Paint at an easel, play the piano, or draw at a writing desk. Paintings sell for more as it grows.'],
+  handiness: ['Tinker, repair, clean', 'Tinker at a workbench, repair broken things yourself instead of calling someone, and clean up.'],
+  writing: ['Write a novel', 'Write a novel at the computer (from age 13). Novels sell for more as it grows.'],
+  gardening: ['Tend the garden', 'Tend a flower bed or a vegetable patch in the garden (Buy mode → 🌳 Garden). Vegetable patches give a harvest that grows with the skill.'],
+};
 /* practice per game minute of an activity */
 const SKILL_FROM = {
   cook: ['cooking', 1], grill: ['cooking', 0.9],
   run: ['fitness', 1], lift: ['fitness', 1], stretch: ['fitness', 0.6], jog: ['fitness', 1], train: ['fitness', 0.8], dance: ['fitness', 0.3],
   read: ['logic', 0.7], browse: ['logic', 0.8], computer: ['logic', 0.4], homework: ['logic', 0.9], study: ['logic', 0.5], stars: ['logic', 1], games: ['logic', 0.2],
   draw: ['creativity', 0.8], paint: ['creativity', 1], piano: ['creativity', 1], listen: ['creativity', 0.2],
-  tinker: ['handiness', 1], garden: ['handiness', 0.5], clean: ['handiness', 0.3],
+  tinker: ['handiness', 1], garden: ['gardening', 1], clean: ['handiness', 0.3],
   web: ['logic', 0.4], writeNovel: ['writing', 1],
 };
 const SKILL_RATE = 1 / 150;                     // a level takes about two and a half game hours at the start
@@ -21871,7 +22031,7 @@ function lifeWishLine(s) {
 /* the skills block on a household card */
 function skillsView(s) {
   const has = SKILLS.filter(([k]) => skillOf(s, k) >= 0.05);
-  if (!has.length) return h('div', { class: 'skills' }, h('b', null, 'Skills'), h('div', { class: 'note' }, 'Nothing yet. Cook, read, paint, exercise, tinker or chat to learn.'));
+  if (!has.length) return h('div', { class: 'skills' }, h('b', null, 'Skills'), h('div', { class: 'note' }, 'Nothing yet. Cook, read, paint, exercise, tinker, garden or talk to people to learn.'));
   return h('div', { class: 'skills' }, h('b', null, 'Skills'), has.map(([k, label, ic]) => {
     const v = skillOf(s, k);
     return h('div', { class: 'skl' }, h('span', null, `${ic} ${label}`), h('i', null, Array.from({ length: 10 }, (_, i) => h('u', { class: i < Math.floor(v) ? 'on' : i < v ? 'part' : '' }))), h('em', null, String(Math.floor(v))));
@@ -24006,6 +24166,9 @@ const cellKey = (ix, iz) => (ix + 40) * 200 + (iz + 60);
 /* ============================================================
    the house you start with (the layout the game has always had)
    ============================================================ */
+/* the kitchen along the back wall, unit against unit from the left wall: [type, x, options] */
+const KITCHEN_Z = -4.015;
+const KITCHEN_RUN = [['counter', -5.385, { w: 0.9 }], ['counter', -4.485, { w: 0.9 }], ['stove', -3.735, { w: 0.6 }], ['counter', -3.135, { w: 0.6 }], ['kitchenSink', -2.385, { w: 0.9 }], ['fridge', -1.545, null]];
 function defaultHome(no) {
   const h = HOUSE_BY_NO[no || 1], st = HOUSE_STYLE[h.style], T = houseTheme(h);
   const home = { v: 1, no: h.no, seq: 100, floors: 2, rooms: [], opens: [], stairs: [], furn: [], roofType: 'auto', ext: { wall: st.wall, trim: st.trim, door: st.door, roof: st.roof, wallIn: st.wallIn } };
@@ -24017,10 +24180,10 @@ function defaultHome(no) {
     home.rooms.push(room);
   });
   let oi = 1;
-  const op = (f, a, p, c, w, t, id) => home.opens.push({ id: id || 'o' + (oi++), f, a, p, c, w, t: t === 'open' ? 'arch' : t === 'window' ? (w <= 0.9 ? 'windowS' : w >= 2.1 ? 'windowW' : 'window') : t });
+  const op = (f, a, p, c, w, t, id, sy) => home.opens.push(Object.assign({ id: id || 'o' + (oi++), f, a, p, c, w, t: t === 'open' ? 'arch' : t === 'window' ? (w <= 0.9 ? 'windowS' : w >= 2.1 ? 'windowW' : 'window') : t }, sy ? { sy } : {}));
   [0, 1].forEach((f) => PLAN.walls[f].forEach((w) => w.opens.forEach((o) => op(f, w.a, w.p, o.c, o.w, o.t))));
   const EX = { front: ['h', 4.5], back: ['h', -4.5], left: ['v', -6], right: ['v', 6] };
-  Object.keys(EX).forEach((side) => [0, 1].forEach((f) => PLAN.ext[side][f].forEach((o) => op(f, EX[side][0], EX[side][1], o.c, o.w, o.t, side === 'front' && f === 0 && o.t === 'door' ? 'front' : undefined))));
+  Object.keys(EX).forEach((side) => [0, 1].forEach((f) => PLAN.ext[side][f].forEach((o) => op(f, EX[side][0], EX[side][1], o.c, o.w, o.t, side === 'front' && f === 0 && o.t === 'door' ? 'front' : undefined, o.sy))));
   home.stairs.push({ id: 's1', f: 0, x: PLAN.stair.x, z: PLAN.stair.zBot, r: 0 });
   const F = (f, t, x, z, r, o, c) => { const it = { id: 'f' + (home.seq++), t, f, x, z, r: r || 0 }; if (c) it.c = c; if (o) it.o = o; home.furn.push(it); };
   /* ground floor: living room */
@@ -24028,8 +24191,8 @@ function defaultHome(no) {
   F(0, 'tv', -5.55, 1.7, 90); F(0, 'dining4', -3.6, 3.5, 0, null, T.sofa2); F(0, 'bookshelf', -5.75, 3.4, 90, { w: 1.2, h: 1.4 });
   F(0, 'lamp', -1.35, 0.35, 0); F(0, 'plant', -5.5, 0.5, 0);
   /* kitchen */
-  F(0, 'fridge', -1.75, -4.07, 0); F(0, 'kitchenSink', -2.75, -4.2, 0); F(0, 'stove', -3.65, -4.19, 0);
-  F(0, 'counter', -4.55, -4.2, 0, null, '#e8dcc0'); F(0, 'counter', -5.45, -4.2, 0, null, '#e8dcc0'); F(0, 'rug', -3.6, -2.2, 0, { w: 2.4, d: 1.0 }, '#c9b28a');
+  KITCHEN_RUN.forEach(([t, x, o]) => F(0, t, x, KITCHEN_Z, 0, o, t === 'counter' || t === 'kitchenSink' ? '#e8dcc0' : null));
+  F(0, 'rug', -3.6, -2.2, 0, { w: 2.4, d: 1.0 }, '#c9b28a');
   /* hall, bathroom, utility */
   F(0, 'plant', 0.3, 4.1, 0);
   F(0, 'toilet', 5.4, -3.1, -90); F(0, 'vanity', 3.6, -3.55, 180); F(0, 'shower', 5.2, -1.3, 0); F(0, 'rug', 3.6, -1.7, 0, { w: 1.4, d: 0.8 }, '#9db4bd');
@@ -24122,7 +24285,6 @@ function genHome(no) {
       const T2 = { table: 'dining4', sink: 'kitchenSink', kCounter: 'counter', deskSet: 'desk', mat: 'yogaMat', bed: (o.w || 1) >= 1.8 ? 'bedDouble' : 'bedSingle' }[t] || t;
       if (!CAT[T2]) return;
       if (T2 === 'dining4') { add(f, T2, x, z, r, null, T.sofa2); return; }
-      if (T2 === 'counter') delete o.w;
       add(f, T2, x, z, r, o, c);
     });
   });
@@ -24294,13 +24456,19 @@ function structureValue(home) {
   home.rooms.forEach((r) => { v += rectArea(r) * ((FLOOR_MATS[r.mat] || FLOOR_MATS.wood).price) * (PRICE.deckLevel[r.f] || 1.2); });
   S.walls.forEach((runs) => runs.forEach((run) => {
     v += (run.to - run.from) * (run.ext ? PRICE.wallExt : PRICE.wallInt);
-    run.opens.forEach((o) => { v += (OPEN_TYPES[o.t] || OPEN_TYPES.window).price; });
+    run.opens.forEach((o) => { v += openPrice(o); });
   }));
   v += home.stairs.length * PRICE.stairs;
   const rt = roofKind(home);
   (S.exposed[S.n - 1] || []).forEach((r) => { v += rectArea(r) * PRICE.roof[rt]; });
   for (let f = 0; f < S.n - 1; f++) S.exposed[f].forEach((r) => { v += rectArea(r) * PRICE.roof.flat; });
   return v;
+}
+/* what a door or window is worth: a window by its glass, against the usual size of its kind */
+function openPrice(o) {
+  const T = OPEN_TYPES[o.t] || OPEN_TYPES.window;
+  if ((T.group || 'door') !== 'window') return T.price;
+  return Math.round(T.price * clamp((o.w * (winTop(o) - winSill(o))) / (T.w * (WIN_TOP - WIN_SILL)), 0.4, 3));
 }
 function roofKind(home) {
   const t = home.roofType || 'auto';
@@ -24398,6 +24566,18 @@ function furnFits(home, S, it, others, why) {
     if (Co.layer === 'wall') continue;
     if (rectsOverlap(g.box, itemGeom(o).box, 0.03)) return NOFIT(why, 'Something is already standing there.');
   }
+  return true;
+}
+/* a piece being put down must not stick into a wall. furnFits leaves some slack so that pieces
+   placed long ago keep their place; this is the stricter test for placing, moving and turning */
+function furnClearOfWalls(S, it, why) {
+  const C = CAT[it.t];
+  if (!C || C.yard || C.layer === 'wall' || C.layer === 'ceil' || it.f >= S.n) return true;
+  const b = itemGeom(it).box, room = (S.byF[it.f] || []).find((r) => rectInside(b, r, HB.tol));
+  if (!room) return true;                          // furnFits says what is wrong
+  const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
+  const face = (x, z) => (S.roomAt(it.f, x, z) ? 0.075 : 0.15) - 0.02;      // half a wall, less a hair
+  if (b.x0 < room.x0 + face(room.x0 - 0.3, cz) || b.x1 > room.x1 - face(room.x1 + 0.3, cz) || b.z0 < room.z0 + face(cx, room.z0 - 0.3) || b.z1 > room.z1 - face(cx, room.z1 + 0.3)) return NOFIT(why, 'That would stick into the wall. Slide it a little further into the room.');
   return true;
 }
 function yardFits(home, S, it, g, others, why) {
@@ -24658,8 +24838,10 @@ const OPS = {
   setOpening(home, f, a, p, c, t, replaceId) {
     const T = OPEN_TYPES[t];
     if (!T) return NO('Unknown fitting.');
+    const was = replaceId && home.opens.find((o) => o.id === replaceId);
     if (replaceId) home.opens = home.opens.filter((o) => o.id !== replaceId);
     const o = { id: replaceId === 'front' ? 'front' : nextId(home, 'o'), f, a, p, c, w: T.w, t };
+    if (was && T.group === 'window') ['sy', 'ty'].forEach((k) => { if (was[k] !== undefined) o[k] = was[k]; });     // another size of window keeps its height
     home.opens.push(o);
     HL.touch();
     return { ok: true, id: o.id };
@@ -25412,10 +25594,11 @@ function homeDoor(b, axis, p, sign, o, y0, ext) {
 
 /* a window seen in a cut-away wall: the sill, and the frame up to where the wall stops */
 function windowTrim(b, axis, p, o, y0, top, trim, th) {
-  const w = o.w, c = o.c, t = th + 0.06, jt = Math.min(top, y0 + 2.1) - (y0 + 0.86);
-  frameBox(b, axis, c, p, y0 + 0.82, w + 0.3, 0.06, t + 0.06, trim);
-  if (jt > 0.02) { frameBox(b, axis, c - w / 2 - 0.03, p, y0 + 0.86, 0.07, jt, t, trim); frameBox(b, axis, c + w / 2 + 0.03, p, y0 + 0.86, 0.07, jt, t, trim); }
-  if (top >= y0 + 2.12) frameBox(b, axis, c, p, y0 + 2.08, w + 0.2, 0.08, t, trim);
+  const w = o.w, c = o.c, t = th + 0.06, sy = winSill(o), ty = winTop(o), jt = Math.min(top, y0 + ty) - (y0 + sy - 0.04);
+  if (top < y0 + sy - 0.08) return;                                  // the wall is cut away below the sill
+  frameBox(b, axis, c, p, y0 + sy - 0.08, w + 0.3, 0.06, t + 0.06, trim);
+  if (jt > 0.02) { frameBox(b, axis, c - w / 2 - 0.03, p, y0 + sy - 0.04, 0.07, jt, t, trim); frameBox(b, axis, c + w / 2 + 0.03, p, y0 + sy - 0.04, 0.07, jt, t, trim); }
+  if (top >= y0 + ty + 0.02) frameBox(b, axis, c, p, y0 + ty - 0.02, w + 0.2, 0.08, t, trim);
 }
 /* walls of one floor. only: 'ext' | 'int' | undefined (both). */
 function homeWalls(b, gb, S, home, f, hh, o) {
@@ -25468,7 +25651,7 @@ function homeTrim(b, S, home, upTo) {
 
 /* roofs: flat decks over every set-back, the chosen roof on top */
 function homeRoofs(b, S, home, upTo, flatTop) {
-  const ex = home.ext, n = S.n, kind = roofKind(home);
+  const ex = home.ext, n = S.n, kind = roofShown(home);
   for (let f = 0; f < Math.min(upTo, n); f++) {
     const top = f === n - 1 && !flatTop;
     const y = FLOOR_Y[f] + floorHeight(f, n);
@@ -25923,16 +26106,16 @@ function miniatureRoomFinish(H, key, b, S, hh, mk) {
   for (const run of S.walls[b.room.f] || []) {
     if (!run.ext || (run.pos !== b.room.id && run.neg !== b.room.id)) continue;
     const sign = run.pos === b.room.id ? 1 : -1, axis = run.a === 'h' ? 'x' : 'z', y = FLOOR_Y[b.room.f];
-    const height = Math.min(hh, 2.1) - .9;
-    if (height <= .01) continue;
     run.opens.filter(o => /^window/.test(o.t)).forEach(o => {
+      const sy = winSill(o), height = Math.min(hh, winTop(o)) - sy;
+      if (height <= .01) return;
       const p = run.p + sign * (run.th / 2 + .008);
-      frameBox(glass, axis, o.c, p, y + .9, o.w, height, .008, '#c5dfdf');
+      frameBox(glass, axis, o.c, p, y + sy, o.w, height, .008, '#c5dfdf');
       // A 10cm cutaway sliver must not add an opaque sill across chair backs.
       // Full-height windows keep their existing framing in half-wall mode.
       if (height >= .25) {
-        [-1, 1].forEach(s => frameBox(frames, axis, o.c + s * o.w / 2, p + sign * .02, y + .9, .055, height, .035, S.home.ext.trim));
-        frameBox(frames, axis, o.c, p + sign * .02, y + .87, o.w + .12, .055, .055, S.home.ext.trim);
+        [-1, 1].forEach(s => frameBox(frames, axis, o.c + s * o.w / 2, p + sign * .02, y + sy, .055, height, .035, S.home.ext.trim));
+        frameBox(frames, axis, o.c, p + sign * .02, y + sy - .03, o.w + .12, .055, .055, S.home.ext.trim);
       }
     });
   }
@@ -26216,6 +26399,8 @@ const PAL = {
   rug: ['#b98a7a', '#8fa3b8', '#a3b58f', '#c4a86a', '#a58fb5', '#b5a08a', '#c9b28a', '#9db4bd', '#b7c9a8', '#e0b85a', '#3d4a5c', '#8a3f4a', '#d9cdb4', '#7fb0d0'],
   plant: ['#4f8f4f', '#5fa35a', '#3f7a5a', '#8aa44a'],
   metal: ['#dfe2e4', '#e6eaec', '#2b2f38', '#a9b0b8', '#c9a26a'],
+  /* cupboards and appliances alike, so a whole kitchen can match */
+  kitchen: ['#f1eee6', '#eadfc9', '#e8dcc0', '#dfe2e4', '#c9d3c0', '#b5cbd9', '#8fa7a0', '#5f7a8a', '#3b4a66', '#3b3f46', '#a9784f', '#7d5636', '#c94f4f', '#e9c46a'],
 };
 function def(id, d) {
   d.id = id; CAT[id] = d;
@@ -26319,6 +26504,21 @@ P.planter = (b, o) => {
   for (let i = 0; i < Math.floor(w * d * 6); i++) { const x = (rng() - 0.5) * (w - 0.2), z = (rng() - 0.5) * (d - 0.2); b.sph(x, 0.38 + rng() * 0.1, z, 0.1, cols[Math.floor(rng() * cols.length)], 4, 0.12); }
   for (let i = 0; i < Math.floor(w * d * 5); i++) b.sph((rng() - 0.5) * (w - 0.2), 0.36, (rng() - 0.5) * (d - 0.2), 0.11, '#5f9a4f', 4, 0.08);
 };
+P.vegPatch = (b, o) => {
+  const w = o.w || 2.0, d = o.d || 1.2, rng = rngFor('veg', o.seed || 1);
+  b.box(0, 0, 0, w, 0.26, d, '#8a5f3c');                                              // a raised wooden bed
+  b.box(0, 0.25, 0, w - 0.1, 0.05, d - 0.1, '#5a4030', { ao: 1 });                   // dark soil
+  const rows = Math.max(2, Math.round((d - 0.2) / 0.32)), per = Math.max(3, Math.round((w - 0.2) / 0.3));
+  for (let r = 0; r < rows; r++) {
+    const z = -(d - 0.3) / 2 + (r * (d - 0.3)) / Math.max(1, rows - 1), kind = r % 3;
+    for (let i = 0; i < per; i++) {
+      const x = -(w - 0.3) / 2 + (i * (w - 0.3)) / Math.max(1, per - 1) + (rng() - 0.5) * 0.04;
+      if (kind === 0) b.sph(x, 0.33, z, 0.1, rng() < 0.5 ? '#7fb85a' : '#6aa64a', 6, 0.08);                 // lettuces
+      else if (kind === 1) { b.box(x, 0.29, z, 0.05, 0.03, 0.05, '#e8862f'); b.box(x, 0.32, z, 0.02, 0.12, 0.06, '#5f9a4f'); }    // carrot tops
+      else b.sph(x, 0.34, z, 0.11, '#9cc87f', 6, 0.1);                                                      // cabbages
+    }
+  }
+};
 P.fountain = (b) => {
   b.cyl(0, 0, 0, 1.0, 0.3, '#c9c9c4', 14); b.cyl(0, 0.28, 0, 0.88, 0.04, '#8fd0e6', 14);
   b.cyl(0, 0, 0, 0.18, 1.1, '#b9b9b4', 8); b.cyl(0, 1.0, 0, 0.55, 0.1, '#c9c9c4', 12); b.cyl(0, 1.08, 0, 0.48, 0.03, '#8fd0e6', 12); b.cyl(0, 1.1, 0, 0.06, 0.4, '#dff3f8', 5);
@@ -26401,23 +26601,35 @@ def('nightstand', { name: 'Nightstand', cat: 'bed', icon: '🕯️', price: 60, 
 def('wardrobe', { name: 'Wardrobe', cat: 'bed', icon: '🚪', price: 320, q: 3, decor: 1, h: 1.9, col: 'wood', wall: 'back', opts: { w: 1.2 }, fp: (o) => [-o.w / 2, -0.3, o.w / 2, 0.33], build: (b, o) => P.wardrobe(b, o) });
 def('dresser', { name: 'Dresser', cat: 'bed', icon: '🗄️', price: 260, q: 3, decor: 1, h: 0.9, col: 'wood', wall: 'back', opts: { w: 1.2 }, fp: (o) => [-o.w / 2, -0.26, o.w / 2, 0.26], build: (b, o) => P.dresser(b, o) });
 
-/* ---------- kitchen ---------- */
+/* ---------- kitchen ----------
+   One module for every unit (05: KIT): the same depth, worktop height and splashback, widths of
+   0.6, 0.9 or 1.2 m, and one set of cabinet colours, so a kitchen can be all of a piece. */
+const KIT_FP = (w) => [-w / 2, -KIT.dt / 2, w / 2, KIT.dt / 2];
 def('fridge', {
-  name: 'Fridge', cat: 'kitchen', icon: '🧊', price: 600, q: 3, decor: 0.5, h: 1.85, wall: 'back', kind: 'fridge', fn: 'Snacks', opts: {},
+  name: 'Fridge', cat: 'kitchen', icon: '🧊', price: 600, q: 3, decor: 0.5, h: 1.85, col: 'kitchen', wall: 'back', kind: 'fridge', fn: 'Snacks', opts: {},
   variants: [{ name: 'Fridge', price: 600, q: 3 }, { name: 'Steel fridge-freezer', price: 1400, q: 5, decor: 1.5, o: { steel: true } }],
-  fp: fpBox(-0.39, -0.35, 0.39, 0.35), build: (b, o) => P.fridge(b, o),
+  fp: fpBox(-0.39, -KIT.dt / 2, 0.39, KIT.dt / 2), build: (b, o) => P.fridge(b, o),
   spots: one('fridge', 'fridge', 0.52, 180, 'stand'),
 });
 def('stove', {
-  name: 'Stove', cat: 'kitchen', icon: '🍳', price: 450, q: 3, decor: 0.5, h: 0.95, wall: 'back', kind: 'stove', fn: 'Cooking (better stove, better meals)', opts: {},
-  variants: [{ name: 'Stove', price: 450, q: 3 }, { name: 'Chef’s range', price: 1200, q: 5, decor: 1.5, o: { chef: true } }],
-  fp: fpBox(-0.35, -0.31, 0.35, 0.31), build: (b, o) => { P.stove(b); if (o.chef) { b.box(0, 0.94, -0.28, 0.7, 0.55, 0.05, '#c4cad0'); b.box(0, 0.35, 0.325, 0.5, 0.05, 0.03, '#a9b0b8'); } },
+  name: 'Stove', cat: 'kitchen', icon: '🍳', price: 450, q: 3, decor: 0.5, h: 0.95, col: 'kitchen', wall: 'back', kind: 'stove', fn: 'Cooking (better stove, better meals)', opts: {},
+  variants: [{ name: 'Stove', price: 450, q: 3, o: { w: 0.6 } }, { name: 'Chef’s range', price: 1200, q: 5, decor: 1.5, o: { chef: true, w: 0.9 } }],
+  fp: (o) => KIT_FP(o.w || 0.6),
+  build: (b, o) => { P.stove(b, o); if (o.chef) { const w = o.w || 0.6; b.box(0, 0.94, -0.28, w, 0.55, 0.05, '#c4cad0'); b.box(0, 0.35, 0.31, w - 0.2, 0.05, 0.03, '#a9b0b8'); } },
   spots: one('kitchen', 'stove', 0.64, 180, 'stand'),
 });
-def('kitchenSink', { name: 'Kitchen sink', cat: 'kitchen', icon: '🚰', price: 250, q: 3, decor: 0.5, h: 1.0, wall: 'back', kind: 'sink', fn: 'Wash up', fp: fpBox(-0.47, -0.32, 0.47, 0.32), build: (b) => P.sink(b), spots: one('sinkK', 'sink', 0.65, 180, 'stand') });
-def('counter', { name: 'Counter', cat: 'kitchen', icon: '🟫', price: 120, q: 3, decor: 0.5, h: 0.95, col: 'paint', wall: 'back', opts: { w: 0.9 }, fp: (o) => [-o.w / 2, -0.3, o.w / 2, 0.3], build: (b, o) => P.kCounter(b, o) });
-def('freezer', { name: 'Chest freezer', cat: 'kitchen', icon: '❄️', price: 500, q: 3, decor: 0, h: 0.95, wall: 'back', kind: 'freezer', fn: 'Frozen snacks', fp: fpBox(-0.56, -0.35, 0.56, 0.36), build: (b) => P.freezer(b), spots: one('util', 'freezer', 0.75, 180, 'stand') });
-def('washer', { name: 'Washing machine', cat: 'kitchen', icon: '🧺', price: 300, q: 3, decor: 0, h: 0.95, wall: 'back', fp: fpBox(-0.33, -0.33, 0.33, 0.33), build: (b) => P.washer(b) });
+def('kitchenSink', {
+  name: 'Kitchen sink', cat: 'kitchen', icon: '🚰', price: 250, q: 3, decor: 0.5, h: 1.0, col: 'kitchen', wall: 'back', kind: 'sink', fn: 'Wash up', opts: { w: 0.9 },
+  variants: [{ name: 'Kitchen sink', price: 250, o: { w: 0.9 } }, { name: 'Wide sink unit', price: 330, o: { w: 1.2 }, decor: 0.8 }],
+  fp: (o) => KIT_FP(o.w || 0.9), build: (b, o) => P.sink(b, o), spots: one('sinkK', 'sink', 0.65, 180, 'stand'),
+});
+def('counter', {
+  name: 'Counter', cat: 'kitchen', icon: '🟫', price: 120, q: 3, decor: 0.5, h: 0.95, col: 'kitchen', wall: 'back', opts: { w: 0.9 },
+  variants: [{ name: 'Narrow counter', price: 90, o: { w: 0.6 } }, { name: 'Counter', price: 120, o: { w: 0.9 } }, { name: 'Long counter', price: 160, o: { w: 1.2 } }],
+  fp: (o) => KIT_FP(o.w || 0.9), build: (b, o) => P.kCounter(b, o),
+});
+def('freezer', { name: 'Chest freezer', cat: 'kitchen', icon: '❄️', price: 500, q: 3, decor: 0, h: 0.95, col: 'kitchen', wall: 'back', kind: 'freezer', fn: 'Frozen snacks', fp: fpBox(-0.55, -KIT.dt / 2, 0.55, KIT.dt / 2), build: (b, o) => P.freezer(b, o), spots: one('util', 'freezer', 0.75, 180, 'stand') });
+def('washer', { name: 'Washing machine', cat: 'kitchen', icon: '🧺', price: 300, q: 3, decor: 0, h: 0.95, col: 'kitchen', wall: 'back', fp: (o) => KIT_FP(o.w || 0.6), build: (b, o) => P.washer(b, o) });
 
 /* ---------- bathroom ---------- */
 def('toilet', { name: 'Toilet', cat: 'bath', icon: '🚽', price: 220, q: 3, decor: 0, h: 0.8, wall: 'back', kind: 'toilet', fn: 'Bathroom', fp: fpBox(-0.19, -0.38, 0.19, 0.27), build: (b) => P.toilet(b), spots: one('toilet', 'toilet', 0, 0, 'sit', { sy: 0.44 }) });
@@ -26519,6 +26731,11 @@ def('planter', {
   name: 'Flower bed', cat: 'garden', icon: '🌷', price: 60, q: 3, decor: 3, h: 0.5, yard: true, free: false, kind: 'garden', fn: 'Tend the garden', opts: { w: 2.0, d: 0.8, seed: 1 },
   variants: [{ name: 'Flower bed', price: 60, o: { w: 2.0, d: 0.8 } }, { name: 'Long flower bed', price: 110, o: { w: 3.4, d: 0.9, seed: 2 }, decor: 4 }],
   fp: (o) => [-o.w / 2, -o.d / 2, o.w / 2, o.d / 2], build: (b, o) => P.planter(b, o), spots: (o) => [{ cat: 'garden', kind: 'garden', x: 0, z: o.d / 2 + 0.45, face: 180, pose: 'stand' }],
+});
+def('vegPatch', {
+  name: 'Vegetable patch', cat: 'garden', icon: '🥕', price: 140, q: 3, decor: 1.5, h: 0.45, yard: true, kind: 'garden', fn: 'Grow vegetables: tending builds Gardening and brings in a harvest', opts: { w: 2.0, d: 1.2, seed: 1 },
+  variants: [{ name: 'Vegetable patch', price: 140, o: { w: 2.0, d: 1.2 } }, { name: 'Big vegetable patch', price: 220, o: { w: 3.0, d: 1.5, seed: 2 }, decor: 2 }],
+  fp: (o) => [-o.w / 2, -o.d / 2, o.w / 2, o.d / 2], build: (b, o) => P.vegPatch(b, o), spots: (o) => [{ cat: 'garden', kind: 'garden', x: 0, z: o.d / 2 + 0.45, face: 180, pose: 'stand' }],
 });
 def('tree', {
   name: 'Tree', cat: 'garden', icon: '🌳', price: 150, q: 3, decor: 4, h: 5, yard: true, free: true, opts: { kind: 'oak', s: 1.0 },
@@ -26646,7 +26863,7 @@ Object.assign(ACT, {
   bath: { label: 'Taking a bath', pose: 'lie', anim: 'bathe', fx: { hygiene: 150, fun: 12, energy: 2 } },
   sand: { label: 'Playing in the sand', pose: 'sit', anim: 'play', fx: { fun: 30 } },
 });
-LEISURE_ACTS.push('browse', 'paint', 'piano', 'listen', 'gaze', 'stars', 'stretch', 'tinker', 'warm', 'swing', 'sand');
+LEISURE_ACTS.push('browse', 'paint', 'piano', 'listen', 'gaze', 'stars', 'stretch', 'tinker', 'warm', 'swing', 'sand', 'garden');
 
 const hasSpot = (cat) => (HN.idx[cat] || []).length > 0;
 const NEEDF = (k, v) => (x) => x.needs[k] >= v;
@@ -26670,11 +26887,11 @@ const USE = {
   bbq: [['🍖', 'Grill something', 'grill', 25, 'hunger']],
   swing: [['🎠', 'Swing', 'swing', 30, 'fun']],
   sandbox: [['🏖️', 'Play in the sand', 'sand', 30, 'fun']],
-  garden: [['🌷', 'Tend the garden', 'garden', 30, null]],
+  garden: [['🌱', 'Tend the garden', 'garden', 35, null]],
   seat: [['🪑', 'Sit down', 'sit', 40, null]],
   deskW: [['📎', 'Do some paperwork', 'work', 45, null], ['✏️', 'Draw', 'draw', 40, 'fun']],
 };
-const USE_TITLE = { shelf: 'Bookshelf', easel: 'Easel', piano: 'Piano', stereo: 'Stereo', aquarium: 'Aquarium', scope: 'Telescope', hearth: 'Fireplace', treadmill: 'Treadmill', weights: 'Weight bench', yoga: 'Yoga mat', workbench: 'Workbench', bath: 'Bathtub', bench: 'Bench', firepit: 'Fire pit', bbq: 'Barbecue', swing: 'Swing', sandbox: 'Sandbox', garden: 'Flower bed', seat: 'Seat', deskW: 'Writing desk' };
+const USE_TITLE = { shelf: 'Bookshelf', easel: 'Easel', piano: 'Piano', stereo: 'Stereo', aquarium: 'Aquarium', scope: 'Telescope', hearth: 'Fireplace', treadmill: 'Treadmill', weights: 'Weight bench', yoga: 'Yoga mat', workbench: 'Workbench', bath: 'Bathtub', bench: 'Bench', firepit: 'Fire pit', bbq: 'Barbecue', swing: 'Swing', sandbox: 'Sandbox', garden: 'Garden', seat: 'Seat', deskW: 'Writing desk' };
 
 function catalogMenu(kind, me, node, items) {
   if (kind === 'crib') return cribMenu(me, node, items);
@@ -26688,14 +26905,14 @@ function catalogMenu(kind, me, node, items) {
   return USE_TITLE[kind] || 'Furniture';
 }
 /* things you can ask for by name (the quick menu, free will) that the catalogue adds */
-const ACT_KINDS = { browse: 'shelf', paint: 'easel', piano: 'piano', music: 'stereo', gaze: 'aquarium', stars: 'scope', warm: 'hearth', run: 'treadmill', lift: 'weights', stretch: 'yoga', tinker: 'workbench', bath: 'bathtub' };
+const ACT_KINDS = { browse: 'shelf', paint: 'easel', piano: 'piano', music: 'stereo', gaze: 'aquarium', stars: 'scope', warm: 'hearth', run: 'treadmill', lift: 'weights', stretch: 'yoga', tinker: 'workbench', bath: 'bathtub', tend: 'garden' };
 function catalogAction(s, kind) {
   if (s.homeNo !== homeLot()) return null;
-  const spot = { browse: 'shelf', paint: 'easel', piano: 'piano', music: 'stereo', gaze: 'aquarium', stars: 'scope', warm: 'hearth', run: 'treadmill', lift: 'weights', stretch: 'yoga', tinker: 'workbench', bath: 'bathtub' }[kind];
+  const spot = ACT_KINDS[kind];
   if (!spot) return null;
   const node = nearestOf(HN.idx[spot], s);
   if (node === undefined) return [];
-  const M = { browse: ['browse', 25, 'fun'], paint: ['paint', 55, 'fun'], piano: ['piano', 35, 'fun'], music: ['dance', 18, null], gaze: ['gaze', 14, null], stars: ['stars', 30, null], warm: ['warm', 22, null], run: ['run', 30, null], lift: ['lift', 25, null], stretch: ['stretch', 22, null], tinker: ['tinker', 40, 'fun'], bath: ['bath', 45, 'hygiene'] }[kind];
+  const M = { browse: ['browse', 25, 'fun'], paint: ['paint', 55, 'fun'], piano: ['piano', 35, 'fun'], music: ['dance', 18, null], gaze: ['gaze', 14, null], stars: ['stars', 30, null], warm: ['warm', 22, null], run: ['run', 30, null], lift: ['lift', 25, null], stretch: ['stretch', 22, null], tinker: ['tinker', 40, 'fun'], bath: ['bath', 45, 'hygiene'], tend: ['garden', 35, null] }[kind];
   return [{ node, act: M[0], remain: M[1], label: ACT[M[0]].label, until: M[2] ? NEEDF(M[2], 97) : undefined }];
 }
 /* what a household member might feel like doing, from what the house has */
@@ -26715,7 +26932,23 @@ function catalogLeisure(s, add) {
     if (hasSpot('weights')) add('lift', 4 + (fit ? 18 : 0));
     if (hasSpot('yoga')) add('stretch', 9 + s.pers[1] * 10);
     if (hasSpot('workbench')) add('tinker', 7 + (s.traits.includes('curious') ? 10 : 0));
+    if (hasSpot('garden') && !isNightNow() && !isWet(G.weather) && G.weather !== 'snow') add('tend', 6 + (s.traits.includes('family-focused') ? 3 : 0) + skillOf(s, 'gardening') * 1.5);
   }
+}
+/* a vegetable patch that has been tended long enough gives a harvest: worth more the better the gardener */
+const VEG_GROW = 150;                       // minutes of tending from planting to harvest
+function gardenTended(s, n, mins) {
+  const it = n && n.item && isLotBld(n.bld) ? lotItem(n.bld, n.item) : null;
+  if (!it || it.t !== 'vegPatch') { if (mins >= 20) addBuff(s, 2, 240, 'A tidy flower bed', 'garden'); return; }
+  const G2 = G.flags.veg || (G.flags.veg = {}), key = n.bld + ':' + it.id, big = (itemOpts(it).w || 2) >= 2.8;
+  G2[key] = (G2[key] || 0) + mins * (1 + skillOf(s, 'gardening') * 0.08);
+  if (G2[key] < VEG_GROW) return;
+  G2[key] = 0;
+  const v = Math.round((18 + skillOf(s, 'gardening') * 9 + Math.random() * 10) * (big ? 1.6 : 1));
+  G.player.money += v;
+  addBuff(s, 4, 360, 'Home-grown vegetables', 'harvest');
+  bumpStat(s, 'harvests');
+  if (inHousehold(s)) { uiToast(`${s.first} harvested the vegetable patch: lettuce, carrots and cabbages. The extra went to the grocery for ${money(v)}.`, 4200); if (typeof emote === 'function') emote(s, '🥕'); }
 }
 function catalogHas(kind) { return hasSpot({ shelf: 'shelf', easel: 'easel' }[kind] || kind); }
 
@@ -26747,6 +26980,7 @@ function useItemDone(s, g, n) {
   if (g.act === 'paint' && mins >= 20 && inHousehold(s)) paintingSold(s);
   if ((g.act === 'paint' || g.act === 'piano') && mins >= 20) addBuff(s, s.traits.includes('artistic') ? 7 : 2, 300, g.act === 'paint' ? 'Made something with paint' : 'Played some music', 'art');
   if (g.act === 'bath' && mins >= 25) addBuff(s, 4, 240, 'A long hot soak', 'soak');
+  if (g.act === 'garden' && mins >= 5) gardenTended(s, n, mins);
   s.fxMul = 1;
   void n;
 }
@@ -27060,33 +27294,51 @@ function bmEdit(fn, extra, quiet) {
 /* ============================================================
    furniture: snapping, ghosts, and the operations
    ============================================================ */
-const WALL_ROT = { x0: 90, x1: 270, z0: 0, z1: 180 };            // rotation that puts an item's back to that wall
-/* turn a wall-hugging item so its back is to the nearest wall (unless the player turned it by hand) */
+/* the side of a piece that goes against a wall, in its own frame (+z is its front): a bed's head end,
+   a desk's far edge, either long side of a bath, a shower's back (its open side is chosen too) */
+const WALL_SIDES = { back: [[0, -1]], front: [[0, 1]], side: [[-1, 0], [1, 0]], corner: [[0, -1]] };
+/* which wall (x0, x1, z0 or z1) a direction in the piece's own frame points at once it is turned by r */
+function bmFacing(r, lx, lz) {
+  const th = deg(r || 0), s = Math.sin(th), c = Math.cos(th);
+  const dx = lx * c + lz * s, dz = -lx * s + lz * c;            // as itemGeom turns its corners
+  return Math.abs(dx) > Math.abs(dz) ? (dx < 0 ? 'x0' : 'x1') : (dz < 0 ? 'z0' : 'z1');
+}
+/* turn a wall-hugging item so its back is to the nearest wall (unless the player turned it by hand).
+   A turn that already puts a right side to that wall is kept, so a bath can face either way. */
 function bmOrient(g) {
   const it = g.it, C = CAT[it.t];
   if (!C.wall || g.free || C.layer === 'wall') return;
   const S = homeStruct(G.home), room = S.roomAt(it.f, it.x, it.z);
   if (!room) return;
+  const gapTo = (b, k) => Math.abs(k === 'x0' ? b.x0 - room.x0 : k === 'x1' ? room.x1 - b.x1 : k === 'z0' ? b.z0 - room.z0 : room.z1 - b.z1);
+  const now = norm360(it.r);
   let best = null;
-  ['x0', 'x1', 'z0', 'z1'].forEach((k) => {
-    let r = WALL_ROT[k];
-    if (C.wall === 'front') r = norm360(r + 180);
-    else if (C.wall === 'side') r = { x0: 0, x1: 180, z0: 270, z1: 90 }[k];
+  [0, 90, 180, 270].forEach((r) => {
     const b = itemGeom(Object.assign({}, it, { r })).box;
-    const at = room[k];
-    const gap = k === 'x0' ? b.x0 - at : k === 'x1' ? at - b.x1 : k === 'z0' ? b.z0 - at : at - b.z1;
-    if (!best || Math.abs(gap) < Math.abs(best.gap)) best = { r, gap };
+    const gap = Math.min(...(WALL_SIDES[C.wall] || WALL_SIDES.back).map(([lx, lz]) => gapTo(b, bmFacing(r, lx, lz))));
+    let score = gap - (r === now ? 0.05 : 0);
+    if (C.wall === 'corner') score += Math.min(0.75, gapTo(b, bmFacing(r, -1, 0))) * 0.5;     // its closed side into the corner
+    if (!best || score < best.score) best = { r, gap, score };
   });
-  if (best && Math.abs(best.gap) < 0.75) it.r = best.r;
+  if (best && best.gap < 0.75) it.r = best.r;
 }
-/* which wall is the back of this item turned to? (x0, x1, z0 or z1) */
-function bmBackWall(it) {
+/* which walls the wall side of this item is turned to (x0, x1, z0, z1) */
+function bmBackWalls(it) {
   const C = CAT[it.t];
-  if (!C.wall || C.layer === 'wall') return null;
-  const th = deg(it.r || 0), s = Math.sin(th), c = Math.cos(th);
-  const d = C.wall === 'front' ? [s, c] : C.wall === 'side' ? [-c, s] : [-s, -c];
-  if (d[0] < -0.5) return 'x0'; if (d[0] > 0.5) return 'x1'; if (d[1] < -0.5) return 'z0'; if (d[1] > 0.5) return 'z1';
-  return null;
+  if (!C.wall || C.layer === 'wall') return [];
+  return (WALL_SIDES[C.wall] || WALL_SIDES.back).map(([lx, lz]) => bmFacing(it.r, lx, lz));
+}
+/* after a turn: shift the piece back off any wall it now pokes into, if the room is big enough */
+function bmKeepInRoom(it) {
+  const C = CAT[it.t];
+  if (!C || C.yard || C.layer === 'wall' || C.layer === 'ceil') return;
+  const S = homeStruct(G.home), room = S.roomAt(it.f, it.x, it.z);
+  if (!room) return;
+  const b = itemGeom(it).box, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
+  const face = (x, z) => (S.roomAt(it.f, x, z) ? 0.075 : 0.15) + 0.015;
+  const fit = (lo, hi, a0, a1) => (a1 - a0 > hi - lo ? 0 : a0 < lo ? lo - a0 : a1 > hi ? hi - a1 : 0);
+  it.x = bmQ(it.x + fit(room.x0 + face(room.x0 - 0.3, cz), room.x1 - face(room.x1 + 0.3, cz), b.x0, b.x1));
+  it.z = bmQ(it.z + fit(room.z0 + face(cx, room.z0 - 0.3), room.z1 - face(cx, room.z1 + 0.3), b.z0, b.z1));
 }
 /* nudge an item to sit flush with walls and neighbours, or onto a quarter-metre grid */
 function bmSnapItem(g) {
@@ -27103,7 +27355,7 @@ function bmSnapItem(g) {
   }
   const rug = C.layer === 'rug', yard = !!C.yard;
   const room = yard ? null : S.roomAt(it.f, it.x, it.z);
-  const back = bmBackWall(it);
+  const backs = bmBackWalls(it), T_ = (k) => (backs.includes(k) ? 0.8 : 0.18);
   const axis = (ax) => {
     const b = itemGeom(it).box;
     const lo = ax === 'x' ? b.x0 : b.z0, hi = ax === 'x' ? b.x1 : b.z1;
@@ -27111,8 +27363,8 @@ function bmSnapItem(g) {
     const G_ = [];
     if (room) {
       const inset = (x, z) => (S.roomAt(it.f, x, z) ? 0.075 : 0.15) + 0.015;
-      if (ax === 'x') { G_.push({ at: room.x0 + inset(room.x0 - 0.3, it.z), s: 0, T: back === 'x0' ? 0.8 : 0.18 }, { at: room.x1 - inset(room.x1 + 0.3, it.z), s: 1, T: back === 'x1' ? 0.8 : 0.18 }); }
-      else { G_.push({ at: room.z0 + inset(it.x, room.z0 - 0.3), s: 0, T: back === 'z0' ? 0.8 : 0.18 }, { at: room.z1 - inset(it.x, room.z1 + 0.3), s: 1, T: back === 'z1' ? 0.8 : 0.18 }); }
+      if (ax === 'x') { G_.push({ at: room.x0 + inset(room.x0 - 0.3, it.z), s: 0, T: T_('x0') }, { at: room.x1 - inset(room.x1 + 0.3, it.z), s: 1, T: T_('x1') }); }
+      else { G_.push({ at: room.z0 + inset(it.x, room.z0 - 0.3), s: 0, T: T_('z0') }, { at: room.z1 - inset(it.x, room.z1 + 0.3), s: 1, T: T_('z1') }); }
     }
     if (!rug) {
       for (const o of home.furn) {
@@ -27139,7 +27391,7 @@ function bmEval(g) {
   const home = G.home, S = homeStruct(home);
   const others = home.furn.filter((o) => o.id !== g.fromId);
   const why = {};
-  let ok = furnFits(home, S, g.it, others, why);
+  let ok = furnFits(home, S, g.it, others, why) && furnClearOfWalls(S, g.it, why);
   if (ok && g.mode === 'new' && home.furn.length + 1 > HB.maxFurn) { ok = false; why.msg = 'That is as much furniture as the house can hold.'; }
   g.valid = ok; g.msg = ok ? '' : (why.msg || 'It doesn’t fit there.');
   if (ok && g.mode === 'new' && g.price > G.player.money) g.msg = `You need ${money(g.price - G.player.money)} more.`;
@@ -27215,7 +27467,7 @@ function bmFindSpot(g) {
     it.r = keepR;
     if (k.run) bmWallSet(g, k.run, k.side, k.a); else { it.x = k.x; it.z = k.z; bmOrient(g); bmSnapItem(g); }
     const why = {};
-    if (furnFits(G.home, S, it, G.home.furn.filter((o) => o.id !== g.fromId), why)) return true;
+    if (furnFits(G.home, S, it, G.home.furn.filter((o) => o.id !== g.fromId), why) && furnClearOfWalls(S, it)) return true;
   }
   /* nowhere fits: leave it in the middle of the screen, red */
   if (C.layer !== 'wall') { it.x = bmQ(c.x); it.z = bmQ(c.z); }
@@ -27280,10 +27532,10 @@ function bmNewItem(t, vi, col) {
   if (v) { it.vn = v.name; it.pr = v.price; if (v.q !== undefined) it.qq = v.q; if (v.decor !== undefined) it.dc = v.decor; }
   return it;
 }
-function bmStartNew(it, price, fromShop) {
+function bmStartNew(it, price, fromShop, vi) {
   bmGhostDrop();
   Sound.play('pickup');
-  const g = { it, mode: 'new', fromId: null, price, free: false, valid: true, msg: '', fromShop: !!fromShop };
+  const g = { it, mode: 'new', fromId: null, price, free: false, valid: true, msg: '', fromShop: !!fromShop, vi };
   BM.ghost = g; BM.sel = null; BM.shopOpen = false; BM.pop = null;
   if (CAT[it.t].layer === 'wall') bmWallsHalf();
   if (CAT[it.t].yard && BM.floor !== 0) BM.floor = 0;
@@ -27298,7 +27550,7 @@ function bmStartMove(id, rot) {
   Sound.play('pickup');
   bmGhostDrop();
   const it = JSON.parse(JSON.stringify(src));
-  if (rot) it.r = norm360((it.r || 0) + rot);
+  if (rot) { it.r = norm360((it.r || 0) + rot); bmKeepInRoom(it); }
   const g = { it, mode: 'move', fromId: id, price: 0, free: !!rot, valid: true, msg: '' };
   BM.ghost = g; BM.sel = null; BM.shopOpen = false; BM.pop = null;
   BMHIDE.id = id; HOUSES3D[homeBld()].rebuild();
@@ -27313,8 +27565,19 @@ function bmRotate() {
   if (!g || CAT[g.it.t].layer === 'wall') return;
   Sound.play('rotate');
   g.it.r = norm360((g.it.r || 0) + 90); g.free = true;
-  bmSnapItem(g);
+  bmKeepInRoom(g.it); bmSnapItem(g);
   bmGhostPose(g); bmEval(g);
+}
+/* a different size or model of the piece being placed: it stays where it is */
+function bmSetVariant(g, vi) {
+  const it = g.it, C = CAT[it.t], v = C.variants && C.variants[vi];
+  if (!v || g.mode !== 'new') return;
+  const at = { f: it.f, x: it.x, z: it.z, r: it.r }, col = it.c;
+  Object.keys(it).forEach((k) => delete it[k]);
+  Object.assign(it, bmNewItem(C.id, vi, col), at);
+  g.vi = vi; g.price = v.price;
+  bmGhostBuild(g); bmKeepInRoom(it); bmSnapItem(g); bmGhostPose(g); bmEval(g);
+  bmRender();
 }
 function bmGhostOk() {
   const g = BM.ghost;
@@ -27374,37 +27637,65 @@ function bmCopy(id) {
 function bmTurnSel(id) {
   const src = G.home.furn.find((q) => q.id === id);
   if (!src || CAT[src.t].layer === 'wall') return;
-  const r = norm360((src.r || 0) + 90);
-  const res = tryEdit((home) => { const q = home.furn.find((o) => o.id === id); q.r = r; return YES; });
-  if (res.ok && !res.sold.length && !res.dropped) { const result = bmCommit(res, 0); if (result.ok) Sound.play('rotate'); BM.sel = id; bmRender(); return; }
+  /* turn it where it stands; if that pushes it into a wall, slide it back into the room */
+  const probe = Object.assign({}, src, { r: norm360((src.r || 0) + 90) });
+  bmKeepInRoom(probe);
+  if (furnClearOfWalls(homeStruct(G.home), probe)) {
+    const res = tryEdit((home) => { const q = home.furn.find((o) => o.id === id); q.r = probe.r; q.x = probe.x; q.z = probe.z; return YES; });
+    if (res.ok && !res.sold.length && !res.dropped) { const result = bmCommit(res, 0); if (result.ok) Sound.play('rotate'); BM.sel = id; bmRender(); return; }
+  }
   bmStartMove(id, 90);
 }
 
 /* ---------- picking furniture on the screen ---------- */
+/* the heights a piece takes up, from the floor it stands on */
+function bmSpan(it, C, base) {
+  if (C.layer === 'ceil') { const top = base + WALL_H; return [top - clamp(C.h || 0.1, 0.12, 1.2), top]; }
+  if (C.layer === 'wall') return [base + 0.8, base + 2.35];
+  return [base, base + clamp(C.h || 0.8, 0.05, 2.6)];
+}
+/* where the line of sight through a point on the screen first meets a piece's box: the height it
+   meets it at (the higher, the nearer the eye), or null when it passes by */
+function bmRayHit(px, py, it, C, base, m) {
+  const [y0, y1] = bmSpan(it, C, base), b = itemGeom(it).box;
+  const top = bmLocal(px, py, y1), bot = bmLocal(px, py, y0);
+  if (!top || !bot) return null;
+  m = m === undefined ? 0.04 : m;
+  if (C.layer === 'wall') m += 0.08;
+  let t0 = 0, t1 = 1;
+  const clip = (p0, d, lo, hi) => {
+    if (Math.abs(d) < 1e-9) return p0 >= lo && p0 <= hi;
+    let a = (lo - p0) / d, c = (hi - p0) / d;
+    if (a > c) { const q = a; a = c; c = q; }
+    t0 = Math.max(t0, a); t1 = Math.min(t1, c);
+    return t0 <= t1;
+  };
+  if (!clip(top.x, bot.x - top.x, b.x0 - m, b.x1 + m) || !clip(top.z, bot.z - top.z, b.z0 - m, b.z1 + m)) return null;
+  return y1 - t0 * (y1 - y0);
+}
+/* the piece under a tap: whatever the line of sight meets first (a rug only when nothing stands on
+   it there), otherwise the piece whose middle is closest on the screen */
 function bmPick(px, py) {
   const home = G.home, f = BM.floor;
-  const lp0 = bmLocal(px, py, FLOOR_Y[f]), lpY = bmLocal(px, py, 0), lpC = bmLocal(px, py, FLOOR_Y[f] + WALL_H - 0.12);
-  let best = null;
+  let hit = null, near = null;
   home.furn.forEach((it) => {
     const C = CAT[it.t];
     if (!C) return;
     const yard = !!C.yard;
     if (!yard && it.f !== f) return;
     if (C.layer === 'wall' && W.mode === 'cut') return;
-    const g = itemGeom(it), b = g.box;
     const base = yard ? 0 : FLOOR_Y[f];
-    const cy = base + bmCenterH(it, C);
-    const sp = bmScreen((b.x0 + b.x1) / 2, cy, (b.z0 + b.z1) / 2);
-    const ceil = C.layer === 'ceil';
-    const lp = ceil ? lpC : yard ? lpY : lp0;
-    const inside = C.layer !== 'wall' && lp && ptIn(b, lp.x, lp.z, ceil ? 0.2 : 0.12);
+    const y = bmRayHit(px, py, it, C, base);
+    if (y !== null) {
+      const b = itemGeom(it).box, score = -y + (C.layer === 'rug' ? 5 : 0) + (b.x1 - b.x0) * (b.z1 - b.z0) * 0.002;
+      if (!hit || score < hit.score) hit = { it, score };
+      return;
+    }
+    const b = itemGeom(it).box, sp = bmScreen((b.x0 + b.x1) / 2, base + bmCenterH(it, C), (b.z0 + b.z1) / 2);
     const d = sp.ok ? Math.hypot(sp.x - px, sp.y - py) : 1e9;
-    let score = null;
-    if (inside) score = ceil ? 2 + d * 0.02 : (C.layer === 'rug' ? 60 : 0) + (b.x1 - b.x0) * (b.z1 - b.z0) * 3 + d * 0.02;
-    else if (d < (C.layer === 'wall' ? 46 : 42)) score = 120 + d;
-    if (score !== null && (!best || score < best.score)) best = { it, score };
+    if (d < (C.layer === 'wall' ? 46 : 42) && (!near || d < near.d)) near = { it, d };
   });
-  return best ? best.it : null;
+  return hit ? hit.it : near ? near.it : null;
 }
 function bmSelect(id) {
   BM.sel = id; BM.pop = null;
@@ -27525,17 +27816,23 @@ function bmSwatchRow(pal, cur, pick, withDefault) {
 
 function renderGhostBar(root) {
   const g = BM.ghost, it = g.it, C = CAT[it.t], el = BM.el;
-  const pal = C.col ? PAL[C.col] : null;
+  const pal = C.col ? PAL[C.col] : null, dec = itemDecor(it);
+  const what = [BM_STAR(itemQ(it)), dec > 0 ? 'Style +' + Math.round(dec * 10) / 10 : '', C.fn || ''].filter(Boolean).join('  ·  ');
   root.append(
     h('div', { class: 'bi' }, thumbEl(it, 'sm'),
-      h('div', { class: 'bt2' }, h('b', null, itemName(it)), h('span', null, BM_STAR(itemQ(it)) + (g.mode === 'new' ? '  ·  ' + money(g.price) : '  ·  moving it')))),
+      h('div', { class: 'bt2' }, h('b', null, itemName(it) + (g.mode === 'new' ? ' · ' + money(g.price) : '')), h('span', null, g.mode === 'new' ? what : 'Moving it · drag it, or tap where it should go'))),
     el.msg = h('div', { class: 'bmsg', hidden: true }));
+  /* sizes and models of a new piece, right here: it changes where it stands */
+  if (g.mode === 'new' && C.variants && C.variants.length > 1) {
+    const cur = g.vi !== undefined ? g.vi : C.variants.findIndex((v) => v.name === it.vn);
+    root.append(h('div', { class: 'svars line' }, C.variants.map((v, i) => chipBtn(v.name, i === cur, () => { if (i !== cur) bmSetVariant(g, i); }, money(v.price)))));
+  }
   if (BM.pop === 'colour' && pal) root.append(bmSwatchRow(pal, it.c || null, (c) => { if (c) it.c = c; else delete it.c; bmGhostBuild(g); bmEval(g); BM.pop = null; bmRender(); }, true));
   root.append(h('div', { class: 'brow' },
     C.layer === 'wall' ? null : bbtn('↻', 'Turn', () => bmRotate()),
     pal ? bbtn('🎨', 'Colour', () => { BM.pop = BM.pop === 'colour' ? null : 'colour'; bmRender(); }) : null,
     bbtn('✕', 'Cancel', () => bmGhostCancel()),
-    el.ok = h('button', { class: 'btn primary bok', onclick: () => bmGhostOk() }, g.mode === 'new' ? '✓ Place · ' + money(g.price) : '✓ Put it here')));
+    el.ok = h('button', { class: 'btn primary bok', onclick: () => bmGhostOk() }, g.mode === 'new' ? '✓ Buy · ' + money(g.price) : '✓ Put it here')));
   bmBarUpdate();
 }
 function renderSelBar(root) {
@@ -27614,7 +27911,8 @@ function renderShop() {
     Object.keys(CAT).map((k) => CAT[k]).filter((c) => c.cat === BM.cat).forEach((c) => {
       const from = c.variants ? Math.min(...c.variants.map((v) => v.price)) : c.price;
       const v0 = c.variants ? c.variants[bmDefaultVariant(c)] : null;
-      grid.append(h('button', { class: 'scard' + (from > G.player.money ? ' poor' : ''), onclick: () => { BM.detail = { t: c.id, vi: bmDefaultVariant(c), c: null }; renderShop(); } },
+      /* tap a piece and it is in the house straight away, following your finger; it is paid for when you put it down */
+      grid.append(h('button', { class: 'scard' + (from > G.player.money ? ' poor' : ''), onclick: () => { Sound.click(); const vi = bmDefaultVariant(c); bmStartNew(bmNewItem(c.id, vi, null), c.variants ? c.variants[vi].price : c.price, true, vi); } },
         thumbEl({ t: c.id, o: v0 && v0.o }, 'lg'), h('b', null, c.name), h('em', null, (c.variants && c.variants.length > 1 ? 'from ' : '') + money(from))));
     });
     el.append(grid);
@@ -27681,7 +27979,7 @@ function bmGhostHit(px, py) {
   const sp = bmScreen((b.x0 + b.x1) / 2, cy, (b.z0 + b.z1) / 2);
   const d = sp.ok ? Math.hypot(sp.x - px, sp.y - py) : 1e9;
   const lp = C.layer === 'wall' ? null : bmLocal(px, py, bmGrabY(it));
-  const inside = lp && ptIn(b, lp.x, lp.z, 0.2);
+  const inside = (lp && ptIn(b, lp.x, lp.z, 0.2)) || (C.layer !== 'wall' && bmRayHit(px, py, it, C, bmPlaneY(it), 0.12) !== null);
   if (!inside && d > 52) return null;
   return { dx: lp ? it.x - lp.x : 0, dz: lp ? it.z - lp.z : 0 };
 }
@@ -28591,8 +28889,43 @@ function dsWhere(spot) {
   const A = G.home.rooms.find((r) => r.id === spot.neg), B = G.home.rooms.find((r) => r.id === spot.pos);
   return A && B ? `Wall: ${A.name} / ${B.name}` : 'Inside wall';
 }
+const q20 = (v) => Math.round(v * 20) / 20;            // fittings slide in 5 cm steps, to line up with what stands by them
 function dsSpotOf(run, f, along) {
-  return { f, a: run.a, p: run.p, from: run.from, to: run.to, ext: run.ext, neg: run.neg, pos: run.pos, c: q4(along) };
+  return { f, a: run.a, p: run.p, from: run.from, to: run.to, ext: run.ext, neg: run.neg, pos: run.pos, c: q20(along) };
+}
+/* change a fitting's size or height (windows): it stays on its wall, clear of its neighbours */
+function dsAdjust(o, patch) {
+  const id = o.id;
+  if (Object.keys(patch).every((k) => Math.abs((o[k] === undefined ? { sy: WIN_SILL, ty: WIN_TOP }[k] : o[k]) - patch[k]) < 1e-6)) return;
+  bsRun((home) => {
+    const q = home.opens.find((x) => x.id === id);
+    if (!q) return NO('That is gone.');
+    Object.assign(q, patch);
+    const run = (computeStruct(home).walls[q.f] || []).find((r) => r.a === q.a && r.p === q.p && r.from <= q.c + 1e-6 && r.to >= q.c - 1e-6);
+    if (!run) return NO('That wall is gone.');
+    const lo = run.from + 0.25 + q.w / 2, hi = run.to - 0.25 - q.w / 2;
+    if (hi < lo - 1e-6) return NO('That is wider than this piece of wall.');
+    q.c = clamp(q.c, lo, hi);
+    if (home.opens.some((z) => z !== q && z.f === q.f && z.a === q.a && z.p === q.p && Math.abs(z.c - q.c) < (z.w + q.w) / 2 + 0.2 - 1e-6)) return NO('It would run into the next door or window.');
+    HL.touch();
+    return YES;
+  }, { strict: 'That doesn’t fit there.', quietDrop: true, after: () => { DS.sel = id; bmRender(); } });
+}
+/* a window's width, sill and top in small steps, and where it sits along the wall */
+const WIN_HEIGHTS = [['Low', 0.45], ['Standard', WIN_SILL], ['Over a worktop', 1.35], ['High', 1.6]];
+function dsSizeRows(o) {
+  const sy = winSill(o), ty = winTop(o), r2 = (v) => Math.round(v * 100) / 100;
+  const step = (label, val, dec, inc) => h('div', { class: 'dsz' }, h('span', null, label),
+    h('button', { 'aria-label': label + ' −', onclick: () => { Sound.click(); dec(); } }, '−'), h('b', null, val), h('button', { 'aria-label': label + ' +', onclick: () => { Sound.click(); inc(); } }, '+'));
+  return [
+    h('div', { class: 'dszs' },
+      step('Width', o.w.toFixed(2) + ' m', () => dsAdjust(o, { w: r2(Math.max(0.5, o.w - 0.1)) }), () => dsAdjust(o, { w: r2(Math.min(3.2, o.w + 0.1)) })),
+      step('Sill', sy.toFixed(2) + ' m', () => dsAdjust(o, { sy: r2(Math.max(0.1, sy - 0.05)) }), () => dsAdjust(o, { sy: r2(Math.min(ty - 0.4, sy + 0.05)) })),
+      step('Top', ty.toFixed(2) + ' m', () => dsAdjust(o, { ty: r2(Math.max(sy + 0.4, ty - 0.05)) }), () => dsAdjust(o, { ty: r2(Math.min(2.6, ty + 0.05)) })),
+      step('Along', '5 cm', () => dsMoveTo(o, r2(o.c - 0.05)), () => dsMoveTo(o, r2(o.c + 0.05)))),
+    h('div', { class: 'svars line' }, WIN_HEIGHTS.map(([nm, v]) => chipBtn(nm, Math.abs(sy - v) < 0.01, () => dsAdjust(o, { sy: v, ty: Math.max(ty, v + 0.4) }), 'sill ' + v.toFixed(2) + ' m'))),
+    h('div', { class: 'bhint sub' }, 'Worktops are 0.93 m high with tiles up to 1.33 m; desks and tables about 0.75 m.'),
+  ];
 }
 /* put a fitting on the wall; `replace` swaps an existing one */
 function dsPlace(spot, t, replaceId) {
@@ -28630,7 +28963,7 @@ function dsBar(root) {
     const T = OPEN_TYPES[o.t] || OPEN_TYPES.window, run = dsRunOf(o);
     const front = o.id === 'front';
     root.append(h('div', { class: 'bi' }, h('span', { class: 'thumb sm' }, T.icon),
-      h('div', { class: 'bt2' }, h('b', null, front ? 'Front door' : T.name), h('span', null, `${T.w} m wide  ·  ${run ? (run.ext ? 'outside wall' : 'inside wall') : ''}`))));
+      h('div', { class: 'bt2' }, h('b', null, front ? 'Front door' : T.name), h('span', null, `${o.w.toFixed(2)} m wide  ·  ${run ? (run.ext ? 'outside wall' : 'inside wall') : ''}  ·  worth ${money(openPrice(o))}`))));
     if (front) {
       root.append(h('div', { class: 'bhint sub' }, 'The front door stays where it is — that’s how everyone gets in and out.'));
       return;
@@ -28640,6 +28973,7 @@ function dsBar(root) {
       spot.f = o.f;
       root.append(h('div', { class: 'svars line' }, dsTypes(spot).map((t) => chipBtn(OPEN_TYPES[t].name, t === o.t, () => { if (t !== o.t) dsPlace(spot, t, o.id); }, money(OPEN_TYPES[t].price)))));
     }
+    if (dsGroupOf(o.t) === 'window') root.append(...dsSizeRows(o));
     root.append(h('div', { class: 'bhint sub' }, 'Drag the ↔ handle to slide it along the wall.'),
       h('div', { class: 'brow' }, bbtn('🗑️', 'Remove', () => dsRemove(o.id), 'sell'), bbtn('✓', 'Done', () => { DS.sel = null; bmRender(); })));
     return;
@@ -28710,7 +29044,7 @@ BTOOLS.doors = {
             if (!lp) return;
             const along = (o.a === 'h' ? lp.x : lp.z) + d.off, run = d.run;
             const lo = run.from + 0.25 + o.w / 2, hi = run.to - 0.25 - o.w / 2;
-            const c2 = clamp(q4(along), lo, hi);
+            const c2 = clamp(q20(along), lo, hi);
             const clash = G.home.opens.some((q) => q.id !== o.id && q.f === o.f && q.a === o.a && q.p === o.p && Math.abs(q.c - c2) < (q.w + o.w) / 2 + 0.2 - 1e-6);
             if (!clash) d.c = c2;
           },
@@ -29036,7 +29370,7 @@ function sgVizDispose() {
    STYLE: outside colours, roof, inside paint
    ============================================================ */
 const DOOR_TONES = ['#7a3f3f', '#33363f', '#2f5d62', '#b4532f', '#f1cc5a', '#e9e2d0', '#5f6f5a', '#8a5a3c', '#3f5f8a', '#c98a7a', '#6a4a7a', '#c0392b'];
-const YS = { tab: 'wall' };
+const YS = { tab: 'wall', roof: null };          // roof: a shape being tried on, not bought yet
 const YS_TABS = [
   { id: 'wall', name: 'Walls', icon: '🏠', key: 'wall', pal: EXT_TONES },
   { id: 'trim', name: 'Trim', icon: '🪟', key: 'trim', pal: EXT_TONES },
@@ -29051,13 +29385,40 @@ function ysApply(t, col) {
   else bmEdit((home) => OPS.setExt(home, { ext: { [t.key]: col } }), 0);
   bmRender();
 }
+/* the roof the house shows: a shape being tried on in Build mode, otherwise its own (13c draws it) */
+function roofShown(home) {
+  return YS.roof && BM.on && home === G.home ? roofKind(Object.assign({}, home, { roofType: YS.roof })) : roofKind(home);
+}
+/* trying a roof shape on costs nothing: it is only drawn. Buying it is one step, paid once. */
+function ysRoofTry(k) {
+  const cur = G.home.roofType || 'auto';
+  YS.roof = k === cur ? null : k;
+  HOUSES3D[homeBld()].rebuild();
+  bmRender();
+}
+function ysRoofClear() { if (!YS.roof) return; YS.roof = null; if (HOUSES3D[homeBld()]) HOUSES3D[homeBld()].rebuild(); }
+function ysRoofBuy() {
+  const k = YS.roof;
+  if (!k) return;
+  YS.roof = null;
+  const r = bmEdit((home) => OPS.setExt(home, { roofType: k }), 0);
+  if (r.ok && r.committed !== false) { Sound.play('place'); UI.toast('New roof: ' + ROOF_SHAPES.find((q) => q[0] === k)[1].toLowerCase() + '.'); } else HOUSES3D[homeBld()].rebuild();
+  bmRender();
+}
 function ysBar(root) {
   const ex = G.home.ext, t = YS_TABS.find((q) => q.id === YS.tab) || YS_TABS[0];
-  root.append(h('div', { class: 'stabs' }, YS_TABS.map((q) => h('button', { class: 'stab' + (q.id === t.id ? ' on' : ''), onclick: () => { Sound.click(); YS.tab = q.id; bmRender(); } }, h('i', null, q.icon), h('span', null, q.name)))));
+  root.append(h('div', { class: 'stabs' }, YS_TABS.map((q) => h('button', { class: 'stab' + (q.id === t.id ? ' on' : ''), onclick: () => { Sound.click(); if (q.id !== YS.tab) ysRoofClear(); YS.tab = q.id; bmRender(); } }, h('i', null, q.icon), h('span', null, q.name)))));
   if (t.id === 'shape') {
-    const cur = G.home.roofType || 'auto';
-    root.append(h('div', { class: 'svars line' }, ROOF_SHAPES.map(([k, nm]) => chipBtn(nm, cur === k, () => { if (cur !== k) { bmEdit((home) => OPS.setExt(home, { roofType: k }), 0); bmRender(); } }, k === 'auto' ? '' : money(PRICE.roof[k]) + '/m²'))));
-    root.append(h('div', { class: 'bhint sub' }, 'Only the top storey’s roof changes shape. Set-backs lower down get flat roofs.'));
+    const cur = G.home.roofType || 'auto', pick = YS.roof || cur;
+    root.append(h('div', { class: 'svars line' }, ROOF_SHAPES.map(([k, nm]) => chipBtn(nm, pick === k, () => ysRoofTry(k), k === 'auto' ? '' : money(PRICE.roof[k]) + '/m²'))));
+    if (YS.roof) {
+      const res = tryEdit((home) => OPS.setExt(home, { roofType: YS.roof })), cost = res.ok ? res.cost : 0;
+      root.append(h('div', { class: 'brow' },
+        bbtn('↶', 'Keep the old one', () => ysRoofTry(cur)),
+        h('button', { class: 'btn primary bok', disabled: !res.ok || cost > G.player.money, onclick: () => { Sound.click(); ysRoofBuy(); } },
+          !res.ok ? res.msg : cost > G.player.money ? `Need ${money(cost - G.player.money)} more` : cost > 0 ? `✓ Buy this roof · ${money(cost)}` : cost < 0 ? `✓ Change it · ${money(-cost)} back` : '✓ Change it')));
+    }
+    root.append(h('div', { class: 'bhint sub' }, YS.roof ? 'This is how it would look. Nothing is paid until you buy it.' : 'Tap a shape to see it on the house first; you only pay when you buy it. Only the top storey’s roof changes shape; set-backs lower down get flat roofs.'));
   } else {
     root.append(bmSwatchRow(t.pal, ex[t.key] || null, (c) => ysApply(t, c), false));
     if (t.id === 'in') root.append(h('div', { class: 'bhint sub' }, 'Repaints every room. To paint one room, use Rooms → Walls.'));
@@ -29074,11 +29435,12 @@ BTOOLS.style = {
   },
   leave() {
     BM.closed = false;
+    ysRoofClear();
     if (YS.saved) { CAM.distT = YS.saved.dist; CAM.pitchT = YS.saved.pitch; YS.saved = null; }
     const c = toWorld(bmH(), 0, -3.4);
     BM.goal = { tx: c[0], tz: c[1], ty: FLOOR_Y[BM.floor], t: 1.2 };
   },
-  reset() {},
+  reset() { ysRoofClear(); },
   bar(root) { ysBar(root); },
   frame() { if (BM.el) bsSweep(); },
 };
@@ -29532,6 +29894,7 @@ const NET = {
   households: {}, gone: {}, ctlKeys: {}, relKeys: {}, worldKeys: {},
   pub: null, timers: {}, backlog: [], pending: [], lastResync: 0, mismatch: null, hub: null, want: 1, suspect: null, lastHash: null,
   stats: null,
+  copy: false,           // the town on screen is a shared one (still true after leaving it), so it is never autosaved as your own game
 };
 const NET_STATS0 = () => ({ since: Date.now(), sent: 0, recv: 0, bytesOut: 0, bytesIn: 0, snapSize: 0, snapRaw: 0, snapshots: 0, byType: {}, hashes: 0, mismatches: 0, resyncs: 0, writes: 0 });
 const netNow = () => (NET.transport ? NET.transport.now() : Date.now());
@@ -29579,6 +29942,7 @@ const presentUids = () => Object.keys(NET.presence).filter((u) => NET.presence[u
 /* ---------- remembered neighbourhoods (this browser only) ---------- */
 function sharedList() { try { return JSON.parse(localStorage.getItem('gn.shared') || '[]'); } catch (e) { return []; } }
 function sharedRemember(rec) {
+  if ((rec.mode || NET.mode) !== 'memory') markPlayed('shared');
   const all = sharedList(), prev = all.find((r) => r.wid === rec.wid) || {}, list = all.filter((r) => r.wid !== rec.wid);
   list.unshift(Object.assign({}, prev, { last: Date.now() }, rec));     // what is not said this time (the lot, the household) is kept
   try { localStorage.setItem('gn.shared', JSON.stringify(list.slice(0, 12))); } catch (e) { /* private mode: the code still works when typed */ }
@@ -29596,7 +29960,11 @@ function netContinueRec(local) {
   const rec = sharedList()[0];
   if (!rec || !rec.code || !netModeAvailable()) return null;
   if ((rec.mode === 'tab') !== (netDefaultMode() === 'tab') || rec.mode === 'memory') return null;
-  if (local && (local.savedAt || 0) >= (rec.last || 0)) return null;
+  if (local) {
+    const last = lastPlayed();
+    if (last === 'solo') return null;
+    if (last !== 'shared' && (local.savedAt || 0) >= (rec.last || 0)) return null;      // saves from before this was remembered
+  }
   return rec;
 }
 /* rejoin it and take your household again; false: it is not free, choose another */
@@ -29644,6 +30012,7 @@ async function netCreate(opts) {
   await T.createWorld(wid, meta);
   await T.joinWorld(wid, uid, { joinedAt: now, lastSeen: now, activeLot: homeLot() });
   netBegin(T, { uid, wid, code: formatInviteCode(norm), meta, name, mode: opts.mode || 'firebase' });
+  NET.copy = true;
   NET.want = G.speed || 1;
   const auth = await T.acquireAuthority(uid, NET_TIMING.authorityLease);
   NET.authority = auth; NET.isAuth = !!auth;
@@ -30615,6 +30984,7 @@ function serializeShared() {
 function applyShared(d, meta) {
   if (typeof CAS !== 'undefined') CAS.active = false;
   resetGame();
+  NET.copy = true;
   netSetSeed(d.shared.worldSeed);
   G.t = d.t; G.speed = 1;
   G.opts = d.opts && d.opts.mods ? d.opts : { mods: {} }; G.mod = d.mod || {};
