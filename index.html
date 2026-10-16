@@ -787,8 +787,19 @@ const deg = (d) => (d * Math.PI) / 180;
    core game never reads a module's data directly. Build with
    `python3 build.py --no-vampire` and the core game runs without it.
    ============================================================ */
-const GAME = { name: 'Good Neighbors', version: '0.6.4', schema: 4, date: '2026-10-16' };
+const GAME = { name: 'Good Neighbors', version: '0.6.5', schema: 4, date: '2026-10-17' };
 const CHANGELOG = [
+  { v: '0.6.5', date: '2026-10-17', title: 'Groceries, leftovers · Moving like people', notes: [
+    'The fridge has to be filled. What your household eats comes out of it: a meal takes a serving, a snack half. A fridge holds 60 servings (a steel fridge-freezer 90, a chest freezer 30 more), which lasts a family a week or two. Tap the fridge to see how full it is; open its door and you can see it too.',
+    'Order groceries at the fridge, on the telephone or online at the computer, and choose how full: a quarter, half, three quarters or right up, at §3 a serving. The shopping comes to the front door about an hour later and someone carries it to the fridge and puts it away. You get a notice when it is running low and when it is empty; until it is filled, meals are takeaways.',
+    'Big pots: at the stove, cook a family pot (4 plates) or a big batch (8). The cook has a plate and the pot stays on the stove for the others, who come and help themselves. It keeps a day and a half out; put it in the fridge and it keeps about five days, and a plate from the fridge is warmed up on the stove. Food that has gone off is thrown out.',
+    'At the fridge they stand where a person would: at the handle side to pull the door open, a step back as it swings past, then leaning in to a shelf (crouching for the bottom one) and pushing the door shut with the other hand.',
+    'No more walking into the sofa: they stop in front of a seat, turn round and lower themselves onto it, hands reaching back. Getting up, they lean forward and push off. Into bed they sit on the edge, then lie back and swing their legs in; out of bed they sit up, swing their legs out and stand beside it.',
+    'Play a game on the phone, from the sofa or a dining chair: the phone held sideways in both hands, thumbs going, the game playing on its little screen, and a slump when a round is lost. People sitting about now and then take their phone out for a scroll, lean back, look round and stretch.',
+    'Sleep in different positions: on the back, on either side, curled up, on the front, arms above the head. Everyone has a favourite, and restless sleepers (carefree, playful or sporty people, and children) turn over now and then in the night, slowly, under the covers; orderly and lazy ones hardly move.',
+    'Listening to music, they nod and sway to the beat; by the fire they hold their hands out to it.',
+    'Someone just standing about at the fridge or the stove no longer keeps everyone else from using it.',
+  ] },
   { v: '0.6.4', date: '2026-10-16', title: 'Time while you are away', notes: [
     'While the game is closed or in the background, time goes on at real-time pace: an hour away is an hour on Hawthorn Lane, sixty times slower than playing. It stops at three game days, so a long break finds your family a few days on, never grown old or gone. Leave the game paused and no time goes by.',
     'Your family gets on with ordinary life meanwhile: meals, sleep and washing, and every shift, school day and study day in the gap counts as an ordinary one, with the pay. Nothing breaks or catches fire, nobody starves, a baby on the way waits to be born until you are back, and nobody in the family dies while you are away.',
@@ -2556,7 +2567,7 @@ function arrive(s) {
   s.act = g.act || 'idle';
   s.y = n.y;
   goalBegin(s, g);
-  foodBegin(s, g);
+  if (foodBegin(s, g) === false) return;
   if (!mediaActionBegin(s, g, n)) return;
   useItemAt(s, n, g);
   if (typeof Sound !== 'undefined') Sound.actionStart(s, g, n);
@@ -2572,15 +2583,30 @@ function finishGoal(s) {
   if (typeof Sound !== 'undefined') Sound.actionEnd(s, g, NAV.nodes[s.node], true);
   s.goal = null; s.act = 'idle'; s.idleFor = 0;
   if (g) g.phase = 'done';
-  const seated = s.pose === 'lie' || s.pose === 'sit';
+  const seated = s.pose === 'lie' || s.pose === 'sit', wasLying = s.pose === 'lie';
   if (seated) { s.pose = 'stand'; s.dy = 0; }
   if (g && g.onDone) g.onDone(s);
   /* getting up: step clear of the chair, sofa or bed instead of standing inside it */
   const n = NAV.nodes[s.node];
+  if (seated && getUp(s, wasLying)) return;
   if (!s.goal && !s.offmap && (!s.queue || !s.queue.length) && n && (seated || n.pose === 'sit' || n.pose === 'lie')) {
     const off = stepOffNode(s.node);
     if (off != null) setGoal(s, { node: off, act: 'idle', remain: 0.01, walkOnly: true, stepOff: true });
   }
+}
+/* getting up takes a moment (07h shows it): out of bed they sit up, swing their legs out and stand
+   beside it; off a seat they lean forward and push up before walking away */
+const GET_UP = { sit: 0.6, lie: 1.3 };
+function getUp(s, lying) {
+  if (s.offmap || (s.queue && s.queue[0] && s.queue[0].node === s.node)) return false;   // staying put for the next thing
+  if (!lying && s.queue && s.queue[0] && NAV.nodes[s.queue[0].node] && NAV.nodes[s.queue[0].node].pose === 'sit' && NAV.nodes[s.queue[0].node].item === NAV.nodes[s.node]?.item) return false;
+  s.hold = Math.max(s.hold || 0, G.t + (lying ? GET_UP.lie : GET_UP.sit));
+  if (!lying) return false;
+  const off = stepOffNode(s.node), m = NAV.nodes[off];
+  if (off == null || !m) return false;
+  s.faceTo = Math.atan2(m.x - s.x, m.z - s.z);         // standing beside it, facing away from the bed
+  s.x = m.x; s.y = m.y; s.z = m.z; s.node = off; s.state = 'doing'; s.act = 'idle'; s.path = [];
+  return true;                                        // beside the bed now: no further step needed
 }
 /* the nearest place to stand next to a seat or a bed */
 function stepOffNode(id) {
@@ -2624,6 +2650,13 @@ function moveAlong(s, dt) {
       step = Math.min(move, Math.max(0.03, dd - 0.95));
     }
     const nx = NAV.nodes[s.path[0]];
+    /* the last step onto a seat or into a bed is not walked through the furniture: from in front of it
+       they sit (or lie) down where they stand, and 07h eases the body round and down into place */
+    if (s.path.length === 1 && (nx.pose === 'sit' || nx.pose === 'lie') && s.goal && s.goal.node === nx.id && Math.abs(nx.y - s.y) < .5 && Math.hypot(nx.x - s.x, nx.z - s.z) < (nx.pose === 'lie' ? 1.9 : 1.4)) {
+      s.yaw = Math.atan2(nx.x - s.x, nx.z - s.z);
+      s.x = nx.x; s.z = nx.z; s.y = nx.y; s.node = nx.id; s.path.shift();
+      break;
+    }
     const dx = nx.x - s.x, dz = nx.z - s.z, dy = nx.y - s.y;
     const d = Math.hypot(dx, dz);
     if (d > 0.001) s.yaw = Math.atan2(dx, dz);
@@ -2750,6 +2783,8 @@ function actionForRaw(s, kind) {
   if (kind.startsWith('checkchild:') || kind.startsWith('askparent:')) return relationshipCareAction(s, kind);
   const ca = catalogAction(s, kind);
   if (ca) return ca;
+  const pa = pantryAction(s, kind);
+  if (pa) return pa;
   switch (kind) {
     case 'sleep': return [{ node: H('bed'), act: 'sleep', remain: SLEEP_MAX, label: 'Sleep', need: ['energy', 99] }];
     case 'nap': return [{ node: H('bed'), act: 'nap', remain: 120, label: 'Nap', need: ['energy', 96] }];
@@ -2764,6 +2799,7 @@ function actionForRaw(s, kind) {
     case 'read': return [{ node: H('sofa'), act: 'read', remain: 50, label: 'Read', need: ['fun', 96] }];
     case 'play': return [{ node: H('play'), act: 'play', remain: 50, label: 'Play', need: ['fun', 96] }];
     case 'relax': return [{ node: H('sofa'), act: 'relax', remain: 20 + Math.random() * 20, label: 'Relax' }];
+    case 'phoneGame': return ageF(s) < 8 ? [] : [{ node: H('sofa'), act: 'phoneGame', remain: 25 + Math.random() * 25, label: 'Play a game on the phone', need: ['fun', 96] }];
     case 'window': return [{ node: H('window'), act: 'window', remain: 8 + Math.random() * 10, label: 'Look outside' }];
     case 'dance': return [{ node: H('play'), act: 'dance', remain: 10 + Math.random() * 10, label: 'Dance around' }];
     case 'draw': return [{ node: H('desk'), act: 'draw', remain: 35 + Math.random() * 25, label: 'Draw' }];
@@ -2799,6 +2835,7 @@ function freeWill(s) {
   hook('freeWill', s, c);
   lifeFreeWill(s, c);
   petFreeWill(s, c);
+  pantryFreeWill(s, c);
   chaosFreeWill(s, c);
   /* --- things the body asks for --- */
   if (s.school && s.school.hw && !s.school.hw.done && hr >= 15.5 && hr < 21) c.push(['homework', 48 + (s.pers[1] - 0.5) * 30]);
@@ -2829,6 +2866,7 @@ function freeWill(s) {
       add('read', 12 + (s.traits.includes('intellectual') ? 20 : 0) + (s.pers[1] * 8) + (tired ? 6 : 0));
       add('web', (teen ? 18 : 9) + (s.traits.includes('curious') ? 8 : 0) + (100 - n.fun) * 0.1);
       add('games', (teen ? 18 : 7) + (100 - n.fun) * 0.15);
+      add('phoneGame', (teen ? 16 : 6) + s.pers[3] * 8 + (tired ? 5 : 0));
       if (G.t >= (s.cool.email || 0)) add('email', 3);
       add('relax', 10 + (tired ? 14 : 0));
       add('window', 7 + (s.traits.includes('curious') ? 6 : 0));
@@ -2871,10 +2909,10 @@ function freeWill(s) {
   s.lastFree = { k: kind.startsWith('chat:') ? 'chat' : kind, t: G.t };
   if (kind.startsWith('chat:')) { const t = G.byId[kind.slice(5)]; startTalk(s, t, autoKind(s, t), true); return; }
   /* an evening on the sofa is not cut short just because the fun bar is already full */
-  if (q.length && ['tv', 'read', 'computer', 'web', 'games', 'play'].includes(kind) && n.fun > 60) { const g = q[q.length - 1]; g.until = null; g.need = null; g.remain = 18 + Math.random() * 30; }
+  if (q.length && ['tv', 'read', 'computer', 'web', 'games', 'play', 'phoneGame'].includes(kind) && n.fun > 60) { const g = q[q.length - 1]; g.until = null; g.need = null; g.remain = 18 + Math.random() * 30; }
   if (q.length) { tagAction(q, null, { auto: true }); s.queue = q.slice(1); setGoal(s, q[0]); }
 }
-const LEISURE_ACTS = ['idle', 'chat', 'tv', 'read', 'relax', 'computer', 'web', 'email', 'play', 'sit', 'window', 'draw', 'dance', 'games'];
+const LEISURE_ACTS = ['idle', 'chat', 'tv', 'read', 'relax', 'computer', 'web', 'email', 'play', 'sit', 'window', 'draw', 'dance', 'games', 'phoneGame'];
 
 /* conversations live in 10a–10d */
 
@@ -3011,7 +3049,7 @@ function tickWorld(dt) {
     if (hh && !NET.on) welcomeEvent();
     if (hh) { checkTrespass(); tutorialTips(); }
     withWorldRandom(['world', Math.round(G.t * 2)], () => { socialTick(dt); if (hh) careerTick(dt); lifeTick(dt); if (hh) needsTick(dt); worldTick(dt); });
-    if (hh) { petsTick(dt); chaosTick(dt); skillsTick(dt); if (G.t >= (G.nx.wish || 0)) { G.nx.wish = G.t + 10; lifeWishTick(); } }
+    if (hh) { petsTick(dt); chaosTick(dt); skillsTick(dt); if (G.t >= (G.nx.pantry || 0)) { G.nx.pantry = G.t + 2; pantryTick(); } if (G.t >= (G.nx.wish || 0)) { G.nx.wish = G.t + 10; lifeWishTick(); } }
   }
 }
 function simTick(s, dt) {
@@ -3557,7 +3595,7 @@ function goalBegin(s, g) {
   g.phase = 'doing';
   g.t0 = G.t;
   if (g.remain === undefined && !s.sched && g.type !== 'talk' && !isCommute(g) && !g.bed) g.remain = ACT_DEFAULT_LEN;
-  if (!s.sched && !g.auto && g.need && g.need[0] === 'fun' && ['tv', 'read', 'computer', 'web', 'games', 'draw', 'play'].includes(g.act)) {
+  if (!s.sched && !g.auto && g.need && g.need[0] === 'fun' && ['tv', 'read', 'computer', 'web', 'games', 'draw', 'play', 'phoneGame'].includes(g.act)) {
     g.needMin = MANUAL_LEISURE_MIN;
     if (s.needs.fun >= g.need[1]) g.remain = MANUAL_LEISURE_MIN;
     else g.remain = Math.max(g.remain || 0, MANUAL_LEISURE_MIN);
@@ -3580,8 +3618,9 @@ function stopCurrent(s) {
     return;
   }
   s.state = 'doing';
-  const n = NAV.nodes[s.node], seated = s.pose === 'sit' || s.pose === 'lie';
+  const n = NAV.nodes[s.node], seated = s.pose === 'sit' || s.pose === 'lie', lying = s.pose === 'lie';
   if (seated) { s.pose = 'stand'; s.dy = 0; }
+  if (seated && getUp(s, lying)) return;
   if (!s.offmap && n && (seated || n.pose === 'sit' || n.pose === 'lie')) {
     const off = stepOffNode(s.node);
     if (off != null) setGoal(s, { node: off, act: 'idle', remain: 0.01, walkOnly: true, stepOff: true });
@@ -3740,6 +3779,18 @@ function avoidStep(dt) {
 const FOOD_ACTIONS = { retrieveMinutes: 3, cookMinutes: 20, washMinutes: 6, minimumEatingMinutes: 4 };
 ACT.getFood = { label: 'Taking food from the fridge', pose: 'stand', anim: 'foodReach', fx: {} };
 ACT.washDishes = { label: 'Washing the plate', pose: 'stand', anim: 'dishWash', fx: { hygiene: 3 } };
+/* the pantry's goals (11n): the same stations and the same visual stages as a meal */
+Object.assign(ACT, {
+  checkFridge: { label: 'Looking in the fridge', pose: 'stand', anim: 'foodReach', fx: {} },
+  stockFridge: { label: 'Putting the shopping away', pose: 'stand', anim: 'foodReach', fx: {} },
+  pickUp: { label: 'Picking up the shopping', pose: 'stand', anim: 'crouch', fx: {} },
+  servePlate: { label: 'Serving up a plate', pose: 'stand', anim: 'plateFood', fx: {} },
+  warmUp: { label: 'Warming up leftovers', pose: 'stand', anim: 'stir', fx: {} },
+  takePot: { label: 'Picking up the pot', pose: 'stand', anim: 'foodReach', fx: {} },
+  storePot: { label: 'Putting the pot in the fridge', pose: 'stand', anim: 'foodReach', fx: {} },
+  toss: { label: 'Throwing out old food', pose: 'stand', anim: 'foodReach', fx: {} },
+});
+const FOOD_FLOW_ACTS = ['getFood', 'cook', 'snack', 'washDishes', 'checkFridge', 'stockFridge', 'servePlate', 'warmUp', 'takePot', 'storePot', 'toss'];
 const FOOD_EATING = new Set(['eat', 'dinner', 'breakfast']);
 const FOOD_ANIMATIONS = { retrieve: 'foodReach', chop: 'chop', stir: 'stir', plate: 'plateFood', wash: 'dishWash' };
 function foodStation(s, kind, preferred) {
@@ -3757,29 +3808,39 @@ function foodCancel(s) { s.foodCarry = null; }
 function foodGoal(node, act, remain, label, step, flow) {
   return { node, act, remain, label, foodStep: step, foodFlow: flow, onCancel: foodCancel };
 }
-function foodAction(s, kind, seat, fridge) {
+/* a meal (or a big pot of plates for the others), or a snack. A household cooks with what is in
+   the fridge (11n); with the fridge empty, the meal is a takeaway */
+function foodAction(s, kind, seat, fridge, plates) {
   const fr = foodStation(s, 'fridge', fridge), stove = foodStation(s, 'stove');
   const table = seat === undefined ? homeNode(s.homeNo, 'table', s) : seat;
   if (kind === 'snack') {
-    if (fr === undefined) return [];
+    if (fr === undefined || !pantryHas(s, PANTRY.snack)) return [];
     const get = foodGoal(fr, 'getFood', FOOD_ACTIONS.retrieveMinutes, 'Open fridge · take a snack', 'retrieve', 'snack');
     const eat = foodGoal(fr, 'snack', 14, 'Eat the snack', 'snack', 'snack'); eat.need = ['hunger', 92];
     return [get, eat];
   }
   if (table === undefined) return [];
+  plates = Math.max(1, Math.round(plates || 1));
+  const empty = fr !== undefined && !pantryHas(s, plates);
+  if (empty && plates > 1) return [];
   const q = [], flow = 'meal';
-  if (fr !== undefined) q.push(foodGoal(fr, 'getFood', FOOD_ACTIONS.retrieveMinutes, stove === undefined ? 'Take a cold plate' : 'Take ingredients from fridge', 'retrieve', flow));
-  if (stove !== undefined) q.push(foodGoal(stove, 'cook', FOOD_ACTIONS.cookMinutes, 'Chop vegetables · cook · plate up', 'cook', flow));
-  else s.mealQ = .85;
+  /* the ingredients are used when the cooking starts (or, with no stove, when the cold plate is taken) */
+  if (fr !== undefined && !empty) { const get = foodGoal(fr, 'getFood', FOOD_ACTIONS.retrieveMinutes, stove === undefined ? 'Take a cold plate' : plates > 1 ? `Take ingredients for ${plates} plates` : 'Take ingredients from fridge', 'retrieve', flow); if (stove === undefined) get.servings = 1; q.push(get); }
+  if (stove !== undefined && !empty) {
+    const cook = foodGoal(stove, 'cook', plates > 1 ? FOOD_ACTIONS.cookMinutes + 5 + plates * 2.5 : FOOD_ACTIONS.cookMinutes, plates > 1 ? `Cook a pot · ${plates} plates · plate up` : 'Chop vegetables · cook · plate up', 'cook', flow);
+    cook.servings = plates;
+    if (plates > 1) cook.pot = plates;
+    q.push(cook);
+  } else if (!empty) s.mealQ = .85;
   const eat = foodGoal(table, 'eat', 24, 'Eat the meal', 'eat', flow); eat.need = ['hunger', 97];
-  if (stove === undefined && fr === undefined) { eat.label = 'Takeaway'; eat.cost = 16; s.mealQ = .9; }
+  if ((stove === undefined && fr === undefined) || empty) { eat.label = empty ? 'Takeaway (the fridge is empty)' : 'Takeaway'; eat.cost = PANTRY.takeaway; s.mealQ = .9; }
   q.push(eat);
   const sink = foodStation(s, 'sink');
   if (sink !== undefined) { const wash = foodGoal(sink, 'washDishes', FOOD_ACTIONS.washMinutes, 'Wash and put away the plate', 'wash', flow); wash.foodOptional = true; q.push(wash); }
   return q;
 }
 function foodResolveGoal(s, g) {
-  if (!g.foodFlow && !['getFood', 'cook', 'snack', 'washDishes'].includes(g.act) && !FOOD_EATING.has(g.act)) foodCancel(s);
+  if (!g.foodFlow && !FOOD_FLOW_ACTS.includes(g.act) && !FOOD_EATING.has(g.act)) foodCancel(s);
   if (!g.foodOptional) return true;
   // Recheck at use time: somebody may have occupied/moved/deleted the sink
   // while the meal was cooking. An optional wash must never cancel a meal.
@@ -3790,16 +3851,18 @@ function foodResolveGoal(s, g) {
 function foodBegin(s, g) {
   const food = g.foodFlow || g.act === 'cook' || g.act === 'snack' || FOOD_EATING.has(g.act) || g.act === 'washDishes';
   if (!food) { foodCancel(s); return; }
-  if (g.act === 'getFood') foodCancel(s);
-  else if (g.act === 'cook') s.foodCarry = { kind: 'ingredients' };
+  if (g.dish != null && !dishBegin(s, g)) return false;
+  if (g.act === 'getFood' || g.act === 'servePlate') foodCancel(s);
+  else if (g.act === 'cook') { s.foodCarry = { kind: 'ingredients' }; if (g.servings && !g.took) g.took = pantryTake(s, g.servings); }
   else if (g.act === 'snack') s.foodCarry = { kind: 'snack' };
   else if (FOOD_EATING.has(g.act)) s.foodCarry = { kind: 'meal' };
   if ((g.act === 'snack' || FOOD_EATING.has(g.act)) && !s.sched) g.needMin = FOOD_ACTIONS.minimumEatingMinutes;
 }
 function foodDone(s, g) {
   if (!g) return;
-  if (g.act === 'getFood') s.foodCarry = { kind: g.foodFlow === 'snack' ? 'snack' : 'ingredients' };
-  else if (g.act === 'cook') s.foodCarry = { kind: 'meal' };
+  if (g.dish != null || ['warmUp', 'takePot', 'storePot', 'toss'].includes(g.act)) { dishDone(s, g); return; }
+  if (g.act === 'getFood') { if (g.foodFlow === 'snack' || g.servings) pantryTake(s, g.foodFlow === 'snack' ? PANTRY.snack : g.servings); s.foodCarry = { kind: g.foodFlow === 'snack' ? 'snack' : 'ingredients' }; }
+  else if (g.act === 'cook') { s.foodCarry = { kind: 'meal' }; dishCooked(s, g); }
   else if (FOOD_EATING.has(g.act)) s.foodCarry = s.queue.some(x => x.act === 'washDishes' && x.aid === g.aid) ? { kind: 'dirty' } : null;
   else if (g.act === 'snack' || g.act === 'washDishes') foodCancel(s);
 }
@@ -3812,7 +3875,9 @@ function foodProgress(s) {
 }
 function foodStage(s) {
   if (s.state !== 'doing') return null;
-  if (s.act === 'getFood') return 'retrieve';
+  if (s.act === 'getFood' || s.act === 'checkFridge' || s.act === 'stockFridge' || s.act === 'storePot' || s.act === 'takePot' || s.act === 'toss') return 'retrieve';
+  if (s.act === 'servePlate') return 'plate';
+  if (s.act === 'warmUp') return 'stir';
   if (s.act === 'cook') { const p = foodProgress(s); return p < FOOD_VISUALS.chopFraction ? 'chop' : p < FOOD_VISUALS.plateFraction ? 'stir' : 'plate'; }
   if (s.act === 'snack') return s.goal?.foodStep ? 'snack' : foodProgress(s) < .2 ? 'retrieve' : 'snack';
   if (FOOD_EATING.has(s.act)) return 'eat';
@@ -4296,8 +4361,11 @@ P.fridge = (b, o) => {
   b.box(0, 1.2, 0, .7, .62, d, c);
   b.box(0, .06, -d / 2 + .04, .67, 1.1, .006, '#c4d1d0', { ao: 1 });
   [.44, .82].forEach(y => b.box(0, y, .01, .68, .025, d - .12, '#f4f2e8'));
-  b.box(-.19, .47, -.07, .16, .20, .14, '#f6f0dc'); b.box(-.19, .65, -.07, .16, .035, .14, '#72a8c0');
-  b.cyl(.15, .47, -.04, .075, .14, '#b4ce7f', 8); b.sph(.13, .91, -.02, .065, '#d87b3d', 8);
+  // An interactive fridge shows what the household actually has (07g); a plain one is always stocked.
+  if (!b.foodInteractive) {
+    b.box(-.19, .47, -.07, .16, .20, .14, '#f6f0dc'); b.box(-.19, .65, -.07, .16, .035, .14, '#72a8c0');
+    b.cyl(.15, .47, -.04, .075, .14, '#b4ce7f', 8); b.sph(.13, .91, -.02, .065, '#d87b3d', 8);
+  }
   if (!b.foodInteractive) { b.push(-.39, 0, zf, 0); P.fridgeDoor(b, o); b.pop(); }
   b.box(0, 1.2, zf + 0.001, 0.76, 0.012, 0.005, '#9aa4ab');
   b.box(0.3, 1.3, zf + 0.01, 0.03, 0.4, 0.03, '#9aa4ab');
@@ -10130,6 +10198,26 @@ function computerWorkPaint(c, v, t, dt, actor, state) {
   }
   B.rect(c, 0, 182, 256, 10, '#dce7d1'); B.text(c, 'Sheet 1   /   Notes', 8, 190, 7); B.cursor(c, 132, 72 + selected * 13, t % 4 < .3);
 }
+/* the grocer's website while someone fills the basket: produce tiles, the basket count going up, then checkout */
+const COMPUTER_GROCER = [['Apples', '#d9584a'], ['Bread', '#d6a35f'], ['Milk', '#e9eef0'], ['Carrots', '#e88b3a'], ['Cheese', '#f0cf5c'], ['Pasta', '#e8c584'], ['Eggs', '#f3e6cf'], ['Greens', '#6fae5a']];
+function computerShopPaint(c, v, t) {
+  const B = ComputerCanvas, added = Math.min(8, Math.floor(t / 2.2)), checkout = t > 19;
+  B.shell(c, 'Window / Corner Grocer', '#3f8a5a', '#f5f3ea'); B.text(c, 'CORNER GROCER', 10, 29, 11, '#fff'); B.text(c, 'Delivered to your door', 142, 28, 7, '#dcefe0');
+  B.rect(c, 196, 38, 50, 16, '#3f8a5a'); B.text(c, 'Basket ' + added, 201, 50, 8, '#fff');
+  if (checkout) {
+    B.rect(c, 40, 62, 176, 104, '#fff'); B.text(c, 'Your order', 52, 80, 12, '#2f5a3d'); B.text(c, added + ' items · groceries for the fridge', 52, 96, 8, '#5a6b5e', 160);
+    for (let i = 0; i < 4; i++) B.line(c, 52, 106 + i * 9, 150 - (i % 2) * 30, '#d3dccf');
+    B.button(c, t % 6 < 3 ? 'Placing order…' : 'Order placed ✓', 52, 146, 98, '#3f8a5a');
+  } else for (let i = 0; i < 8; i++) {
+    const x = 10 + (i % 4) * 59, y = 60 + Math.floor(i / 4) * 62, p = COMPUTER_GROCER[i];
+    B.rect(c, x, y, 54, 56, '#fff'); B.circle(c, x + 27, y + 20, 12, p[1]); B.text(c, p[0], x + 5, y + 42, 8, '#30443a', 46);
+    B.button(c, i < added ? 'In basket' : '+ Add', x + 5, y + 46 - 4, 44, i < added ? '#8bb39a' : '#3f8a5a');
+  }
+  B.rect(c, 0, 182, 256, 10, '#dfe9de'); B.text(c, 'A fictional shop · the order is placed in the game', 8, 190, 6);
+  const k = added % 8, cx = checkout ? 100 : 37 + (k % 4) * 59, cy = checkout ? 153 : 107 + Math.floor(k / 4) * 62;
+  B.cursor(c, cx, cy, (t % 2.2) > 1.9);
+  v.average[0] = .62; v.average[1] = .66; v.average[2] = .56;
+}
 // String states deliberately match the public gameplay API without depending
 // on script-load order. begin/paint can be reused by any display surface.
 ScreenContent.register('COMPUTER_BROWSE_WEB', { begin: (s, r) => ComputerCanvas.base(s, r, [.53, .64, .64]), paint: computerWebPaint });
@@ -10139,6 +10227,7 @@ ScreenContent.register('COMPUTER_WRITE_NOVEL', { begin: (s, r) => ComputerCanvas
 ScreenContent.register('COMPUTER_SELL_NOVEL', ScreenContent.providers.COMPUTER_WRITE_NOVEL);
 ScreenContent.register('COMPUTER_PAPERWORK', { begin: (s, r) => ComputerCanvas.base(s, r, [.57, .65, .49]), paint: computerWorkPaint });
 ScreenContent.register('COMPUTER_HOMEWORK', ScreenContent.providers.COMPUTER_PAPERWORK);
+ScreenContent.register('COMPUTER_SHOP', { begin: (s, r) => ComputerCanvas.base(s, r, [.62, .66, .56]), paint: computerShopPaint });
 
 /* ---- 06v-screen-arcade.js ---- */
 /* Four small, autonomous arcade simulations. Private RNG, fixed storage and
@@ -11710,7 +11799,7 @@ function poseTargets(R, s, kind, anim, pose, t, moving, spd) {
   if (!sitting && !lying) T.spX += stoop;
   /* standing about: now and then the weight moves onto one leg and the other knee relaxes */
   switch (anim) {
-    case 'sleep': T.arL = 0.12; T.arR = 0.2; T.hdX = 0.05; break;
+    case 'sleep': sleepPose(T, R, s, t, lying); break;
     case 'mourn': T.hdX = 0.38; T.arL = T.arR = -0.42; T.foL = T.foR = -1.05; T.armZ = -0.12; T.spX += 0.06; break;
     case 'cuddle': case 'snuggle': {
       /* turned onto the side toward the partner, slid over, the top arm across */
@@ -11788,7 +11877,9 @@ function animChar(R, s, dt, t, spd) {
   activityPose(T, R, s, t, moving);
   R.umbOn = !!R.umb && typeof umbrellaOn === 'function' && umbrellaOn(s);
   if (R.umbOn) { T.arL = -0.5; T.foL = -1.15; T.armZ = 0.12; }
-  const k = 1 - Math.exp(-dt * (moving ? 18 : 9));
+  /* turning over in bed is a slow roll, not a snap */
+  const k = 1 - Math.exp(-dt * (moving ? 18 : R.blendSlow > 0 ? 2.4 : 9));
+  R.blendSlow = Math.max(0, (R.blendSlow || 0) - dt);
   const c = R.cur;
   for (const key of POSE_KEYS) c[key] = c[key] === undefined ? T[key] : c[key] + (T[key] - c[key]) * k;
   R.hips.position.y = c.hipY; R.body.position.y = c.bY; R.body.position.z = c.bZ; R.body.position.x = c.sft; R.body.rotation.x = c.brX;
@@ -11807,19 +11898,21 @@ function animChar(R, s, dt, t, spd) {
   R.book.visible = ['read', 'readBook', 'browseBook'].includes(anim); R.cup.visible = anim === 'eat';
   foodPropsFrame(R, s, moving);
   activityPropsFrame(R, s, moving);
+  Handheld.frame(R, s, handheldKind(s, gait), dt);
   activityVoice(s, R);
   if (R.cbox) R.cbox.visible = anim === 'unpack' && !!R.carry;
   if (R.umb) { R.umb.visible = R.umbOn; if (R.umbOn) { R.umb.rotation.x = -(c.spX + c.arL + c.foL); R.umb.rotation.z = -c.armZ * 0.5; } }
   if (R.shadow) { R.shadow.visible = !(pose === 'lie' && !moving) && !(pose === 'sit' && !moving); R.shadow.position.x = c.sft; groundingCharacterContact(R, R.shadow.parent, c.sft); }
   /* the covers over a sleeper in a bed (not over the face, not on the floor) */
   if (R.blanket) {
-    const inBed = pose === 'lie' && !moving && (s.dy || 0) > 0.3 && anim !== 'labour' && s.act !== 'bath';
+    const tr = R.activity && R.activity.transition;
+    const inBed = pose === 'lie' && !moving && (s.dy || 0) > 0.3 && anim !== 'labour' && s.act !== 'bath' && !(tr && tr.enter && tr.lie && tr.age < tr.duration * .62);   // the covers come up once they lie back
     R.blanket.visible = inBed;
     if (inBed) {
       const csv = R.cs || 1, sy = s.dy / csv, shared = anim === 'snuggle', sd = s.cuddleSide || 0;
       const top = c.bY + Math.max(R.halfD || 0.125, (R.halfW || 0.2) * Math.abs(Math.sin(c.roll))) + 0.035;
       const z0 = c.bZ - (R.headDist || 1.59) + 0.42, z1 = c.bZ + 0.12;
-      const w = (shared ? 1.0 : 0.66) + Math.abs(Math.sin(c.roll)) * 0.08;
+      const w = (shared ? 1.0 : 0.66) + Math.abs(Math.sin(c.roll)) * (0.08 + Math.max(0, -Math.min(c.thL, c.thR)) * 0.3);   // knees drawn up on the side need more cover
       const hgt = Math.max(0.06, top - sy + 0.02) * (1 + (shared ? Math.sin(t * 3.1) * 0.05 : Math.sin(t * 1.7 + R.ph) * 0.015));
       R.blanket.scale.set(w, hgt, z1 - z0);
       R.blanket.position.set(c.sft + (shared ? sd * 0.18 : 0), sy - 0.02 + hgt / 2, (z0 + z1) / 2);
@@ -12917,9 +13010,19 @@ function facialForceBlink(R, s, long) {
    No textures, render targets, lights, probe invalidations or per-frame builds. */
 const FOOD_VISUALS = { chopFraction: .34, plateFraction: .84, doorAngle: 1.45, doorSpeed: 9 };
 const FOOD_WORK_NAMES = ['board', 'whole', 'chopped', 'pan', 'meal', 'plate', 'rinse'];
-const FOOD_PROP_NAMES = ['ingredients', 'snack', 'plate', 'meal', 'knife', 'spatula', 'fork', 'sponge'];
+const FOOD_PROP_NAMES = ['ingredients', 'snack', 'plate', 'meal', 'knife', 'spatula', 'fork', 'sponge', 'bag', 'pot', 'tub'];
+/* what a fridge holds, shelf by shelf (fridge-local: x across, base y, z depth); shown by how full it is */
+const FRIDGE_GOODS = [
+  ['box', -.25, .465, -.12, .08, .2, .08, '#f4f2ec'], ['cyl', -.12, .465, -.05, .045, .1, '#d9584a'], ['box', .03, .465, -.1, .12, .05, .08, '#f0cf5c'],
+  ['sph', -.24, .885, -.05, .042, '#d9584a'], ['cyl', -.12, .845, -.15, .035, .24, '#7fb06a'], ['box', .05, .845, -.08, .14, .06, .1, '#cfe3ea'],
+  ['box', .2, .465, -.06, .16, .05, .09, '#e8dcc4'], ['sph', .22, .915, -.1, .07, '#86c06a'], ['box', -.05, .045, -.12, .07, .18, .07, '#f2a33a'],
+  ['cyl', .12, .045, -.12, .035, .06, '#fbfbf6'], ['box', .25, .045, -.12, .1, .04, .06, '#f3e3a0'], ['cyl', -.22, .045, -.06, .016, .15, '#e88b3a'],
+];
+/* reach heights inside the fridge: the top shelf, the middle one, the bottom (crouching) */
+const FRIDGE_REACH = [.9, .52, .14];
+const fridgeDoorOpen = (p) => smooth(.06, .3, p) * (1 - smooth(.8, .96, p));
 const FoodKitchen = {
-  geometry: {}, fixtures: new Map(), doors: new Map(), work: new Map(), nodes: null, rev: -1,
+  geometry: {}, fixtures: new Map(), doors: new Map(), work: new Map(), pots: new Map(), bags: null, nodes: null, rev: -1,
   recipes: {
     ingredients(b) { b.box(-.045, 0, 0, .13, .10, .16, '#adca86'); b.sph(.065, .05, .02, .055, '#e49b43', 8, .045, .09); },
     snack(b) { b.soft(0, 0, 0, .14, .055, .13, '#dfb574', .018, { bot: true }); b.box(0, .023, 0, .13, .02, .13, '#82ac61'); b.soft(0, .042, 0, .14, .035, .13, '#f1cf8d', .013); },
@@ -12934,13 +13037,24 @@ const FoodKitchen = {
     fork(b) { b.box(0, 0, .035, .013, .01, .13, '#bdcbd0', { bot: true }); for (let i = 0; i < 3; i++) b.box((i - 1) * .009, 0, .116, .005, .012, .04, '#bdcbd0', { bot: true }); },
     sponge(b) { b.soft(0, 0, .02, .065, .035, .08, '#dbc366', .009, { bot: true }); b.box(0, .032, .02, .06, .008, .074, '#6c986d'); },
     rinse(b) { b.cyl(0, 0, 0, .008, .13, '#aadce9', 6); b.cyl(0, 0, 0, .06, .003, '#c2e5e4', 10); },
+    bag(b) { b.soft(0, -.2, .05, .2, .26, .13, '#c9a46b', .012, { bot: true }); b.box(0, .045, .05, .2, .02, .13, '#b48e57'); b.sph(-.05, .08, .05, .045, '#7cb35b', 6); b.box(.05, .03, .06, .035, .12, .035, '#e4b74f', { bot: true }); },
+    pot(b) { b.cyl(0, -.07, .12, .12, .13, '#5d6670', 14, .125); b.cyl(0, .06, .12, .128, .012, '#7a848d', 14); b.sph(0, .082, .12, .02, '#2f343a', 6); for (const x of [-.145, .145]) b.box(x, .02, .12, .045, .02, .03, '#2f343a', { bot: true }); },
+    tub(b) { b.soft(0, -.03, .08, .17, .07, .12, '#e8eef0', .012, { bot: true }); b.box(0, .04, .08, .175, .012, .125, '#7fb0c8'); },
+    stovePot(b) { b.cyl(0, 0, 0, .12, .13, '#5d6670', 14, .125); b.cyl(0, .13, 0, .128, .012, '#7a848d', 14); b.sph(0, .152, 0, .02, '#2f343a', 6); for (const x of [-.145, .145]) b.box(x, .09, 0, .045, .02, .03, '#2f343a', { bot: true }); },
+    fridgeTub(b) { b.soft(0, 0, 0, .17, .07, .12, '#e8eef0', .012, { bot: true }); b.box(0, .07, 0, .175, .012, .125, '#7fb0c8'); },
+    porchBags(b) {
+      for (const [x, z, c] of [[0, 0, '#c9a46b'], [.24, .05, '#d2b07a']]) { b.soft(x, 0, z, .22, .3, .15, c, .012, { bot: true }); b.box(x, .3, z, .22, .02, .15, '#b48e57'); }
+      b.sph(-.05, .34, 0, .05, '#7cb35b', 6); b.box(.05, .3, .01, .035, .14, .035, '#e4b74f', { bot: true }); b.sph(.27, .33, .05, .045, '#d9584a', 6);
+    },
   },
   mesh(name, H) {
-    const role = name === 'pan' || name === 'knife' || name === 'fork' ? 'metal' : name === 'plate' ? 'ceramic' : 'plastic';
+    const role = ['pan', 'knife', 'fork', 'pot', 'stovePot'].includes(name) ? 'metal' : name === 'plate' ? 'ceramic' : 'plastic';
     const material = materialLibraryMaterial(name.startsWith('door') ? 'paint' : role, WM.main, H);
     if (!this.geometry[name]) {
       const b = new Batch(); b.surfaceRole = name.startsWith('door') ? 'paint' : role;
-      if (name.startsWith('door')) P.fridgeDoor(b, { steel: name === 'doorSteel', c: name.startsWith('door:') ? name.slice(5) : undefined }); else this.recipes[name](b);
+      if (name.startsWith('door')) P.fridgeDoor(b, { steel: name === 'doorSteel', c: name.startsWith('door:') ? name.slice(5) : undefined });
+      else if (name.startsWith('goods')) FRIDGE_GOODS.slice(0, +name.slice(5) * 3).forEach((g) => g[0] === 'box' ? b.box(g[1], g[2], g[3], g[4], g[5], g[6], g[7]) : g[0] === 'cyl' ? b.cyl(g[1], g[2], g[3], g[4], g[5], g[6], 10) : b.sph(g[1], g[2], g[3], g[4], g[5], 8));
+      else this.recipes[name](b);
       const source = b.build(material); this.geometry[name] = source.geometry;
     }
     const m = new THREE.Mesh(this.geometry[name], material);
@@ -12950,7 +13064,9 @@ const FoodKitchen = {
   reset() {
     for (const d of this.doors.values()) d.group.parent?.remove(d.group);
     for (const w of this.work.values()) w.group.parent?.remove(w.group);
-    this.doors.clear(); this.work.clear(); this.fixtures.clear(); this.nodes = null; this.rev = -1;
+    for (const q of this.pots.values()) q.group.parent?.remove(q.group);
+    if (this.bags) this.bags.group.parent?.remove(this.bags.group);
+    this.doors.clear(); this.work.clear(); this.pots.clear(); this.bags = null; this.fixtures.clear(); this.nodes = null; this.rev = -1;
     // Shared geometry/materials survive save/editor changes and are reused.
   },
   sync() {
@@ -12985,7 +13101,41 @@ const FoodKitchen = {
     pivot.position.set(-.39, 0, FRIDGE_DOOR_Z); group.add(pivot);
     const o = isLotBld(f.bld) ? itemOpts(f.item) : {};
     pivot.add(this.mesh(o.c ? 'door:' + o.c : o.steel ? 'doorSteel' : 'door', f.H)); f.H.group.add(group);
-    d = { fixture: f, group, pivot, angle: 0, user: null, sounded: false }; this.doors.set(f.key, d); return d;
+    /* what is inside, by how full the household's fridge is (seen only while the door is open) */
+    const goods = new THREE.Group(); goods.visible = false; group.add(goods);
+    const levels = [1, 2, 3, 4].map((k) => { const m = this.mesh('goods' + k, f.H); m.visible = false; goods.add(m); return m; });
+    const tubs = [0, 1, 2].map((i) => { const m = this.mesh('fridgeTub', f.H); m.position.set(-.18 + i * .19, .845, .08); m.visible = false; goods.add(m); return m; });
+    d = { fixture: f, group, pivot, goods, levels, tubs, angle: 0, user: null, sounded: false }; this.doors.set(f.key, d); return d;
+  },
+  /* the big pots standing on a stove (household lots: 11n) */
+  stovePots(f, show) {
+    const no = +f.bld.slice(1), list = typeof stoveDishes === 'function' ? stoveDishes(no, f.item.id) : [];
+    let q = this.pots.get(f.key);
+    if (!list.length && !q) return;
+    if (!q) {
+      const group = new THREE.Group(); group.userData.transientEffect = true;
+      q = { group, m: [0, 1].map((i) => { const m = this.mesh('stovePot', f.H); m.position.set(i ? -.14 : .14, .935, -.07); group.add(m); return m; }) };
+      this.pots.set(f.key, q);
+    }
+    if (q.group.parent !== f.H.group) { q.group.parent?.remove(q.group); f.H.group.add(q.group); }
+    q.group.position.set(f.x, f.y, f.z); q.group.rotation.y = f.rot;
+    q.group.visible = show && list.length > 0;
+    q.m.forEach((m, i) => { m.visible = i < list.length; });
+  },
+  /* the shopping waiting inside the front door */
+  porchBags() {
+    const no = homeLot(), F = typeof pantryPeek === 'function' ? pantryPeek(no) : null, H = HOUSES3D['h' + no];
+    const id = NAV.byName['h' + no + '.hF'], n = id !== undefined && NAV.nodes[id];
+    const want = !!(F && F.porch > 0 && H && n);
+    if (!want && !this.bags) return;
+    if (!this.bags || this.bags.H !== H) {
+      if (this.bags) this.bags.group.parent?.remove(this.bags.group);
+      if (!H) { this.bags = null; return; }
+      const group = new THREE.Group(); group.userData.transientEffect = true; group.add(this.mesh('porchBags', H)); H.group.add(group);
+      this.bags = { group, H };
+    }
+    this.bags.group.visible = want && H.open && H.viewFloor === (n.floor || 0);
+    if (want) { const l = toLocal(H.h, n.x, n.z); this.bags.group.position.set(l[0] + .35, n.y, l[1] + .1); }
   },
   workspace(s, f) {
     let w = this.work.get(s.id);
@@ -13008,10 +13158,12 @@ const FoodKitchen = {
     for (const d of this.doors.values()) d.user = null;
     for (const w of this.work.values()) w.group.visible = false;
     // Closed appliances cost one shared-geometry draw only on visible floors.
-    for (const f of this.fixtures.values()) if (f.kind === 'fridge') {
+    for (const f of this.fixtures.values()) {
       const show = f.H.open && f.H.viewFloor === f.f && !(BM.on && BMHIDE.id === f.item.id);
-      if (show || this.doors.has(f.key)) this.door(f).group.visible = show;
+      if (f.kind === 'fridge') { if (show || this.doors.has(f.key)) this.door(f).group.visible = show; }
+      else if (f.kind === 'stove' && isLotBld(f.bld)) this.stovePots(f, show);
     }
+    this.porchBags();
     for (const s of G.sims) {
       const stage = foodStage(s), f = this.fixtures.get(s.node);
       if (!stage || !f || !simShown(s) || BM.on && BMHIDE.id === f.item.id) continue;
@@ -13026,6 +13178,11 @@ const FoodKitchen = {
         w.board.position.set(-.16, .936, .08); w.whole.position.copy(w.board.position); w.chopped.position.copy(w.board.position);
         const chopped = clamp(p / FOOD_VISUALS.chopFraction, 0, 1);
         w.whole.scale.setScalar(Math.max(.15, 1 - chopped)); w.chopped.scale.setScalar(Math.max(.1, chopped));
+      } else if (s.act === 'servePlate') {
+        /* a plate filled from the big pot */
+        w.plate.visible = w.meal.visible = true;
+        w.plate.position.set(.18, .944, .15); w.meal.position.copy(w.plate.position);
+        w.meal.scale.setScalar(Math.max(.1, smooth(.15, .85, p)));
       } else if (stage === 'stir' || stage === 'plate') {
         w.pan.visible = w.meal.visible = true;
         w.pan.position.set(-.12, .948, .12); w.meal.position.copy(w.pan.position);
@@ -13050,8 +13207,16 @@ const FoodKitchen = {
     const k = 1 - Math.exp(-dt * FOOD_VISUALS.doorSpeed);
     for (const d of this.doors.values()) {
       const p = d.user ? foodProgress(d.user) : 1;
-      const open = d.user ? smooth(0, .24, p) * (1 - smooth(.78, 1, p)) : 0;
+      const open = d.user ? fridgeDoorOpen(p) : 0;
       d.angle += (-FOOD_VISUALS.doorAngle * open - d.angle) * k; d.pivot.rotation.y = d.angle;
+      d.goods.visible = Math.abs(d.angle) > .04;
+      if (d.goods.visible) {
+        const no = isLotBld(d.fixture.bld) ? +d.fixture.bld.slice(1) : 0, lv = no ? pantryLevel(no) : .8;
+        const k4 = lv <= .005 ? 0 : Math.max(1, Math.min(4, Math.ceil(lv * 4)));
+        d.levels.forEach((m, i) => { m.visible = i === k4 - 1; });
+        const tubs = no ? dishesOf(no).filter((x) => x.at === 'fridge').length : 0;
+        d.tubs.forEach((m, i) => { m.visible = i < tubs; });
+      }
       if (Math.abs(d.angle) > .12 && !d.sounded) { Sound.play('fridgeOpen', { character: d.user, source: 'fridge:' + d.fixture.key }); d.sounded = true; }
       if (Math.abs(d.angle) < .05 && d.sounded) { const q = toWorld(d.fixture.H.h, d.fixture.x, d.fixture.z); Sound.play('fridgeClose', { position: { x:q[0], y:d.fixture.y, z:q[1], bld:d.fixture.bld }, source: 'fridge:' + d.fixture.key }); d.sounded = false; }
     }
@@ -13079,13 +13244,51 @@ function foodArmTarget(T, R, side, y, z) {
   const fo = -Math.acos(clamp((d * d - a * a - b * b) / (2 * a * b), -1, 1));
   T[side === 0 ? 'arL' : 'arR'] = ar - T.spX; T[side === 0 ? 'foL' : 'foR'] = fo; T.armZ = 0;
 }
+/* at the fridge: step to the handle side and pull the door open, stepping back as it swings past;
+   lean in to a shelf (crouching for the bottom one), take what is needed, straighten up, step back and
+   push the door shut with the other hand. The door (FoodKitchen) follows fridgeDoorOpen on the same clock. */
+function fridgeChoreography(T, R, s, p) {
+  const g = s.goal, cs = R.cs || 1, look = s.act === 'checkFridge';
+  const shelf = FRIDGE_REACH[hashStr(s.id + ':' + Math.round((g && g.t0) || 0) + ':' + s.act) % (look ? 2 : 3)];
+  const pull = smooth(.04, .1, p) * (1 - smooth(.26, .34, p)), open = fridgeDoorOpen(p);
+  const reach = smooth(.36, .5, p) * (1 - smooth(.66, .78, p)) * (look ? .45 : 1), shut = smooth(.8, .84, p) * (1 - smooth(.94, 1, p));
+  const low = shelf < .3 ? 1 : 0, mid = shelf < .7 && !low ? 1 : 0;
+  /* where they stand: the handle side to open, back as the door swings, in to reach, back to close */
+  const side = .14 * smooth(0, .08, p) * (1 - smooth(.24, .38, p)) + .05 * shut;
+  const fwd = -.13 * smooth(.08, .24, p) * (1 - smooth(.3, .44, p)) + .06 * reach - .04 * shut;
+  const yaw = s.faceTo == null ? s.yaw : s.faceTo;
+  R.root.position.x += -Math.cos(yaw) * side + Math.sin(yaw) * fwd;
+  R.root.position.z += Math.sin(yaw) * side + Math.cos(yaw) * fwd;
+  /* the body: lean in, bend the knees for the middle shelf, down on one knee for the bottom */
+  T.spX += .08 + reach * (.2 + mid * .18 + low * .12); T.lc = 1;
+  T.hdX = .1 + reach * (.12 + mid * .12 + low * .2) - open * .04 * (1 - reach);
+  if (low && reach > 0) { const k = reach; T.hipY = LEG + (.5 - LEG) * k; T.thL = -1.35 * k; T.shL = 1.45 * k; T.thR = .1 * k; T.shR = 1.55 * k; }
+  else if (mid && reach > 0) { const k = reach; T.hipY = LEG - .07 * k; T.thL = T.thR = -.45 * k; T.shL = T.shR = .85 * k; }
+  T.twist = .28 * pull * open + .3 * shut; T.hpZ = T.sft = 0;
+  /* the hands: right on the handle, then into the fridge; left pushes the door shut */
+  if (pull > .02 && reach < .05) foodArmTarget(T, R, 1, 1.0 * Math.min(1, cs * 1.05), .3 - .12 * open);
+  else if (reach > .02) foodArmTarget(T, R, 1, Math.max(.05, shelf * Math.min(1, cs * 1.05) + .08), .44 + .06 * mid);
+  else { T.arR = -.55; T.foR = -1.05; }
+  if (shut > .02) foodArmTarget(T, R, 0, 1.0 * Math.min(1, cs * 1.05), .36);
+  else { T.arL = -.18 - open * .25 * (1 - reach); T.foL = -.35; }
+  T.armZ = .04;
+}
 function foodPose(T, R, s, t, moving) {
   const stage = foodStage(s), carry = s.foodCarry;
-  if (moving && carry) { T.arL = -.75; T.foL = -.85; T.armZ = .02; return; }
+  if (moving && carry) {
+    if (carry.kind === 'pot') { T.arL = T.arR = -.95; T.foL = T.foR = -.55; T.armZ = -.06; return; }
+    T.arL = carry.kind === 'groceries' ? -.25 : -.75; T.foL = carry.kind === 'groceries' ? -.45 : -.85; T.armZ = .02; return;
+  }
   if (stage === 'retrieve') {
-    const p = foodProgress(s); T.hdX = .12; T.spX += .09;
-    foodArmTarget(T, R, 1, Math.min(1.08, .95 * (R.cs || 1)), .38 + .08 * Math.sin(p * Math.PI));
-    T.arL = -.15; T.foL = -.25;
+    const p = foodProgress(s), fx = FoodKitchen.fixtures.get(s.node);
+    if (fx && fx.kind === 'fridge') fridgeChoreography(T, R, s, p);
+    else {
+      /* a pot off the stove, or into the bin: a reach to the worktop */
+      T.hdX = .16; T.spX += .12;
+      foodArmTarget(T, R, 1, Math.min(1.0, .96 * (R.cs || 1)), .4 + .06 * Math.sin(p * Math.PI));
+      if (s.act === 'takePot' || s.act === 'toss') foodArmTarget(T, R, 0, Math.min(1.0, .96 * (R.cs || 1)), .4 + .06 * Math.sin(p * Math.PI));
+      else { T.arL = -.15; T.foL = -.25; }
+    }
   } else if (stage === 'chop' || stage === 'stir' || stage === 'plate') {
     T.hdX = .18; T.spX += .18; T.hpZ = T.sft = T.twist = T.hdY = 0;
     foodArmTarget(T, R, 0, .985, .40);
@@ -13108,6 +13311,7 @@ function foodPropsFrame(R, s, moving) {
   const f = foodHandProps(R), p = foodProgress(s);
   const hand = stage === 'retrieve' ? f.right : f.left;
   if (f.ingredients.parent !== hand) hand.add(f.ingredients);
+  if (f.tub.parent !== f.right) f.right.add(f.tub);
   for (const name of FOOD_PROP_NAMES) f[name].visible = false;
   const H = HOUSES3D[NAV.nodes[s.node]?.bld];
   if (f.H !== H) {
@@ -13117,10 +13321,21 @@ function foodPropsFrame(R, s, moving) {
   if (moving && carry) {
     if (carry.kind === 'ingredients') f.ingredients.visible = true;
     else if (carry.kind === 'snack') f.snack.visible = true;
+    else if (carry.kind === 'groceries') f.bag.visible = true;
+    else if (carry.kind === 'pot') f.pot.visible = true;
     else { f.plate.visible = true; f.meal.visible = true; f.meal.scale.setScalar(carry.kind === 'dirty' ? .16 : 1); }
-  } else if (stage === 'retrieve' && p > .48 && p < .96) {
-    if (s.goal?.foodFlow === 'snack' || s.act === 'snack') f.snack.visible = true;
-    else f.ingredients.visible = true;
+  } else if (stage === 'retrieve') {
+    /* what is in the hands depends on what they came to the fridge (or the stove) for */
+    const a = s.act;
+    if (a === 'stockFridge') { f.bag.visible = p < .74; f.ingredients.visible = p > .4 && p < .7; }
+    else if (a === 'storePot') f.pot.visible = p < .56;
+    else if (a === 'takePot') f.pot.visible = p > .5;
+    else if (a === 'toss') { if (FoodKitchen.fixtures.get(s.node)?.kind === 'fridge') f.tub.visible = p > .55 && p < .9; else f.pot.visible = p > .4; }
+    else if (a !== 'checkFridge' && p > .55 && p < .96) {
+      if (s.goal?.foodFlow === 'snack' || s.act === 'snack') f.snack.visible = true;
+      else if (s.goal?.foodFlow === 'leftovers') f.tub.visible = true;
+      else f.ingredients.visible = true;
+    }
   }
   else if (stage === 'chop') f.knife.visible = true;
   else if (stage === 'stir' || stage === 'plate') {
@@ -13141,7 +13356,7 @@ function foodPropsFrame(R, s, moving) {
 /* ---- 07h-activity-acting.js ---- */
 /* Object acting stays presentation-only: shared props, blended anchor changes,
    real-time contact markers and no changes to needs, routing or reservations. */
-const ACTIVITY_ACTING = { enterSeconds: .85, exitSeconds: .65, drySeconds: 3, swingAngle: .16 };
+const ACTIVITY_ACTING = { enterSeconds: 1.05, exitSeconds: .85, lieSeconds: 1.8, riseSeconds: 1.4, drySeconds: 3, swingAngle: .16 };
 const ACTIVITY_ANIMS = { addFlowers: 'placeFlower', paint: 'paintBrush', garden: 'gardenTool', tinker: 'tinkerTool', lift: 'liftWeights', grill: 'grillPan', piano: 'pianoKeys', swing: 'swingSeat', draw: 'drawPencil', browse: 'browseBook', read: 'readBook', study: 'readBook', phone: 'phoneCall', clean: 'mopFloor', petpet: 'petStroke', playpet: 'petPlay', feedpet: 'petFeed', tend: 'babyCare' };
 const ACTIVITY_GAZE = { placeFlower:'crouch', paintBrush:'work', gardenTool:'crouch', tinkerTool:'work', grillPan:'work', pianoKeys:'work', drawPencil:'read', readBook:'read', browseBook:'read', babyCare:'work', petStroke:'crouch', petPlay:'crouch', petFeed:'crouch', mopFloor:'work' };
 const ACTIVITY_PROPS = { brush: 'plastic', pencil: 'wood', hammer: 'metal', trowel: 'metal', weight: 'metal', handset: 'plastic', towel: 'fabric', bottle: 'plastic', toy: 'plastic', bowl: 'ceramic', mop: 'wood', page: 'plastic', parkedHandset: 'plastic', swingSeat: 'paint' };
@@ -13210,8 +13425,10 @@ function activityPrepare(R,s,dt) {
   P.clock+=step; P.elapsed+=step; P.dry=Math.max(0,P.dry-step);
   if(P.act!==s.act||P.goal!==s.goal||P.pose!==s.pose||P.state!==s.state) {
     if((P.act==='bath'||P.act==='shower'&&P.bathing)&&!activityBathing(s)) P.dry=ACTIVITY_ACTING.drySeconds;
-    if(P.pose!==s.pose&&(P.pose==='sit'||P.pose==='lie'||s.pose==='sit'||s.pose==='lie')&&Math.abs(s.y-P.lastY)<.6&&Math.hypot(s.x-P.lastX,s.z-P.lastZ)<1.8) {
-      P.transition={from:{...R.cur},x:P.lastX,y:P.lastY,z:P.lastZ,age:0,duration:s.pose==='stand'?ACTIVITY_ACTING.exitSeconds:ACTIVITY_ACTING.enterSeconds,enter:s.pose!=='stand'};
+    if(P.pose!==s.pose&&(P.pose==='sit'||P.pose==='lie'||s.pose==='sit'||s.pose==='lie')&&Math.abs(s.y-P.lastY)<.6&&Math.hypot(s.x-P.lastX,s.z-P.lastZ)<2.2) {
+      const enter=s.pose!=='stand',lie=enter?s.pose==='lie':P.pose==='lie',fast=Math.min(2.2,Math.sqrt(Math.max(1,G.speed||1)));
+      P.transition={from:{...R.cur},x:P.lastX,y:P.lastY,z:P.lastZ,yaw:R.root.rotation.y,sy:enter?s.dy:P.lastDy,age:0,enter,lie,
+        duration:(lie?(enter?ACTIVITY_ACTING.lieSeconds:ACTIVITY_ACTING.riseSeconds):(enter?ACTIVITY_ACTING.enterSeconds:ACTIVITY_ACTING.exitSeconds))/fast};
     }
     P.act=s.act;P.pose=s.pose;P.state=s.state;P.goal=s.goal;P.elapsed=0;P.markers={};P.phase='';
   }
@@ -13220,13 +13437,16 @@ function activityPrepare(R,s,dt) {
   // towel or bathing outfit into piano playing, swinging or another task.
   if(P.dry>0&&!activityBathing(s)&&!activityDrying(s,P))P.dry=0;
   if(P.transition){P.transition.age+=step;if(P.transition.age>P.transition.duration)P.transition=null;}
-  P.lastX=s.x;P.lastY=s.y;P.lastZ=s.z;
+  P.lastX=s.x;P.lastY=s.y;P.lastZ=s.z;P.lastDy=s.dy;
 }
 function activityAnimation(R,s,moving) {
   const P=R.activity; if(activityDrying(s,P)) return 'dryTowel';
   if(moving||s.state!=='doing') return null;
   if(s.act==='shower') return nodeKind(NAV.nodes[s.node])==='shower'?'showerWash':'wash';
   if(s.act==='tv'&&P?.reaction&&P.clock<P.reaction.until) return P.reaction.anim;
+  const hand=handheldKind(s,moving); if(hand) return hand==='game'?'phoneGame':'phoneFeed';
+  if(s.act==='listen') return 'musicNod';
+  if(s.act==='warm'&&nodeKind(NAV.nodes[s.node])==='hearth') return 'warmHands';
   return ACTIVITY_ANIMS[s.act]||null;
 }
 function activitySwing(s) { const P=SIMM[s.id]?.rig.activity; return P?Math.sin(P.clock*1.65)*ACTIVITY_ACTING.swingAngle*smooth(0,1,P.elapsed):0; }
@@ -13243,7 +13463,11 @@ function activityPose(T,R,s,t,moving) {
   else if(a==='drawPencil') {T.arL=-.65;T.foL=-1.05;T.arR=-.85;T.foR=-1.2+Math.sin(clock*7)*.035;T.hdX=.28;T.spX=.12;}
   else if(a==='readBook'||a==='browseBook') {T.arL=T.arR=-.95;T.foL=-1.25;T.foR=-1.35;T.hdX=.27;if(a==='browseBook'&&P.elapsed<.8){T.arR=-1.5;T.foR=-.25;}const turn=Math.sin(clock*.7);if(turn>.94)T.foL=-.85;}
   else if(a==='phoneCall') {const reach=Math.max(1-smooth(.15,.8,P.elapsed),smooth(.9,1,progress));foodArmTarget(T,R,1,(1.50-reach*.5)*(R.cs||1),(.10+reach*.3)*(R.cs||1));T.armZ=.10;T.hdZ=-.07;T.arL=-.3+wave*.10;T.foL=-.7;}
-  else if(a==='mopFloor') {T.spX=.2;T.arL=-.6;T.foL=-.4;T.arR=-.7+Math.sin(clock*2)*.15;T.foR=-.5;T.hdX=.3;}
+  else if(a==='phoneGame'||a==='phoneFeed') handheldPose(T,R,s,clock,a==='phoneGame'?'game':'feed');
+  else if(a==='musicNod') listenPose(T,R,clock);
+  else if(a==='warmHands') warmHandsPose(T,R,clock);
+  else if(!a&&!moving&&s.state==='doing'&&s.pose==='sit'&&(s.act==='relax'||s.act==='sit')) relaxedSit(T,R,s,clock);
+  if(a==='mopFloor') {T.spX=.2;T.arL=-.6;T.foL=-.4;T.arR=-.7+Math.sin(clock*2)*.15;T.foR=-.5;T.hdX=.3;}
   else if(a==='babyCare') {const kind=s.goal?.careKind||'play';T.spX=.22;T.hdX=.25;T.arL=-1.1;T.foL=-.7;T.arR=-1.2+Math.sin(clock*2.5)*.06;T.foR=kind==='feed'?-.35:-.7;T.armZ=-.1;}
   else if(a==='petStroke'||a==='petFeed'||a==='petPlay') {T.spX=.35;T.hipY=.5;T.thL=-1.35;T.shL=1.45;T.thR=.1;T.shR=1.55;T.arR=-.9+Math.sin(clock*3)*.15;T.foR=-.4;T.hdX=.32;}
   else if(a==='showerWash') {
@@ -13258,12 +13482,7 @@ function activityPose(T,R,s,t,moving) {
     if(s.pose==='sit') { sitLegs(T,R,s.dy||.48); T.bY=0; }
   }
   if(a==='swingSeat') {const angle=activitySwing(s);T.arL=T.arR=-1.6;T.foL=T.foR=-.3;T.armZ=.12;T.spX=-angle*.7;T.thL-=angle;T.thR-=angle;R.root.position.y+=1.75*(1-Math.cos(angle));R.root.position.x+=Math.sin(s.yaw)*Math.sin(angle)*1.75;R.root.position.z+=Math.cos(s.yaw)*Math.sin(angle)*1.75;}
-  if(P.transition) {
-    const tr=P.transition,p=clamp(tr.age/tr.duration,0,1),k=smooth(0,1,p);
-    for(const key of POSE_KEYS) if(Number.isFinite(tr.from[key]))T[key]=tr.from[key]+(T[key]-tr.from[key])*k;
-    if(s.pose==='sit'||tr.enter===false)T.spX+=Math.sin(p*Math.PI)*.16;
-    R.root.position.x=tr.x+(R.root.position.x-tr.x)*k;R.root.position.y=tr.y+(R.root.position.y-tr.y)*k;R.root.position.z=tr.z+(R.root.position.z-tr.z)*k;
-  }
+  if(P.transition) activityTransition(T,R,s,P.transition);
   if(a==='readBook'||a==='browseBook')R.book.visible=true;
 }
 function activityProp(R,s,name,side) {
@@ -13278,7 +13497,7 @@ function activityPropsFrame(R,s,moving) {
   if(a==='drawPencil')show('page',0);
   if(a==='readBook'||a==='browseBook') {R.book.visible=true;const rec=show('page',1);rec.group.rotation.z=Math.max(0,Math.sin(P.clock*.7)-.94)*22;}
   if(a==='grillPan'){const f=foodHandProps(R);f.right.visible=true;f.spatula.visible=true;}
-  if(a==='dryTowel'||a==='phoneCall'||a==='babyCare'||a==='drawPencil') {R.book.visible=false;R.cup.visible=false;}
+  if(a==='dryTowel'||a==='phoneCall'||a==='babyCare'||a==='drawPencil'||a==='phoneGame'||a==='phoneFeed') {R.book.visible=false;R.cup.visible=false;}
   graveFlowerHandFrame(R,s);
   activityContactMarkers(R,s,a);
 }
@@ -13293,6 +13512,259 @@ function activityContactMarkers(R,s,anim) {
   // A live marker, rather than a scheduled source: cancelling a call before
   // ringing must never leave a delayed ringback in the audio graph.
   if(anim==='phoneCall'&&P.elapsed>.9&&!P.markers.rang){P.markers.rang=true;Sound.play('phoneRingback',{character:s});}
+}
+
+/* ---------- sitting down, lying down, getting up ----------
+   Moves, not snaps. Sitting: turn round where you stand, then lower yourself back onto the seat, leaning
+   forward with the hands reaching back for it. Lying: sit on the edge of the bed facing out, then lie
+   back as the legs swing in. Getting up runs the other way: push up off the seat; sit up, swing the legs
+   out and stand beside the bed. Presentation only: the person is already where the simulation put them
+   (03-sim: the last step is not walked, getting up waits a moment). */
+const POSE_REST = { hipY: LEG, foL: -.1, foR: -.1, armZ: .06 };
+const poseVal = (rec, key) => (Number.isFinite(rec[key]) ? rec[key] : (POSE_REST[key] ?? 0));
+const _edgePose = {};
+function edgePose(R, sy) {
+  for (const key of POSE_KEYS) _edgePose[key] = POSE_REST[key] ?? 0;
+  sitLegs(_edgePose, R, sy > .05 ? sy : .5);
+  _edgePose.arL = _edgePose.arR = -.25; _edgePose.foL = _edgePose.foR = -.45; _edgePose.lc = 1; _edgePose.spX = .06;
+  return _edgePose;
+}
+function lerpAngle(a, b, k) { return a + angDiff(a, b) * k; }
+function activityTransition(T, R, s, tr) {
+  const p = clamp(tr.age / tr.duration, 0, 1), root = R.root.position;
+  const hereX = root.x, hereY = root.y, hereZ = root.z;                // where the simulation has them now
+  const put = (x, y, z) => { root.x = x; root.y = y; root.z = z; };
+  if (tr.enter && !tr.lie) {
+    /* turn round (updateSimMeshes turns them toward the seat's facing), then down and back onto it */
+    const kTurn = smooth(0, .32, p), kDown = smooth(.22, 1, p), mid = Math.sin(kDown * Math.PI);
+    for (const key of POSE_KEYS) { const a = poseVal(tr.from, key) + (poseVal(POSE_REST, key) - poseVal(tr.from, key)) * kTurn; T[key] = a + (T[key] - a) * kDown; }
+    T.spX += mid * .34; T.arL += mid * .5; T.arR += mid * .5; T.hdX -= mid * .12; T.lc = Math.max(T.lc, kDown);
+    put(tr.x + (hereX - tr.x) * kDown, tr.y + (hereY - tr.y) * kDown, tr.z + (hereZ - tr.z) * kDown);
+  } else if (tr.enter) {
+    /* sit on the edge facing out, then lie back and swing the legs in */
+    const out = Math.atan2(tr.x - hereX, tr.z - hereZ), face = s.faceTo == null ? s.yaw : s.faceTo;
+    const ex = tr.x + (hereX - tr.x) * .38, ez = tr.z + (hereZ - tr.z) * .38;
+    const E = edgePose(R, tr.sy), kA = smooth(0, .4, p), kSit = smooth(.12, .4, p), kB = smooth(.4, 1, p);
+    for (const key of POSE_KEYS) { const a = poseVal(tr.from, key) + (poseVal(POSE_REST, key) - poseVal(tr.from, key)) * kA, b = a + (E[key] - a) * kSit; T[key] = b + (T[key] - b) * kB; }
+    T.spX += Math.sin(kSit * Math.PI) * .3 * (1 - kB); T.arL += Math.sin(kSit * Math.PI) * .45 * (1 - kB); T.arR += Math.sin(kSit * Math.PI) * .45 * (1 - kB);
+    const kWalk = smooth(.08, .4, p);
+    const x1 = tr.x + (ex - tr.x) * kWalk, z1 = tr.z + (ez - tr.z) * kWalk;
+    put(x1 + (hereX - x1) * kB, tr.y + (hereY - tr.y) * kSit, z1 + (hereZ - z1) * kB);
+    R.root.rotation.y = kB > 0 ? lerpAngle(out, face, kB) : lerpAngle(tr.yaw, out, smooth(0, .3, p));
+  } else if (!tr.lie) {
+    /* lean forward, hands on the knees, push up; then they walk off */
+    const k = smooth(.1, .78, p), mid = Math.sin(Math.min(1, p * 1.25) * Math.PI);
+    for (const key of POSE_KEYS) T[key] = poseVal(tr.from, key) + (T[key] - poseVal(tr.from, key)) * k;
+    T.spX += mid * .42; T.arL += (-.45 - T.arL) * mid * .7; T.arR += (-.45 - T.arR) * mid * .7; T.foL += (-.55 - T.foL) * mid * .6; T.foR += (-.55 - T.foR) * mid * .6;
+    const kp = smooth(.3, 1, p);
+    put(tr.x + (hereX - tr.x) * kp, tr.y + (hereY - tr.y) * kp, tr.z + (hereZ - tr.z) * kp);
+  } else {
+    /* sit up and swing the legs out over the edge, then stand up beside the bed */
+    const out = Math.atan2(hereX - tr.x, hereZ - tr.z);
+    const ex = tr.x + (hereX - tr.x) * .62, ez = tr.z + (hereZ - tr.z) * .62;
+    const E = edgePose(R, tr.sy), kA = smooth(0, .55, p), kB = smooth(.55, 1, p);
+    for (const key of POSE_KEYS) { const a = poseVal(tr.from, key) + (E[key] - poseVal(tr.from, key)) * kA; T[key] = a + (T[key] - a) * kB; }
+    T.spX += Math.sin(kB * Math.PI) * .38;
+    const x1 = tr.x + (ex - tr.x) * kA, z1 = tr.z + (ez - tr.z) * kA;
+    put(x1 + (hereX - x1) * kB, tr.y + (hereY - tr.y) * kB, z1 + (hereZ - z1) * kB);
+    R.root.rotation.y = lerpAngle(tr.yaw, out, kA);
+  }
+}
+
+/* ---- 07i-handheld.js ---- */
+/* ============================================================
+   07i — the phone in someone's hands, and how people rest
+
+   Playing a game on the phone (phoneGame, from any seat) is acted like the
+   computer: the phone is held sideways in both hands, thumbs going, eyes on it,
+   and its little screen plays the same arcade games as the computer (06v), a
+   groan when a round is lost. Sitting about (relax, sit) people now and then
+   take the phone out to scroll, lean back, look round and stretch.
+
+   Sleep is not one pose: a night starts in the sleeper's favourite position and
+   restless sleepers turn over now and then (carefree, playful, athletic people
+   and children often; orderly or lazy ones hardly at all). Worked out from the
+   person and when the sleep began, so every screen shows the same night.
+
+   Presentation only: nothing here changes needs, routes or saves.
+   ============================================================ */
+const HANDHELD = { hz: 8, near: 11, release: 30, max: 4, w: 174, h: 95 };
+const PHONE_FEED = ['#e98a6f', '#7fb0c8', '#9bc47f', '#e8c35c', '#b597d0', '#7fc4b4'];
+const Handheld = {
+  slots: new Map(), clock: 0,
+  /* the phone: a dark slab lying flat (landscape), its screen on top */
+  mesh(R, s) {
+    if (R.phone) return R.phone;
+    const group = new THREE.Group(), tilt = new THREE.Group(); group.add(tilt);
+    if (!this.bodyGeo) { const b = new Batch(); b.surfaceRole = 'plastic'; b.soft(0, -.005, 0, .15, .01, .074, '#1f252c', .005, { bot: true }); this.bodyGeo = b.build(materialLibraryMaterial('plastic', WM.main)).geometry; }
+    const body = new THREE.Mesh(this.bodyGeo, materialLibraryMaterial('plastic', WM.main));
+    body.userData.live = true; body.userData.activityProp = true; tilt.add(body);
+    const screen = new THREE.Mesh(this.geometry || (this.geometry = new THREE.PlaneGeometry(.134, .066)), this.off || (this.off = new THREE.MeshBasicMaterial({ color: 0x24384a })));
+    screen.rotation.x = -Math.PI / 2; screen.position.y = .0055; screen.userData.live = true; screen.userData.activityProp = true; tilt.add(screen);
+    tilt.rotation.x = -.85;                                            // the screen tipped up toward the face
+    group.position.set(-.05, -CH.ARM2 - .03, .05);                    // from the hand toward the middle, between both hands
+    R.fore[1].add(group);
+    R.phone = { group, tilt, screen };
+    return R.phone;
+  },
+  /* a canvas for the screen of someone close enough to see it */
+  slot(s, kind) {
+    let q = this.slots.get(s.id);
+    if (q && q.kind !== kind) { q.v = null; q.kind = kind; q.t = 0; }
+    if (!q) {
+      if (this.slots.size >= HANDHELD.max) {
+        let old = null; for (const [id, x] of this.slots) if (!old || x.seen < old[1].seen) old = [id, x];
+        if (old) { old[1].tex.dispose(); old[1].mat.dispose(); this.slots.delete(old[0]); }
+      }
+      const canvas = document.createElement('canvas'); canvas.width = HANDHELD.w; canvas.height = HANDHELD.h;
+      const tex = new THREE.CanvasTexture(canvas); tex.encoding = THREE.sRGBEncoding; tex.generateMipmaps = false; tex.minFilter = tex.magFilter = THREE.LinearFilter;
+      q = { canvas, ctx: canvas.getContext('2d'), tex, mat: new THREE.MeshBasicMaterial({ map: tex }), kind, v: null, t: 0, next: 0, seen: 0, fails: 0 };
+      this.slots.set(s.id, q);
+    }
+    q.seen = this.clock;
+    return q;
+  },
+  paint(q, s, dt) {
+    const c = q.ctx; q.t += dt;
+    if (q.kind === 'game') {
+      if (!q.v) { q.v = ScreenArcade.begin(s, rngFor('phone game', s.id, Math.round(G.t))); q.fails = 0; }
+      /* only the playfield of the arcade screen (06v): 232×127 at (12, 45) */
+      c.setTransform(HANDHELD.w / 232, 0, 0, HANDHELD.h / 127, 0, 0); c.translate(-12, -45);
+      ScreenArcade.paint(c, q.v, q.t, dt);
+    } else {
+      /* scrolling a feed: coloured posts going by */
+      c.setTransform(HANDHELD.w / 232, 0, 0, HANDHELD.h / 127, 0, 0);
+      c.fillStyle = '#f4f1ea'; c.fillRect(0, 0, 232, 127); c.fillStyle = '#4b6c86'; c.fillRect(0, 0, 232, 14);
+      const off = (q.t * 22) % 46;
+      for (let i = -1; i < 4; i++) {
+        const y = 18 + i * 46 - off, k = (Math.floor(q.t * 22 / 46) + i + 6) % PHONE_FEED.length;
+        c.fillStyle = '#ffffff'; c.fillRect(8, y, 216, 40); c.fillStyle = PHONE_FEED[k]; c.fillRect(12, y + 4, 52, 32);
+        c.fillStyle = '#c9ced3'; c.fillRect(72, y + 8, 120, 5); c.fillRect(72, y + 18, 90, 5); c.fillRect(72, y + 28, 104, 5);
+      }
+    }
+    q.tex.needsUpdate = true;
+  },
+  /* each frame, for one person: is the phone out, and what is on it */
+  frame(R, s, kind, dt) {
+    const P = this.mesh(R, s);
+    P.group.visible = !!kind;
+    if (!kind) return;
+    /* level in the hands whatever the arms do, then tipped toward the face */
+    P.group.rotation.x = -(R.cur.spX + R.cur.arR + R.cur.foR + R.cur.brX); P.group.rotation.z = R.cur.armZ;
+    const near = CAMERA && CAMERA.position.distanceTo(R.root.position) < HANDHELD.near;
+    if (!near) { P.screen.material = this.off; return; }
+    const q = this.slot(s, kind);
+    P.screen.material = q.mat;
+    q.next -= dt;
+    if (q.next <= 0) { this.paint(q, s, 1 / HANDHELD.hz - q.next); q.next += 1 / HANDHELD.hz; if (q.next < 0) q.next = 0; }
+    /* a round lost on the little screen: a groan and a slump */
+    if (q.v && q.v.failures !== q.fails) { q.fails = q.v.failures; R.activity.phoneReact = { until: R.activity.clock + 1.3 }; }
+  },
+  tick(dt) {
+    this.clock += dt;
+    for (const [id, q] of this.slots) if (this.clock - q.seen > HANDHELD.release) { q.tex.dispose(); q.mat.dispose(); this.slots.delete(id); }
+  },
+  reset() { for (const q of this.slots.values()) { q.tex.dispose(); q.mat.dispose(); } this.slots.clear(); },
+};
+
+/* is the phone out right now? a game, or (sitting about) a few minutes' scrolling now and then */
+function handheldKind(s, moving) {
+  if (moving || s.state !== 'doing') return null;
+  if (s.act === 'phoneGame') return 'game';
+  if ((s.act === 'relax' || s.act === 'sit') && s.pose === 'sit' && ageF(s) >= 10) {
+    const keen = .25 + s.pers[0] * .35 + (ageF(s) < 20 ? .25 : 0) - (ageF(s) > 65 ? .2 : 0);
+    const cyc = Math.floor(G.t / 9), r = rngFor('phone check', s.id, cyc)();
+    if (r < keen && G.t % 9 > 2 && G.t % 9 < 7) return 'feed';
+  }
+  return null;
+}
+/* holding the phone in both hands: thumbs busy, eyes on it */
+function handheldPose(T, R, s, clock, kind) {
+  const cs = R.cs || 1, sitting = s.pose === 'sit', hy = (sitting ? (s.dy || .48) + .3 : 1.08) * Math.min(1, cs * 1.05);
+  T.spX += sitting ? .1 : .04; T.hdX = .38; T.hdY = 0; T.hdZ = Math.sin(clock * .5 + R.ph) * .04;
+  foodArmTarget(T, R, 0, hy, .4); foodArmTarget(T, R, 1, hy, .4);
+  T.armZ = .42;                                                      // the hands come together in front
+  const tap = kind === 'game' ? .07 : .03, f = kind === 'game' ? 11 : 4;
+  T.foL += Math.max(0, Math.sin(clock * f)) * tap; T.foR += Math.max(0, Math.sin(clock * f + 1.9)) * tap;
+  const re = R.activity.phoneReact;
+  if (re && R.activity.clock < re.until) { const k = Math.sin(clamp((re.until - R.activity.clock) / 1.3, 0, 1) * Math.PI); T.spX -= .22 * k; T.hdX -= .45 * k; T.hdZ += .1 * k; }
+}
+
+/* ---------- resting on a seat: lean back, look round, a stretch now and then ---------- */
+function relaxedSit(T, R, s, clock) {
+  T.spX -= .12; T.hdX -= .04;
+  T.arL = T.arR = -.42; T.foL = -.8; T.foR = -.7;
+  if (s.act !== 'tv') T.hdY = Math.sin(clock * .23 + R.ph) * .32 * (Math.sin(clock * .11 + R.ph * 2) > .2 ? 1 : .25);
+  T.twist = Math.sin(clock * .07 + R.ph) * .05;
+  /* every minute or so: arms up, a stretch, back down */
+  const c = (clock + R.ph * 7) % 55;
+  if (s.act === 'relax' && c < 2.6) { const k = Math.sin(c / 2.6 * Math.PI); T.arL += (-2.75 - T.arL) * k; T.arR += (-2.75 - T.arR) * k; T.foL += (-.3 - T.foL) * k; T.foR += (-.3 - T.foR) * k; T.spX -= .12 * k; T.hdX -= .2 * k; }
+}
+
+/* ---------- music and the fire ---------- */
+function listenPose(T, R, clock) {
+  const beat = clock * 2.2 * TAU / 2;
+  T.hdX = .04 + Math.max(0, Math.sin(beat)) * .09; T.twist = Math.sin(beat / 2) * .07; T.hpZ = Math.sin(beat / 2) * .03;
+  T.arL = T.arR = -.15; T.foL = T.foR = -.4; T.thR = Math.max(0, Math.sin(beat)) * -.08; T.shR = Math.max(0, Math.sin(beat)) * .12;
+}
+function warmHandsPose(T, R, clock) {
+  const rub = Math.sin(clock * 6.5) * .025, cs = Math.min(1, (R.cs || 1) * 1.05);
+  T.spX += .1; T.hdX = .18;
+  foodArmTarget(T, R, 0, 1.0 * cs, .4 + rub); foodArmTarget(T, R, 1, 1.0 * cs, .4 - rub); T.armZ = -.12;
+}
+
+/* ---------- sleeping positions ---------- */
+const SLEEP_KINDS = ['back', 'side', 'curl', 'front', 'armsUp'];
+const _sleepPlans = new WeakMap();
+function sleepRestless(s) {
+  const t = s.traits || [], a = ageF(s);
+  return clamp(.18 + (1 - s.pers[1]) * .32 + s.pers[3] * .16 + s.pers[4] * .08 + (t.includes('athletic') ? .16 : 0) - (t.includes('lazy') ? .16 : 0) + (a < 13 ? .12 : 0) - (a > 65 ? .1 : 0), 0, 1);
+}
+function sleepFavourite(s) {
+  const t = s.traits || [], h = hashStr(s.id + ':sleeper');
+  if (t.includes('shy')) return 'curl';
+  if (s.pers[1] > .68) return 'back';
+  if (s.pers[3] > .72) return h % 2 ? 'armsUp' : 'front';
+  return ['side', 'side', 'curl', 'back', 'front'][h % 5];
+}
+/* the night's positions: [{ at, kind, side }] from the start of the sleep, extended as the night goes on */
+function sleepPlan(s, g) {
+  let plan = _sleepPlans.get(g);
+  const t0 = g.t0 == null ? G.t : g.t0;
+  if (!plan || plan.t0 !== t0) {
+    const rng = rngFor('sleep', s.id, Math.round(t0)), fav = sleepFavourite(s), r = sleepRestless(s);
+    const first = rng() < .6 ? fav : SLEEP_KINDS[Math.floor(rng() * SLEEP_KINDS.length)];
+    plan = { t0, rng, fav, gap: (r < .3 ? 3 : 1) * (320 - 270 * r), list: [{ at: t0, kind: first, side: rng() < .5 ? -1 : 1 }] };
+    _sleepPlans.set(g, plan);
+  }
+  while (plan.list[plan.list.length - 1].at < G.t) {
+    const last = plan.list[plan.list.length - 1], rng = plan.rng;
+    let kind = rng() < .4 ? plan.fav : SLEEP_KINDS[Math.floor(rng() * SLEEP_KINDS.length)];
+    let side = rng() < .5 ? -1 : 1;
+    if (kind === last.kind && side === last.side) side = -side;          // a turn is always a change
+    plan.list.push({ at: last.at + plan.gap * (.55 + rng() * .9), kind, side });
+    if (plan.list.length > 40) break;
+  }
+  let cur = plan.list[0];
+  for (const e of plan.list) { if (e.at <= G.t) cur = e; else break; }
+  return cur;
+}
+function sleepPose(T, R, s, t, lying) {
+  const g = s.goal;
+  if (!lying || !g || s.act === 'passout' || !(s.act === 'sleep' || s.act === 'nap' || s.act === 'babysleep')) { T.arL = .12; T.arR = .2; T.hdX = .05; return; }
+  const P = sleepPlan(s, g), sd = P.side, kind = s.act === 'babysleep' && (P.kind === 'front' || P.kind === 'armsUp') ? 'back' : P.kind;
+  const key = kind + sd + P.at;
+  if (R.sleepKey && R.sleepKey !== key) R.blendSlow = 2.6;             // turning over, not snapping
+  R.sleepKey = key;
+  switch (kind) {
+    case 'back': T.arL = .12; T.arR = .2; T.hdX = .05; T.hdY = sd * .28; break;
+    case 'armsUp': T.arL = T.arR = -2.55; T.foL = T.foR = -1.2; T.armZ = .35; T.hdY = sd * .32; T.thL = sd > 0 ? -.25 : 0; T.shL = sd > 0 ? .35 : 0; break;
+    case 'side': T.roll = sd * 1.3; T.thL = T.thR = -.5; T.shL = T.shR = .85; T.arL = -.55; T.arR = -.75; T.foL = -1.95; T.foR = -2.05; T.armZ = -.1; T.hdX = .14; break;
+    case 'curl': T.roll = sd * 1.36; T.thL = T.thR = -1.05; T.shL = T.shR = 1.6; T.arL = T.arR = -.5; T.foL = T.foR = -2.15; T.armZ = -.1; T.hdX = .32; T.spX += .22; break;
+    case 'front': T.roll = sd * 2.95; T.thL = sd > 0 ? -.75 : -.08; T.shL = sd > 0 ? 1.0 : .15; T.thR = sd > 0 ? -.08 : -.75; T.shR = sd > 0 ? .15 : 1.0; T.arL = T.arR = -2.45; T.foL = T.foR = -1.15; T.armZ = .25; T.hdY = sd * 1.2; break;
+  }
+  /* breathing: a slow rise and fall */
+  T.bY += Math.sin(t * 1.5 + R.ph) * .004;
 }
 
 /* ---- 08a-ui.js ---- */
@@ -13613,6 +14085,7 @@ function menuGuide(body) {
       'Tap a computer for web browsing, email, games, writing a novel, job searching or paperwork. Games fill Fun fastest, then TV, then browsing. Email takes only eight minutes. Requested leisure still lasts at least twenty minutes when Fun is already full.',
       'From age 13, Write a Novel starts a project that takes about 8–10 game hours across two-hour sessions. Cancelling or saving keeps its progress. Continue Novel resumes it and builds the Writing skill. A finished book waits for Sell Novel at the computer; skill and a little luck determine the payment.',
       'Tap a TV for Watch TV or Choose Channel: News, Dating / Reality, Action Movies, Children / Cartoons, Sports, Soap / Drama. Each TV keeps its own channel. Everyone watching the same set sees the channel change, including children.',
+      'From age 8, tap a sofa (or a dining chair) for Play a game on the phone: good Fun, and you can see the game on the little screen. People sitting about now and then take their phone out for a scroll.',
     ]),
     sec('🎒', 'School', [
       'Children from 5 to 17 go to Hawthorn School on Hawthorn Lane, Monday to Friday, about 08:15 to 15:10. They walk there on their own if Automatic commuting is on, otherwise use the Go to school button in the notice or the quick menu.',
@@ -13649,6 +14122,12 @@ function menuGuide(body) {
     sec('🌦️', 'Weather and bills', [
       'The weather changes through the day: sun, cloud, rain, storms and fog, and snow in winter. Tap the clock for the forecast. People take an umbrella in the rain and spend less time outdoors.',
       'Bills come with the Monday post: water, power and the council, more for a bigger, better-furnished house. Pay them from the notice or the Household tab. Four days late and they are collected with a fee.',
+    ]),
+    sec('🧊', 'The fridge, groceries and leftovers', [
+      'What your household eats comes out of the fridge. Tap it to see how full it is: a fridge holds 60 servings (a steel fridge-freezer 90, a chest freezer 30 more), which lasts a family a week or two. A meal takes one serving, a snack half, a big pot one a plate.',
+      'Order groceries at the fridge, on the telephone or on the computer, and choose how full: a quarter, half, three quarters or right up, at §3 a serving. The shopping comes to the front door about an hour later and someone puts it away; left there a few hours, the driver brings it in. A notice says when the fridge is running low and when it is empty. With nothing in it, meals are takeaways.',
+      'At the stove, cook a family pot (4 plates) or a big batch (8): the cook has a plate and the rest stays on the stove for whoever is hungry, and anyone hungry goes for it first. On the stove it keeps a day and a half; put it in the fridge and it keeps about five days, and a plate from the fridge is warmed up on the stove. Food that has gone off gets a notice and goes in the bin.',
+      'While you are away the household eats from the fridge, and if it runs out somebody orders more (half a fridge).',
     ]),
     sec('🍽️', 'When a need runs out', [
       'Bladder empty: they wet themselves, feel awful for hours, and leave a puddle. Tap the puddle to clean it; until then everybody at home is a bit sadder.',
@@ -16643,10 +17122,24 @@ function objectMenu(me, node) {
   switch (kind) {
     case 'phone': return phoneMenu(me, node);
     case 'tv': title = 'Television'; items.push(...tvMenuItems(me, node)); break;
-    case 'sofa': title = 'Sofa'; if (televisionForNode(node)) items.push({ icon: '📺', label: 'Watch TV / choose channel', fn: () => UI.sheet({ title: 'Television', items: tvMenuItems(me, node) }) }); items.push({ icon: '📖', label: 'Read', fn: () => run(me, [goal(node.id, 'read', 60, 'Read', { need: ['fun', 96] })]) }, { icon: '🛋️', label: 'Relax', fn: () => run(me, [goal(node.id, 'relax', 30, 'Relax')]) }); break;
-    case 'dine': title = 'Dining table'; items.push({ icon: '🍽️', label: 'Cook and have a meal', fn: () => run(me, foodAction(me, 'eat', node.id)) }, { icon: '🪑', label: 'Sit down', fn: () => run(me, [goal(node.id, 'sit', 30, 'Sit')]) }); break;
-    case 'stove': title = 'Stove'; items.push({ icon: '🍳', label: 'Cook and have a meal', fn: () => run(me, actionFor(me, 'eat')) }); break;
-    case 'fridge': title = 'Fridge'; items.push({ icon: '🥪', label: 'Grab a snack', fn: () => run(me, foodAction(me, 'snack', undefined, node.id)) }); break;
+    case 'sofa': title = 'Sofa'; if (televisionForNode(node)) items.push({ icon: '📺', label: 'Watch TV / choose channel', fn: () => UI.sheet({ title: 'Television', items: tvMenuItems(me, node) }) }); items.push({ icon: '📖', label: 'Read', fn: () => run(me, [goal(node.id, 'read', 60, 'Read', { need: ['fun', 96] })]) }, { icon: '🛋️', label: 'Relax', fn: () => run(me, [goal(node.id, 'relax', 30, 'Relax')]) }); if (ageF(me) >= 8) items.push({ icon: '📱', label: 'Play a game on the phone', sub: 'Good Fun · up to 45 minutes', fn: () => run(me, [goal(node.id, 'phoneGame', 45, 'Play a game on the phone', { need: ['fun', 96] })]) }); break;
+    case 'dine': {
+      title = 'Dining table';
+      const left = pantryTableItem(me, node);
+      if (left) items.push(left);
+      items.push({ icon: '🍽️', label: 'Cook and have a meal', sub: pantryHas(me, 1) ? null : 'The fridge is empty: a takeaway (' + money(PANTRY.takeaway) + ')', fn: () => run(me, foodAction(me, 'eat', node.id)) }, { icon: '🪑', label: 'Sit down', fn: () => run(me, [goal(node.id, 'sit', 30, 'Sit')]) });
+      if (ageF(me) >= 8) items.push({ icon: '📱', label: 'Sit and play a game on the phone', fn: () => run(me, [goal(node.id, 'phoneGame', 30, 'Play a game on the phone', { need: ['fun', 96] })]) });
+      break;
+    }
+    case 'stove': title = 'Stove'; items.push(...pantryStoveItems(me, node)); break;
+    case 'fridge': {
+      title = 'Fridge';
+      const has = pantryHas(me, PANTRY.snack);
+      items.push({ icon: '🥪', label: 'Grab a snack', disabled: !has, why: 'The fridge is empty. Order groceries.', fn: () => run(me, foodAction(me, 'snack', undefined, node.id)) });
+      items.push(...pantryFridgeItems(me, node));
+      if (pantryUser(me) && pantryCap(me.homeNo)) return UI.sheet({ title, sub: pantryLine(me.homeNo) + '.', items });
+      break;
+    }
     case 'sink': title = 'Sink'; items.push({ icon: '🧼', label: 'Wash up', fn: () => run(me, [goal(node.id, 'shower', 3, 'Wash up')]) }); break;
     case 'toilet': title = 'Toilet'; items.push({ icon: '🚽', label: 'Use the bathroom', fn: () => run(me, [goal(node.id, 'bathroom', 8, 'Bathroom', { need: ['bladder', 98] })]) }); break;
     case 'shower': title = 'Shower'; items.push({ icon: '🚿', label: 'Take a shower', fn: () => run(me, [goal(node.id, 'shower', 20, 'Shower', { need: ['hygiene', 98] })]) }); break;
@@ -17104,7 +17597,7 @@ function resetGame() {
   Sound.resetWorld();
   ScreenContent.reset();
   TVScreens.reset();
-  FoodKitchen.reset();
+  FoodKitchen.reset(); Handheld.reset();
   ActivityObjects.reset();
   resetSims();
   clearPuddles(); clearGraves(); G.fires = []; G.emergencies = []; G.chaos = null; G.dead = []; G.lifeKey = null; BEDS.length = 0;
@@ -17485,6 +17978,7 @@ function catchUp(mins) {
   const t0 = G.t, t1 = t0 + mins, money0 = G.player.money, seq0 = G.noteSeq, quiet0 = UI.quiet;
   const hh = () => G.player.members.map((id) => G.byId[id]).filter((s) => s && !s.dead);
   const ran = performance.now(), duties = {}, credited = new Set();
+  let pantry = null;
   UI.quiet = true;
   BEDS.length = 0;
   hh().forEach((s) => {
@@ -17528,6 +18022,8 @@ function catchUp(mins) {
   } finally {
     G.t = t1;
     G.weather = weatherAt(G.t, G.seed);
+    /* meals from the fridge, the groceries that came, pots that went off */
+    try { pantry = pantryAway(homeLot(), t0, t1); } catch (e) { console.error(e); }
     /* nothing broke down or burned, and no emergency is half way through */
     (G.fires || []).forEach((f) => { f.out = true; }); G.emergencies = [];
     G.puddles = (G.puddles || []).filter((p) => !p.home);
@@ -17539,7 +18035,7 @@ function catchUp(mins) {
     UI.quiet = quiet0;
   }
   const done = G._awayDuties || []; G._awayDuties = null;
-  return { mins, t0, t1: G.t, ms: performance.now() - ran, money: G.player.money - money0, duties: done, events: G.events.filter((e) => e.t > t0), notes: G.notes.filter((n) => n.id >= seq0) };
+  return { mins, t0, t1: G.t, ms: performance.now() - ran, money: G.player.money - money0, duties: done, pantry, events: G.events.filter((e) => e.t > t0), notes: G.notes.filter((n) => n.id >= seq0) };
 }
 /* back after a while: the time that went by, then (for an hour or more) what happened in it */
 function awayBack(gm) {
@@ -17575,6 +18071,7 @@ UI.recap = function (r) {
     const s = G.byId[id];
     if (moodOf(s) < 32) items.push({ icon: '😞', label: `${s.first} is feeling ${moodWord(moodOf(s)).toLowerCase()}`, keep: true });
   });
+  pantryRecap(items, r.pantry);
   hook('recap', items, r);
   G.player.members.forEach((id) => {
     const s = G.byId[id], A = ACT[s.act] || ACT.idle;
@@ -17671,6 +18168,7 @@ function update(dt, now) {
   updateSimMeshes(dt, _clock, MODE === 'play' ? Math.max(1, RATE[G.speed]) : 2);
   FoodKitchen.frame(dt);
   ActivityObjects.frame(dt);
+  Handheld.tick(dt);
   updateShowerWater(dt);
   unpackFxFrame(dt);
   updatePuddles(dt);
@@ -21990,11 +22488,12 @@ function completePhoneCall(me, g) {
 }
 function phoneMenu(me, node) {
   const contacts = phoneContacts(me);
+  const grocer = pantryUser(me) && pantryCap(me.homeNo) ? [{ icon: '🛒', label: 'Order groceries…', sub: `The fridge: ${pantryWord(me.homeNo).toLowerCase()} · delivered in about an hour`, fn: () => UI.grocerySheet(me, 'phone', node.id) }] : [];
   UI.sheet({ title: 'Telephone · invite someone over', sub: contacts.length ? `${me.first}’s household contacts` : 'Meet someone in the neighbourhood to add a contact.', tall: true,
-    items: contacts.map(n => ({ icon: '☎️', label: simName(n), sub: relWord(me, n),
+    items: grocer.concat(contacts.map(n => ({ icon: '☎️', label: simName(n), sub: relWord(me, n),
       disabled: n.homeNo === me.homeNo || n.age < PHONE_CALLS.minimumAge,
       why: n.homeNo === me.homeNo ? 'They live here already.' : 'Too young to answer the telephone.',
-      fn: () => run(me, [goal(node.id, 'phone', PHONE_CALLS.duration, `Call ${n.first}`, { phoneTo: n.id })], `Call ${n.first} · invite over`) })),
+      fn: () => run(me, [goal(node.id, 'phone', PHONE_CALLS.duration, `Call ${n.first}`, { phoneTo: n.id })], `Call ${n.first} · invite over`) }))),
     foot: 'They may be working, asleep, looking after family or simply not feel like visiting. Outgoing acquaintances may still say yes.' });
 }
 
@@ -22191,13 +22690,13 @@ function startSkills(s) {
 /* Computer/TV gameplay only. Screen renderers can query the explicit states
    below; no screen textures, feeds, render targets or new animation system. */
 const COMPUTER_ACTIVITY = Object.freeze({
-  OFF: 'OFF', IDLE: 'IDLE', BROWSE_WEB: 'COMPUTER_BROWSE_WEB', EMAIL: 'COMPUTER_EMAIL',
+  OFF: 'OFF', IDLE: 'IDLE', BROWSE_WEB: 'COMPUTER_BROWSE_WEB', EMAIL: 'COMPUTER_EMAIL', SHOP: 'COMPUTER_SHOP',
   JOB_SEARCH: 'COMPUTER_JOB_SEARCH', GAME: 'COMPUTER_GAME', WRITE_NOVEL: 'COMPUTER_WRITE_NOVEL',
   SELL_NOVEL: 'COMPUTER_SELL_NOVEL', PAPERWORK: 'COMPUTER_PAPERWORK', HOMEWORK: 'COMPUTER_HOMEWORK',
 });
 const COMPUTER_ACT = Object.freeze({
   web: COMPUTER_ACTIVITY.BROWSE_WEB, computer: COMPUTER_ACTIVITY.BROWSE_WEB,
-  email: COMPUTER_ACTIVITY.EMAIL, games: COMPUTER_ACTIVITY.GAME,
+  email: COMPUTER_ACTIVITY.EMAIL, games: COMPUTER_ACTIVITY.GAME, groceries: COMPUTER_ACTIVITY.SHOP,
   writeNovel: COMPUTER_ACTIVITY.WRITE_NOVEL, sellNovel: COMPUTER_ACTIVITY.SELL_NOVEL,
   jobSearch: COMPUTER_ACTIVITY.JOB_SEARCH, paperwork: COMPUTER_ACTIVITY.PAPERWORK,
   work: COMPUTER_ACTIVITY.PAPERWORK, homework: COMPUTER_ACTIVITY.HOMEWORK,
@@ -22217,6 +22716,8 @@ const TV_CHANNELS = Object.freeze([
 Object.assign(ACT, {
   web: { label: 'Browsing the web', pose: 'sit', anim: 'type', fx: { fun: 18 } },
   email: { label: 'Checking email', pose: 'sit', anim: 'type', fx: { fun: 2, social: 2 } },
+  groceries: { label: 'Ordering groceries online', pose: 'sit', anim: 'type', fx: {} },
+  phoneGame: { label: 'Playing a game on the phone', pose: 'sit', anim: 'idle', fx: { fun: 24, social: -1 } },
   writeNovel: { label: 'Writing a novel', pose: 'sit', anim: 'type', fx: { fun: 4 } },
   sellNovel: { label: 'Selling a novel', pose: 'sit', anim: 'type', fx: {} },
   jobSearch: { label: 'Looking for work', pose: 'sit', anim: 'type', fx: { fun: -2 } },
@@ -22253,6 +22754,7 @@ function computerMenuItems(s, node) {
   const item = (act, icon, sub) => ({ icon, label: computerAction(s, act, node.id)[0]?.label || ({ writeNovel: 'Write a Novel', sellNovel: 'Sell Novel', jobSearch: 'Look for Work' }[act]), sub,
     fn: () => run(s, computerAction(s, act, node.id)) });
   const items = [item('web', '🌐', 'Moderate Fun · up to 1 hour'), item('email', '✉️', '8 minutes'), item('games', '🎮', 'Strong Fun · up to 90 minutes')];
+  if (pantryUser(s) && pantryCap(s.homeNo) && ageF(s) >= 13) items.push({ icon: '🛒', label: 'Order groceries online…', sub: `The fridge: ${pantryWord(s.homeNo).toLowerCase()} · delivered in about an hour`, fn: () => UI.grocerySheet(s, 'web', node.id) });
   if (ageF(s) >= 13) {
     const p = s.novel;
     if (p && p.completed) items.push(item('sellNovel', '📖', `“${p.title}” · ${money(p.value)} · 8 minutes`));
@@ -23985,6 +24487,435 @@ function clinicBump(i) {
   clinicPatients().forEach((s) => { if (s.clinic.bed === i) { s.clinic.bed = -1; s.pose = 'stand'; s.dy = 0; patientWait(s); } });
 }
 
+/* ---- 11n-pantry.js ---- */
+/* ============================================================
+   11n — the pantry: what is in the fridge, groceries, big pots and leftovers
+
+   Food is counted in servings. A meal takes one, a snack half, a big pot one a
+   plate. A fridge holds 60 (a steel fridge-freezer 90, a chest freezer 30 more),
+   which lasts a household a week or two. It is filled again by ordering
+   groceries at the fridge, on the telephone or online: you choose how full, it
+   comes to the front door about an hour later and somebody puts it away (or the
+   driver brings it in after a while).
+
+   A big pot leaves plates on the stove for the others. Out on the stove it keeps
+   a day and a half; in the fridge about five days, and a plate from the fridge
+   is warmed up on the stove (or eaten cold without one). Pots that have gone
+   off are thrown out.
+
+   Only households have a pantry (lotHome(no).food); the neighbours' kitchens
+   are not counted. While you are away the household eats from the fridge and
+   restocks it when it runs out (pantryAway, from catchUp).
+   ============================================================ */
+const PANTRY = {
+  fridge: 60, steel: 90, freezer: 30,  // servings each one holds
+  price: 3,                            // one serving of groceries
+  snack: .5,                           // a snack takes half a serving
+  start: .8,                           // how full a household's fridge is the first time anyone looks
+  perDay: 2.5,                         // what one person gets through in a day: two meals and a snack
+  arrive: [40, 75],                    // minutes until an order is at the door
+  porchWait: 180,                      // left at the door this long, the driver brings it in
+  low: .2,                             // "running low" below a fifth
+  pots: [4, 8],                        // the big pots on offer (plates)
+  keeps: 36 * 60,                      // a pot left out keeps a day and a half…
+  fridgeSlow: .3,                      // …and about five days in the fridge
+  perStove: 2,                         // pots that fit on one stove
+  takeaway: 16,
+};
+const DISH_NAMES = ['vegetable stew', 'spaghetti bolognese', 'lentil curry', 'chilli', 'lasagne', 'risotto', 'chicken casserole', 'minestrone', 'shepherd’s pie', 'mac and cheese', 'goulash', 'fried rice'];
+
+/* ---------- the pantry of a home ---------- */
+function pantryHome(no) { const h = typeof G !== 'undefined' && G.homes && G.homes[no]; return h && h.rooms ? h : null; }
+function pantryCap(no) {
+  const home = pantryHome(no);
+  let cap = 0;
+  if (home) for (const it of home.furn || []) {
+    if (it.t === 'fridge') cap += itemOpts(it).steel ? PANTRY.steel : PANTRY.fridge;
+    else if (it.t === 'freezer') cap += PANTRY.freezer;
+  }
+  return cap;
+}
+/* the household's food, set up the first time it is needed */
+function pantryOf(no) {
+  const home = pantryHome(no);
+  if (!home) return null;
+  if (!home.food) home.food = { stock: Math.round(pantryCap(no) * PANTRY.start), orders: [], porch: 0, porchAt: 0, dishes: [], seq: 1 };
+  const F = home.food;
+  if (!Array.isArray(F.orders)) F.orders = [];
+  if (!Array.isArray(F.dishes)) F.dishes = [];
+  F.porch = F.porch || 0; F.seq = F.seq || 1;
+  return F;
+}
+/* without setting anything up (drawing a neighbour's fridge, say) */
+function pantryPeek(no) { const home = pantryHome(no); return home && home.food || null; }
+function pantryLevel(no) { const cap = pantryCap(no), F = pantryPeek(no); return cap ? clamp((F ? F.stock : cap * PANTRY.start) / cap, 0, 1) : 0; }
+/* does s eat from a pantry? a household member does, on the screen that runs them */
+function pantryUser(s) {
+  if (!s || s.sched || s.visitor || s.funeralGuest || !pantryHome(s.homeNo)) return false;
+  return typeof NET === 'undefined' || !NET.on || netMine(s);
+}
+function pantryHas(s, n) { if (!pantryUser(s) || !pantryCap(s.homeNo)) return true; const F = pantryOf(s.homeNo); return F.stock >= n - 1e-6; }
+function pantryTake(s, n) {
+  if (!pantryUser(s) || !pantryCap(s.homeNo)) return n;
+  const F = pantryOf(s.homeNo), got = Math.min(F.stock, n);
+  F.stock = Math.round((F.stock - got) * 100) / 100;
+  return got;
+}
+function pantryEaters(no) { return G.sims.filter((s) => s.homeNo === no && !s.sched && !s.dead && !s.visitor && !isInfant(s)).length || 1; }
+function pantryDays(no) { const F = pantryPeek(no); return F ? F.stock / (pantryEaters(no) * PANTRY.perDay) : 0; }
+function pantryDaysText(d) { return d < .6 ? 'less than a day' : d < 1.5 ? 'about a day' : `about ${Math.round(d)} days`; }
+function pantryWord(no) {
+  const l = pantryLevel(no);
+  return l <= .005 ? 'Empty' : l < PANTRY.low ? 'Nearly empty' : l < .4 ? 'Running low' : l < .65 ? 'About half full' : l < .9 ? 'Well stocked' : 'Full';
+}
+function pantryLine(no) {
+  const cap = pantryCap(no), F = pantryOf(no);
+  if (!cap || !F) return 'There is no fridge here.';
+  const stock = Math.floor(F.stock), pend = groceryPending(F);
+  return `${pantryWord(no)} · ${stock} of ${cap} servings · enough for ${pantryDaysText(pantryDays(no))}` + (F.porch ? ' · the shopping is at the door' : pend ? ` · ${pend} more on the way` : '');
+}
+
+/* ---------- groceries ---------- */
+function groceryPending(F) { return (F.orders || []).reduce((t, o) => t + o.n, 0) + (F.porch || 0); }
+function groceryRoom(no) { const F = pantryOf(no); return F ? Math.max(0, Math.floor(pantryCap(no) - F.stock - groceryPending(F))) : 0; }
+/* fill to a quarter, a half, three quarters or right up, counting what is on its way */
+function groceryChoices(no) {
+  const cap = pantryCap(no), F = pantryOf(no);
+  if (!cap || !F) return [];
+  const have = F.stock + groceryPending(F);
+  return [[.25, 'Fill to a quarter'], [.5, 'Fill to half'], [.75, 'Fill to three quarters'], [1, 'Fill it right up']].map(([lv, label]) => {
+    const n = Math.max(0, Math.min(Math.round(cap * lv - have), Math.floor(cap - have)));
+    return { lv, label, n, cost: n * PANTRY.price };
+  });
+}
+/* place the order (when the call, the visit to the fridge or the website is done) */
+function groceryOrder(s, n, via) {
+  const no = s.homeNo, F = pantryOf(no);
+  n = Math.min(Math.round(n), groceryRoom(no));
+  if (!F || n <= 0) { uiToast('There is no room in the fridge for more.'); return false; }
+  const cost = n * PANTRY.price;
+  if (G.player.money < cost) { uiToast(`Not enough money for that order (${money(cost)}).`); return false; }
+  G.player.money -= cost;
+  const at = G.t + PANTRY.arrive[0] + Math.random() * (PANTRY.arrive[1] - PANTRY.arrive[0]);
+  F.orders.push({ id: F.seq++, n, cost, at, via, by: s.id });
+  F.lowSaid = F.emptySaid = false;
+  const how = via === 'phone' ? 'on the telephone' : via === 'web' ? 'online' : 'at the fridge';
+  uiToast(`${s.first} ordered groceries ${how}: ${n} servings for ${money(cost)}. They will be at the door around ${fmtTime(at)}.`, 4600);
+  logEvent(`${simName(s)} ordered groceries ${how} (${n} servings, ${money(cost)}).`, { tag: 'family', sim: s.id });
+  return true;
+}
+/* the goals that place an order: a short call, a look in the fridge, or a few minutes at the computer */
+function groceryGoals(s, via, node, n) {
+  const done = { onDone: (x) => groceryOrder(x, n, via) };
+  if (via === 'phone') return [goal(node, 'phone', 3, 'Order groceries', done)];
+  if (via === 'web') return [goal(node, 'groceries', 5, 'Order groceries online', done)];
+  return [goal(node, 'checkFridge', 2, 'Look in the fridge · order groceries', done)];
+}
+/* the order sheet, from the fridge, the telephone or the computer */
+UI.grocerySheet = function (me, via, node) {
+  const no = me.homeNo, cap = pantryCap(no), F = pantryOf(no);
+  if (!cap || !F) { UI.toast('There is no fridge to put groceries in. Buy one in Build mode.'); return; }
+  const room = groceryRoom(no), opts = groceryChoices(no);
+  const items = opts.map((o) => ({
+    icon: '🛒', label: `${o.label} · ${o.n} servings`, sub: `${money(o.cost)} · ${Math.round(o.lv * 100)}% full once it is in`,
+    disabled: o.n <= 0 || o.cost > G.player.money, why: o.n <= 0 ? (room <= 0 ? 'It will be full with what is on its way.' : 'It is fuller than that already.') : `That costs ${money(o.cost)}.`,
+    fn: () => run(me, groceryGoals(me, via, node, o.n), 'Order groceries'),
+  }));
+  (F.orders || []).forEach((o) => items.push({ icon: '🚚', label: `${o.n} servings on the way`, sub: `At the door around ${fmtTime(o.at)}`, disabled: true, why: 'Already ordered.' }));
+  if (F.porch) items.push({ icon: '🛍️', label: 'Put the shopping away', sub: `${F.porch} servings waiting at the front door`, fn: () => run(me, groceryPutAway(me), 'Put the shopping away') });
+  UI.sheet({ title: via === 'phone' ? 'Telephone · order groceries' : via === 'web' ? 'Corner Grocer · online' : 'The fridge · order groceries', sub: `${pantryLine(no)}. ${money(PANTRY.price)} a serving, delivered to the door in about an hour.`, items, tall: items.length > 5 });
+};
+/* the order is at the door */
+function groceriesArrive(no, o) {
+  const F = pantryOf(no);
+  F.porch += o.n; F.porchAt = G.t;
+  if (typeof Sound !== 'undefined' && !UI.quiet) { try { Sound.doorbell(); } catch (e) { /* decoration */ } }
+  const who = G.byId[G.player.sel];
+  notify({ title: 'The groceries are here', body: `${o.n} servings are at the front door. Someone will put them away, or tap Put away.`, tag: 'door',
+    actions: who ? [{ label: 'Put them away', fn: () => { const s = G.byId[G.player.sel]; if (s) run(s, groceryPutAway(s), 'Put the shopping away'); } }] : [] });
+  logEvent('The groceries were delivered.', { tag: 'family' });
+}
+/* the shopping goes into the fridge (by someone, or by the driver after a while) */
+function groceriesIn(no, s) {
+  const F = pantryOf(no), cap = pantryCap(no);
+  if (!F || !F.porch) return 0;
+  const n = F.porch;
+  F.stock = cap ? Math.min(cap, F.stock + n) : F.stock + n;
+  F.porch = 0;
+  if (s) { addBuff(s, 1, 120, 'A full fridge', 'groceries'); if (inHousehold(s) && !UI.quiet) uiToast(`${s.first} put the shopping away. The fridge is ${pantryWord(no).toLowerCase()}.`, 3200); }
+  else logEvent('The delivery driver brought the shopping in and put it in the fridge.', { tag: 'family' });
+  return n;
+}
+/* pick the bags up at the door and put them in the fridge */
+function groceryPutAway(s) {
+  const no = s.homeNo, F = pantryOf(no);
+  if (!F || !F.porch) return [];
+  const door = homeNode(no, 'door', s), fr = foodStation(s, 'fridge');
+  if (door === undefined || door === null || fr === undefined) return [];
+  const put = foodGoal(fr, 'stockFridge', 4, 'Put the shopping away', 'stock', 'stock');
+  put.onDone = (x) => { if (x.foodCarry && x.foodCarry.kind === 'groceries') groceriesIn(x.homeNo, x); foodCancel(x); };
+  return [{ node: door, act: 'pickUp', remain: 1.2, label: 'Pick up the shopping', onDone: (x) => { if ((pantryOf(x.homeNo) || {}).porch > 0) x.foodCarry = { kind: 'groceries' }; } }, put];
+}
+
+/* ---------- big pots and leftovers ---------- */
+function dishesOf(no) { const F = pantryPeek(no); return F && F.dishes || []; }
+const dishGood = (d) => !!d && !d.off && G.t < d.spoil && d.n > 0;
+const dishText = (d) => `${d.by}’s ${d.name}`;
+function dishKeeps(d) {
+  const h = (d.spoil - G.t) / 60;
+  if (d.off || h <= 0) return 'gone off';
+  return h < 1.5 ? 'keeps about an hour more' : h < 36 ? `keeps ${Math.round(h)} more hours` : `keeps ${Math.round(h / 24)} more days`;
+}
+function stoveDishes(no, item) { return dishesOf(no).filter((d) => d.at === 'stove' && d.item === item); }
+/* the stove a pot is on */
+function dishStoveNode(no, d) {
+  const bld = 'h' + no;
+  const n = NAV.nodes.find((m) => !m.dead && m.bld === bld && nodeKind(m) === 'stove' && (d.item ? m.item === d.item : m.name === d.node));
+  return n ? n.id : undefined;
+}
+function dishCreate(s, stoveNode, plates) {
+  const no = s.homeNo, F = pantryOf(no), n = NAV.nodes[stoveNode];
+  if (!F || !n || plates < 1) return null;
+  const r = rngFor('dish', s.id, Math.round(G.t));
+  const d = { id: F.seq++, name: DISH_NAMES[Math.floor(r() * DISH_NAMES.length)], by: s.first, cook: s.id, n: plates, q: Math.round((s.mealQ || 1) * 100) / 100, made: G.t, spoil: G.t + PANTRY.keeps, at: 'stove', item: n.item || null, node: n.name };
+  F.dishes.push(d);
+  return d;
+}
+function dishFind(no, id) { return dishesOf(no).find((d) => d.id === id) || null; }
+function dishTake(no, id) {
+  const F = pantryPeek(no), d = F && F.dishes.find((x) => x.id === id);
+  if (!dishGood(d)) return null;
+  d.n--;
+  if (d.n <= 0) F.dishes.splice(F.dishes.indexOf(d), 1);
+  return d;
+}
+function dishRemove(no, id) { const F = pantryPeek(no); if (!F) return; const i = F.dishes.findIndex((d) => d.id === id); if (i >= 0) F.dishes.splice(i, 1); }
+/* into the fridge: it keeps much longer from here on */
+function dishToFridge(no, d) {
+  if (!d || d.at === 'fridge') return;
+  const left = Math.max(0, d.spoil - G.t);
+  d.spoil = G.t + left / PANTRY.fridgeSlow; d.at = 'fridge'; d.item = null; d.node = null;
+}
+/* a plate of leftovers: off the stove, or out of the fridge and warmed up, then to the table */
+function leftoversAction(s, dishId, seat) {
+  const no = s.homeNo, F = pantryUser(s) && pantryOf(no);
+  if (!F) return [];
+  const list = F.dishes.filter(dishGood);
+  const d = dishId != null ? list.find((x) => x.id === dishId) : list.slice().sort((a, b) => (a.at === 'stove' ? 0 : 1) - (b.at === 'stove' ? 0 : 1) || a.spoil - b.spoil)[0];
+  if (!d) return [];
+  const table = seat === undefined ? homeNode(no, 'table', s) : seat;
+  if (table === undefined || table === null) return [];
+  const q = [], flow = 'leftovers';
+  if (d.at === 'stove') {
+    const st = dishStoveNode(no, d);
+    if (st === undefined) return [];
+    q.push(foodGoal(st, 'servePlate', 1.5, `Serve a plate of ${dishText(d)}`, 'servePlate', flow));
+  } else {
+    const fr = foodStation(s, 'fridge'), stove = foodStation(s, 'stove');
+    if (fr === undefined) return [];
+    q.push(foodGoal(fr, 'getFood', 2, `Take ${dishText(d)} out of the fridge`, 'retrieve', flow));
+    if (stove !== undefined) q.push(foodGoal(stove, 'warmUp', 4, 'Warm it up', 'warmUp', flow));
+  }
+  q[0].dish = d.id;
+  const eat = foodGoal(table, 'eat', 22, `Eat the ${d.name}`, 'eat', flow); eat.need = ['hunger', 97]; q.push(eat);
+  const sink = foodStation(s, 'sink');
+  if (sink !== undefined) { const w = foodGoal(sink, 'washDishes', FOOD_ACTIONS.washMinutes, 'Wash and put away the plate', 'wash', flow); w.foodOptional = true; q.push(w); }
+  return q;
+}
+/* a pot off the stove and into the fridge */
+function storePotAction(s, dishId) {
+  const no = s.homeNo, F = pantryUser(s) && pantryOf(no);
+  if (!F || !pantryCap(no)) return [];
+  const d = F.dishes.find((x) => x.at === 'stove' && !x.off && G.t < x.spoil && (dishId == null || x.id === dishId));
+  const st = d && dishStoveNode(no, d), fr = foodStation(s, 'fridge');
+  if (!d || st === undefined || fr === undefined) return [];
+  const a = foodGoal(st, 'takePot', 1, `Pick up ${dishText(d)}`, 'pot', 'pot'), b = foodGoal(fr, 'storePot', 3, 'Put it in the fridge', 'stock', 'pot');
+  a.dish = b.dish = d.id;
+  return [a, b];
+}
+/* a pot that has gone off goes in the bin, and the pot in the sink */
+function tossDishAction(s, dishId) {
+  const no = s.homeNo, F = pantryUser(s) && pantryOf(no);
+  if (!F) return [];
+  const d = F.dishes.find((x) => dishId == null ? (x.off || G.t >= x.spoil) : x.id === dishId);
+  if (!d) return [];
+  const at = d.at === 'stove' ? dishStoveNode(no, d) : foodStation(s, 'fridge');
+  if (at === undefined) return [];
+  const g = foodGoal(at, 'toss', 1.5, `Throw out ${dishText(d)}`, 'toss', 'pot'); g.dish = d.id;
+  const q = [g], sink = foodStation(s, 'sink');
+  if (sink !== undefined) { const w = foodGoal(sink, 'washDishes', FOOD_ACTIONS.washMinutes, 'Wash the pot', 'wash', 'pot'); w.foodOptional = true; q.push(w); }
+  return q;
+}
+/* the first goal of a leftovers action finds its pot gone (eaten up, thrown out): say so */
+function dishBegin(s, g) {
+  if (g.dish == null || !pantryUser(s)) return true;
+  const d = dishFind(s.homeNo, g.dish);
+  if (g.act === 'toss' ? !!d : (g.act === 'servePlate' || g.act === 'getFood') ? dishGood(d) : g.act === 'takePot' ? dishGood(d) && d.at === 'stove' : true) return true;
+  failGoal(s, g.act === 'toss' ? 'find that pot any more' : 'find any of that left');
+  return false;
+}
+/* the moment a goal of these actions is done */
+function dishDone(s, g) {
+  if (!pantryUser(s)) return;
+  const no = s.homeNo;
+  if (g.dish != null && (g.act === 'servePlate' || g.act === 'getFood' && g.foodFlow === 'leftovers')) {
+    const d = dishTake(no, g.dish);
+    if (!d) return;
+    s.leftQ = d.q;
+    s.mealQ = d.q * (g.act === 'servePlate' ? 1 : .8);           // cold from the fridge, unless it is warmed up
+    s.foodCarry = { kind: 'meal' };
+  } else if (g.act === 'warmUp') { s.mealQ = (s.leftQ || 1) * .95; s.foodCarry = { kind: 'meal' }; }
+  else if (g.act === 'takePot') s.foodCarry = { kind: 'pot' };
+  else if (g.act === 'storePot') { dishToFridge(no, dishFind(no, g.dish)); s.foodCarry = null; }
+  else if (g.act === 'toss') { const d = dishFind(no, g.dish); dishRemove(no, g.dish); if (d && inHousehold(s) && !UI.quiet) uiToast(`${s.first} threw out ${dishText(d)}.`); s.foodCarry = s.queue.some((x) => x.act === 'washDishes' && x.aid === g.aid) ? { kind: 'dirty' } : null; }
+}
+/* a big pot has just been cooked */
+function dishCooked(s, g) {
+  if (!(g.pot > 1) || !pantryUser(s)) return;
+  const plates = g.took == null ? g.pot : Math.min(g.pot, Math.round(g.took));   // a fridge that ran short makes a smaller pot
+  if (plates < 2) return;
+  const d = dishCreate(s, s.node, plates - 1);
+  if (!d) return;
+  if (typeof emote === 'function') emote(s, '🍲');
+  if (inHousehold(s) && !UI.quiet) uiToast(`${s.first} cooked a big pot of ${d.name}: ${d.n} more plate${d.n > 1 ? 's' : ''} on the stove for whoever is hungry.`, 4200);
+  logEvent(`${simName(s)} cooked a big pot of ${d.name}.`, { tag: 'family', sim: s.id });
+}
+
+/* ---------- every few minutes: deliveries, pots going off, running low ---------- */
+function pantryTick() {
+  const no = homeLot(), home = pantryHome(no);
+  if (!home || !home.food || (typeof NET !== 'undefined' && NET.on && !netMyLot(no))) return;
+  const F = pantryOf(no), cap = pantryCap(no);
+  for (let i = F.orders.length - 1; i >= 0; i--) { const o = F.orders[i]; if (G.t >= o.at) { F.orders.splice(i, 1); groceriesArrive(no, o); } }
+  if (F.porch > 0 && G.t - (F.porchAt || 0) > PANTRY.porchWait && !G.sims.some((s) => s.homeNo === no && s.goal && (s.goal.act === 'pickUp' || s.goal.act === 'stockFridge'))) {
+    groceriesIn(no, null);
+    if (!UI.quiet) uiToast('The delivery driver brought the shopping in and put it in the fridge.', 3600);
+  }
+  for (const d of F.dishes.slice()) {
+    /* a stove sold or moved: the pot goes in the fridge (or, with no fridge, in the bin) */
+    if (d.at === 'stove' && dishStoveNode(no, d) === undefined) { if (cap) dishToFridge(no, d); else { dishRemove(no, d.id); continue; } }
+    if (!d.off && G.t >= d.spoil) {
+      d.off = true;
+      notify({ title: `${dishText(d)} has gone off`, body: d.at === 'fridge' ? 'It has been in the fridge too long. Throw it out from the fridge menu.' : 'It was left out on the stove too long. Put pots in the fridge to keep them for days.', tag: 'tip',
+        actions: [{ label: 'Throw it out', fn: () => { const s = G.byId[G.player.sel]; if (s) run(s, tossDishAction(s, d.id), 'Throw it out'); } }] });
+    }
+  }
+  if (!cap) return;
+  const lv = F.stock / cap, coming = groceryPending(F) > 0;
+  const order = [{ label: 'Order groceries', fn: () => { const s = G.byId[G.player.sel], fr = s && foodStation(s, 'fridge'); if (s && fr !== undefined) UI.grocerySheet(s, 'fridge', fr); } }];
+  if (F.stock < 1 && !coming && !F.emptySaid) {
+    F.emptySaid = F.lowSaid = true;
+    notify({ title: 'The fridge is empty', body: 'Nothing left to cook with. Order groceries at the fridge, on the telephone or online; until then, meals are takeaways.', tag: 'tip', actions: order });
+  } else if (lv < PANTRY.low && !coming && !F.lowSaid) {
+    F.lowSaid = true;
+    notify({ title: 'The fridge is running low', body: `${pantryLine(no)}. Order groceries at the fridge, on the telephone or online.`, tag: 'tip', actions: order });
+  } else if (coming || lv >= PANTRY.low + .1) { if (lv >= PANTRY.low + .1) F.lowSaid = false; if (F.stock >= 1 || coming) F.emptySaid = false; }
+}
+
+/* ---------- free will: dinner's ready, the shopping, the pots ---------- */
+function pantryFreeWill(s, c) {
+  const F = pantryUser(s) && pantryPeek(s.homeNo);
+  if (!F) return;
+  const n = s.needs, good = F.dishes.filter(dishGood);
+  if (good.length && s.age >= 4) {
+    if (n.hunger < 55) c.push(['leftovers', 100 - n.hunger + 10]);
+    else if (n.hunger < 80 && good.some((d) => d.at === 'stove' && G.t - d.made < 90)) c.push(['leftovers', 64]);   // dinner's on the stove
+  }
+  if (s.age < 13) return;
+  const busy = (act) => G.sims.some((m) => m !== s && m.homeNo === s.homeNo && m.goal && m.goal.act === act);
+  if (F.porch > 0 && !busy('pickUp') && !busy('stockFridge')) c.push(['shopping', 62 + s.pers[1] * 12]);
+  if (F.dishes.some((d) => d.off || G.t >= d.spoil) && !busy('toss')) c.push(['tossDish', 46 + s.pers[1] * 24]);
+  if (pantryCap(s.homeNo) && !busy('takePot') && !busy('storePot') && F.dishes.some((d) => d.at === 'stove' && !d.off && G.t - d.made > 75) && Math.random() < .3 + s.pers[1] * .6) c.push(['storePot', 40 + s.pers[1] * 30]);
+}
+function pantryAction(s, kind) {
+  if (kind === 'leftovers') return leftoversAction(s);
+  if (kind === 'shopping') return groceryPutAway(s);
+  if (kind === 'storePot') return storePotAction(s);
+  if (kind === 'tossDish') return tossDishAction(s);
+  return null;
+}
+
+/* ---------- menus ---------- */
+function pantryFridgeItems(me, node) {
+  const no = me.homeNo, F = pantryUser(me) && pantryOf(no), items = [];
+  if (!F) return items;
+  F.dishes.filter((d) => d.at === 'fridge').forEach((d) => {
+    if (dishGood(d)) items.push({ icon: '🍲', label: `${foodStation(me, 'stove') !== undefined ? 'Warm up' : 'Have'} a plate of ${dishText(d)}`, sub: `${d.n} plate${d.n > 1 ? 's' : ''} · ${dishKeeps(d)}`, fn: () => run(me, leftoversAction(me, d.id), 'Leftovers') });
+    else items.push({ icon: '🗑️', label: `Throw out ${dishText(d)}`, sub: 'It has gone off', fn: () => run(me, tossDishAction(me, d.id), 'Throw it out') });
+  });
+  if (F.porch) items.push({ icon: '🛍️', label: 'Put the shopping away', sub: `${F.porch} servings at the front door`, fn: () => run(me, groceryPutAway(me), 'Put the shopping away') });
+  items.push({ icon: '🛒', label: 'Order groceries…', sub: `${money(PANTRY.price)} a serving · at the door in about an hour`, fn: () => UI.grocerySheet(me, 'fridge', node.id) });
+  return items;
+}
+function pantryStoveItems(me, node) {
+  const no = me.homeNo, user = pantryUser(me), F = user && pantryOf(no), items = [];
+  const it = node.item, here = F ? F.dishes.filter((d) => d.at === 'stove' && d.item === it) : [];
+  const full = here.length >= PANTRY.perStove;
+  const cook = (plates, icon, label) => {
+    const has = !F || !pantryCap(no) || F.stock >= plates;
+    items.push({ icon, label, sub: plates > 1 ? `${plates} plates: one now, the rest for the others · ${plates} servings from the fridge` : '1 serving from the fridge',
+      disabled: !has || (plates > 1 && full), why: plates > 1 && full ? 'There are pots on every burner. Put one in the fridge first.' : 'There isn’t enough in the fridge. Order groceries.', fn: () => run(me, foodAction(me, 'eat', undefined, undefined, plates)) });
+  };
+  cook(1, '🍳', 'Cook and have a meal');
+  if (user) { cook(PANTRY.pots[0], '🍲', `Cook a family pot · ${PANTRY.pots[0]} plates`); cook(PANTRY.pots[1], '🥘', `Cook a big batch · ${PANTRY.pots[1]} plates`); }
+  here.forEach((d) => {
+    if (dishGood(d)) {
+      items.push({ icon: '🍽️', label: `Have a plate of ${dishText(d)}`, sub: `${d.n} plate${d.n > 1 ? 's' : ''} left · ${dishKeeps(d)}`, fn: () => run(me, leftoversAction(me, d.id), 'Leftovers') });
+      if (pantryCap(no)) items.push({ icon: '🧊', label: `Put the ${d.name} in the fridge`, sub: 'Keeps about five days in there', fn: () => run(me, storePotAction(me, d.id), 'Into the fridge') });
+    } else items.push({ icon: '🗑️', label: `Throw out ${dishText(d)}`, sub: 'It has gone off', fn: () => run(me, tossDishAction(me, d.id), 'Throw it out') });
+  });
+  return items;
+}
+/* the best plate of leftovers, for the dining table's menu */
+function pantryTableItem(me, node) {
+  const F = pantryUser(me) && pantryPeek(me.homeNo), d = F && F.dishes.filter(dishGood).sort((a, b) => (a.at === 'stove' ? 0 : 1) - (b.at === 'stove' ? 0 : 1))[0];
+  return d ? { icon: '🍲', label: `Have a plate of ${dishText(d)}`, sub: `${d.at === 'stove' ? 'On the stove' : 'In the fridge'} · ${d.n} plate${d.n > 1 ? 's' : ''} left`, fn: () => run(me, leftoversAction(me, d.id, node.id), 'Leftovers') } : null;
+}
+
+/* ---------- while you were away: meals from the fridge, a restock when it runs out ---------- */
+function pantryAway(no, t0, t1) {
+  const home = pantryHome(no);
+  if (!home || !home.food) return null;
+  const F = pantryOf(no), cap = pantryCap(no), out = { plates: 0, used: 0, delivered: 0, ordered: 0, cost: 0, takeaway: 0, tossed: [] };
+  for (const o of F.orders.slice()) if (o.at <= t1) { F.orders.splice(F.orders.indexOf(o), 1); F.porch += o.n; out.delivered += o.n; }
+  if (F.porch) { F.stock = cap ? Math.min(cap, F.stock + F.porch) : F.stock + F.porch; F.porch = 0; }
+  let need = pantryEaters(no) * PANTRY.perDay * (t1 - t0) / 1440;
+  /* leftovers first, the ones that would go off soonest */
+  for (const d of F.dishes.filter((x) => !x.off && x.spoil > t0).sort((a, b) => a.spoil - b.spoil)) { const k = Math.min(d.n, Math.floor(need)); d.n -= k; need -= k; out.plates += k; }
+  F.dishes = F.dishes.filter((d) => d.n > 0);
+  const got = Math.min(F.stock, need); F.stock = Math.round((F.stock - got) * 100) / 100; need -= got; out.used = got;
+  if (need > .01) {
+    if (cap) {
+      /* it ran out: somebody ordered more (half a fridge, or what was needed) */
+      const n = Math.min(cap, Math.max(Math.ceil(need), Math.round(cap * .5)));
+      out.ordered = n; out.cost = n * PANTRY.price; G.player.money -= out.cost;
+      F.stock = Math.max(0, n - need);
+    } else { out.takeaway = Math.ceil(need); out.cost = out.takeaway * PANTRY.takeaway; G.player.money -= out.cost; }
+  }
+  for (const d of F.dishes.slice()) if (d.off || d.spoil <= t1) { out.tossed.push(dishText(d)); dishRemove(no, d.id); }
+  F.lowSaid = F.emptySaid = false;
+  out.level = cap ? F.stock / cap : 0; out.line = cap ? pantryWord(no) : '';
+  return out;
+}
+function pantryRecap(items, p) {
+  if (!p) return;
+  const parts = [];
+  if (p.used >= 1 || p.plates) parts.push(`${Math.round(p.used)} servings from the fridge` + (p.plates ? ` and ${p.plates} plate${p.plates > 1 ? 's' : ''} of leftovers` : ''));
+  items.push({ icon: '🧊', label: `The fridge is ${(p.line || 'empty').toLowerCase()}`, sub: parts.length ? `They ate ${parts.join(' ')}.` : 'Nobody needed much.', keep: true });
+  if (p.delivered) items.push({ icon: '🚚', label: `The groceries came (${p.delivered} servings) and went into the fridge`, keep: true });
+  if (p.ordered) items.push({ icon: '🛒', label: `The fridge ran empty, so they ordered ${p.ordered} servings (${money(p.cost)})`, keep: true });
+  if (p.takeaway) items.push({ icon: '🥡', label: `No fridge: ${p.takeaway} takeaway meal${p.takeaway > 1 ? 's' : ''} (${money(p.cost)})`, keep: true });
+  p.tossed.forEach((t) => items.push({ icon: '🗑️', label: `${t} had gone off and was thrown out`, keep: true }));
+}
+
+/* ---------- the vegetable patch: the harvest goes into the fridge first ---------- */
+function pantryHarvest(s, servings) {
+  if (!pantryUser(s) || !pantryCap(s.homeNo)) return 0;
+  const F = pantryOf(s.homeNo), n = Math.max(0, Math.min(servings, Math.floor(pantryCap(s.homeNo) - F.stock)));
+  F.stock += n;
+  return n;
+}
+
 /* ---- 12-anim.js ---- */
 /* ============================================================
    12 — how people move around each other
@@ -25546,11 +26477,16 @@ function envMood(s) {
    finding things at home (any lot)
    ============================================================ */
 /* someone is using the spot, or is on the way to it (spots are reserved from the moment you set off) */
-const occupiedNode = (id, sim) => (typeof nodeBroken === 'function' && nodeBroken(id)) || G.sims.some((o) => o !== sim && !o.offmap && ((o.node === id && o.state === 'doing') || (o.state === 'walking' && o.goal && o.goal.node === id && !o.goal.walkOnly)));
+/* someone merely standing about at the fridge, the stove or the sink (nothing to do there) does not keep
+   it from the next person: they shuffle aside (12-anim personal space) */
+const IDLE_FREE = new Set(['fridge', 'stove', 'sink', 'freezer']);
+const idleStander = (o, id) => !o.goal && o.act === 'idle' && !!NAV.nodes[id] && IDLE_FREE.has(nodeKind(NAV.nodes[id]));
+const occupiedNode = (id, sim) => (typeof nodeBroken === 'function' && nodeBroken(id)) || G.sims.some((o) => o !== sim && !o.offmap && ((o.node === id && o.state === 'doing' && !idleStander(o, id)) || (o.state === 'walking' && o.goal && o.goal.node === id && !o.goal.walkOnly)));
 /* Called when an action starts, not every frame. Compare cached walking paths
    rather than straight-line distance, and reserve only genuinely free sides. */
-function freeInteractionNode(sim, ids) {
+function freeInteractionNode(sim, ids, target) {
   const start = sim && (sim.path?.length ? sim.path[0] : sim.node);
+  const to = target != null ? NAV.nodes[target] : null;
   let best, cost = Infinity;
   for (const id of ids || []) {
     const n = NAV.nodes[id];
@@ -25558,14 +26494,16 @@ function freeInteractionNode(sim, ids) {
     if (start == null || !NAV.nodes[start] || NAV.nodes[start].dead) { if (best === undefined) best = id; continue; }
     const path = findPath(start, id);
     if (!path) continue;
-    const d = pathCost(path);
+    /* the last bit, from the approach onto the seat or into the bed, counts extra: sit down from the front
+       of a sofa rather than from beyond its arm */
+    const d = pathCost(path) + (to ? Math.hypot(n.x - to.x, n.z - to.z) * 2.5 : 0);
     if (d < cost) { best = id; cost = d; }
   }
   return best;
 }
 function interactionAccess(sim, node) {
   const n = NAV.nodes[node];
-  return n ? freeInteractionNode(sim, n.access || (n.side >= 0 ? [n.side] : [])) : undefined;
+  return n ? freeInteractionNode(sim, n.access || (n.side >= 0 ? [n.side] : []), node) : undefined;
 }
 function nearestOf(list, sim) {
   if (!list || !list.length) return undefined;
@@ -27082,10 +28020,12 @@ function gardenTended(s, n, mins) {
   if (G2[key] < VEG_GROW) return;
   G2[key] = 0;
   const v = Math.round((18 + skillOf(s, 'gardening') * 9 + Math.random() * 10) * (big ? 1.6 : 1));
-  G.player.money += v;
+  /* the harvest goes into the fridge first; what doesn't fit goes to the grocery */
+  const kept = pantryHarvest(s, big ? 10 : 6), sold = Math.max(0, v - kept * PANTRY.price);
+  G.player.money += sold;
   addBuff(s, 4, 360, 'Home-grown vegetables', 'harvest');
   bumpStat(s, 'harvests');
-  if (inHousehold(s)) { uiToast(`${s.first} harvested the vegetable patch: lettuce, carrots and cabbages. The extra went to the grocery for ${money(v)}.`, 4200); if (typeof emote === 'function') emote(s, '🥕'); }
+  if (inHousehold(s)) { uiToast(`${s.first} harvested the vegetable patch: lettuce, carrots and cabbages. ${kept ? `${kept} servings went into the fridge` + (sold ? `, the rest to the grocery for ${money(sold)}.` : '.') : `The extra went to the grocery for ${money(sold)}.`}`, 4200); if (typeof emote === 'function') emote(s, '🥕'); }
 }
 function catalogHas(kind) { return hasSpot({ shelf: 'shelf', easel: 'easel' }[kind] || kind); }
 
@@ -30572,7 +31512,7 @@ function netDebugText() {
 const NET_COSMETIC = new Set(['x', 'note', 'hash']);
 const NET_DELTA_FIELDS = ['money', 'age', 'stage', 'job', 'career', 'school', 'skills', 'buffs', 'mem', 'wants', 'know', 'stat', 'homeNo', 'slot', 'hIndex', 'preg', 'starve', 'petId', 'edu', 'injury', 'medic', 'lifeWish', 'novel', 'pastJobs', 'bf', 'nb', 'deathAt', 'role', 'ap', 'out', 'first', 'last', 'traits', 'pers', 'gender', 'pron', 'orient', 'work', 'mod', 'wasPlayer', 'away'];
 const NET_WORLD_FIELDS = ['cars', 'vacant', 'funerals', 'gone', 'npcSeq', 'clinic'];
-const NET_HOME_FIELDS = ['floors', 'ext', 'roofType', 'seq', 'gen', 'edited', 'lv', 'phoneV', 'v'];
+const NET_HOME_FIELDS = ['floors', 'ext', 'roofType', 'seq', 'gen', 'edited', 'lv', 'phoneV', 'v', 'food'];
 const NET_HOME_LISTS = ['rooms', 'opens', 'stairs', 'furn'];
 /* last-writer-wins: true when an event is older than what is already there */
 function netStale(holder, field, key) { const k = holder.nk || (holder.nk = {}); if (k[field] && k[field] > key) return true; k[field] = key; return false; }
@@ -30825,10 +31765,10 @@ const NET_APPLY = {
   },
   h(d, key) {
     const no = d.lot, home = lotHome(no), L = home.lww || (home.lww = {});
-    let changed = false;
+    let changed = false, any = false;
     Object.keys(d.set).forEach((k) => {
       if (L[k] && L[k] > key) return;
-      L[k] = key; changed = true;
+      L[k] = key; any = true; if (k !== '@food') changed = true;   // what is in the fridge needs no rebuilt house
       const v = d.set[k];
       if (k === '@style') { if (v && HOUSE_BY_NO[no].style !== v) restyleHouse(no, v); return; }
       if (k[0] === '@') { const f = k.slice(1); if (v === null) delete home[f]; else home[f] = netClone(v); return; }
@@ -30836,9 +31776,9 @@ const NET_APPLY = {
       if (v === null) { if (i >= 0) arr.splice(i, 1); }
       else if (i >= 0) arr[i] = netClone(v); else arr.push(netClone(v));
     });
-    if (!changed) return;
+    if (!any) return;
     NET.pub.homes[no] = netHomeMap(no);
-    NET_DIRTY.homes.add(no);
+    if (changed) NET_DIRTY.homes.add(no);
   },
   rf(d, key) {
     Object.keys(d.set).forEach((k) => {
