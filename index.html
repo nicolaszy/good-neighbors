@@ -787,8 +787,14 @@ const deg = (d) => (d * Math.PI) / 180;
    core game never reads a module's data directly. Build with
    `python3 build.py --no-vampire` and the core game runs without it.
    ============================================================ */
-const GAME = { name: 'Good Neighbors', version: '0.6.3', schema: 4, date: '2026-10-11' };
+const GAME = { name: 'Good Neighbors', version: '0.6.4', schema: 4, date: '2026-10-16' };
 const CHANGELOG = [
+  { v: '0.6.4', date: '2026-10-16', title: 'Time while you are away', notes: [
+    'While the game is closed or in the background, time goes on at real-time pace: an hour away is an hour on Hawthorn Lane, sixty times slower than playing. It stops at three game days, so a long break finds your family a few days on, never grown old or gone. Leave the game paused and no time goes by.',
+    'Your family gets on with ordinary life meanwhile: meals, sleep and washing, and every shift, school day and study day in the gap counts as an ordinary one, with the pay. Nothing breaks or catches fire, nobody starves, a baby on the way waits to be born until you are back, and nobody in the family dies while you are away.',
+    'Coming back is quick: the gap is summed up in a moment instead of being played out minute by minute. You find everyone where the hour says: at work if a shift is on, in bed at night. The recap says how long it was and who went to work or school.',
+    'Shared neighbourhoods: while you are away and the others play on, your household lives at the same real-time pace, three days at most, however fast the town runs for them. When you come back, their birthdays, a baby on the way and the rest of their lives pick up from there. When nobody is there, the whole town waits, as before.',
+    'Sleeping in no longer means missing work, school or lectures. The reminder comes even while they are asleep and its button wakes them; people who go by themselves are woken in time, and go late rather than not at all. (Until now the button did nothing for someone asleep, which could leave a degree stuck.)' ] },
   { v: '0.6.3', date: '2026-10-11', title: 'Building, kitchens, windows, skills', notes: [
     'Buy mode: tap something in the catalogue and it is in your house straight away. Change its size and colour right there, move it, turn it; you pay when you put it down with ✓ Buy.',
     'A bath can face either way along a wall, and turning a piece next to a wall slides it back into the room, so it turns through all four sides even in a corner. Showers and everything else can no longer be pushed into a wall.',
@@ -13593,6 +13599,8 @@ function menuGuide(body) {
     ]),
     sec('💾', 'Keeping your game', [
       'The game saves by itself, but a browser or app can forget its saves. Menu → Saves → Export save gives you a text code: copy it into Notes. Import save (also on the title screen) brings it back, on this device or another.',
+      'While you are away, time goes on at real-time pace (an hour away is an hour in the game, sixty times slower than playing) and for three game days at most. The family gets on with ordinary life: meals, sleep, work and school. Nobody starves or comes to harm, a baby waits to be born until you are back, and nobody dies while you are gone. Leave the game paused and no time goes by at all.',
+      'In a shared neighbourhood the same goes for your household while you are away and the others play on: your family lives at real-time pace, three days at most, however fast the town runs for them. When nobody is there, the whole town waits.',
     ]),
     sec('💼', 'How to get a job', [
       'Only people aged 18 or older can work. Tap the person you are playing (or the desk in your house) and choose Look for work.',
@@ -17180,7 +17188,7 @@ function quitToTitle() {
    saves
    ============================================================ */
 const IDENT = ['cid', 'id', 'hid', 'first', 'last', 'age', 'stage', 'gender', 'pron', 'orient', 'pers', 'traits', 'job', 'ap', 'out', 'homeNo', 'slot', 'hIndex', 'bornT'];
-const DYN = ['needs', 'rel', 'mem', 'wants', 'know', 'buffs', 'cool', 'stat', 'career', 'school', 'work', 'offmap', 'workAway', 'mod', 'money', 'age', 'stage', 'nb', 'bf', 'preg', 'starve', 'sched', 'job', 'poCool', 'lifePend', 'role', 'gen', 'deathAt', 'petId', 'skills', 'carAway', 'lifeWish', 'novel', 'edu', 'pastJobs', 'injury', 'medic', 'sched0', 'wasPlayer'];
+const DYN = ['needs', 'rel', 'mem', 'wants', 'know', 'buffs', 'cool', 'stat', 'career', 'school', 'work', 'offmap', 'workAway', 'mod', 'money', 'age', 'stage', 'nb', 'bf', 'preg', 'starve', 'sched', 'job', 'poCool', 'lifePend', 'role', 'gen', 'deathAt', 'petId', 'skills', 'carAway', 'lifeWish', 'novel', 'edu', 'pastJobs', 'injury', 'medic', 'sched0', 'wasPlayer', 'away'];
 const roundJSON = (k, v) => (typeof v === 'number' && k !== 'progress' && k !== 'writtenMinutes' && k !== 'writing' ? Math.round(v * 1000) / 1000 : v);
 
 function serializeGame() {
@@ -17373,13 +17381,10 @@ function applySave(d, wantAway) {
   updateViews(); updateLighting(true); updateGlass();
   UI.refresh(true);
   markPlayed('solo');
-  /* time went on while you were away, unless you had paused it */
-  const awayMin = wantAway && G.speed > 0 ? (Date.now() - d.savedAt) / 60000 : 0;
-  if (awayMin >= 3) {
-    const gm = Math.min(360, awayMin * 10);
-    const rec = catchUp(gm);
-    UI.recap(rec);
-  } else UI.toast(G.speed === 0 ? 'Welcome back. Paused, as you left it: ▶ carries on.' : 'Welcome back.', 3200);
+  /* time went on while you were away (at real-time pace, a few days at most), unless you had paused it */
+  const gm = wantAway && G.speed > 0 ? awayMinutes((Date.now() - d.savedAt) / 60000) : 0;
+  if (gm >= AWAY.min) awayBack(gm);
+  else UI.toast(G.speed === 0 ? 'Welcome back. Paused, as you left it: ▶ carries on.' : 'Welcome back.', 3200);
 }
 
 /* ---------- a save as text, to keep outside the game (in Notes, an email to yourself…) ----------
@@ -17425,24 +17430,145 @@ function importSaveJSON(json) {
   loadGameText(json, false);
 }
 
-/* ---------- while you were away ---------- */
-function catchUp(mins) {
-  const t0 = G.t, money0 = G.player.money, seq0 = G.noteSeq;
-  UI.quiet = true;
-  let left = mins;
-  while (left > 1e-6) {
-    const d = Math.min(1.5, left);
-    tickWorld(d); left -= d;
+/* ---------- while you were away ----------
+   Time goes on while the game is closed or hidden, but at real-time pace (AWAY.rate game minutes per
+   real minute: sixty times slower than playing at normal speed) and for at most AWAY.cap, so coming
+   back after a long break finds the family a few days on, not grown old or gone. In a shared
+   neighbourhood the same pace and cap hold for a household whose player is away (15c netLifeNow).
+
+   It is not played out minute by minute any more. The town's day-level life (birthdays, the
+   neighbours' babies, deaths and moves, gossip, bills, job replies) runs in half-hour steps; nobody
+   walks anywhere. The household lives quietly: they eat, sleep and wash, and every shift, school day
+   and study day that falls in the gap is an ordinary day there. Nothing breaks or catches fire,
+   nobody starves, a baby on the way waits to be born until you are back, and the end of a long life
+   never comes while you are away. Everyone is then put where the hour says they should be. */
+const AWAY = { rate: 1, cap: 3 * 1440, min: 10, step: 30 };
+const awayMinutes = (realMin) => Math.min(AWAY.cap, Math.max(0, realMin) * AWAY.rate);
+/* an ordinary day at work, school or college, credited in one go */
+function awayDuty(s, kind, sh, W0) {
+  const mood = Math.max(55, moodOf(s)), arrive = { mood, energy: 72, hunger: 70, hygiene: 72, bladder: 70 };
+  const W = W0 && W0.arrive ? Object.assign(W0, { st: 'away', late: W0.late || 0 }) : { st: 'away', kind, start: sh.start, end: sh.end, late: 0, arrive, samples: [], event: null, awayMin: 0, visitors: 0, hwDone: true, mood0: mood, energy0: 72 };
+  W.hwDone = true;
+  s.work = W;
+  if (kind === 'school' && s.school) schoolDay(s, W);
+  else if (kind === 'uni' && uniEnrolled(s)) uniDay(s, W);
+  else if (kind === 'work' && s.career && s.career.level > 0) workShift(s, W);
+  else { s.work = { st: 'home' }; return false; }
+  s.work = { st: 'home', notified: kind + sh.start };
+  return true;
+}
+/* needs after a quiet stretch of ordinary life, by the hour it is now */
+function awayNeeds(s) {
+  const h = minOfDay(G.t) / 60, night = h >= 23 || h < 6.5, up = night ? 0 : h - 6.5, N = s.needs;
+  N.energy = night ? 72 : clamp(96 - up * 3, 48, 96);
+  N.hunger = clamp(88 - (up % 5) * 8, 50, 90);
+  N.hygiene = clamp(92 - up * 2.4, 55, 92);
+  N.bladder = 78;
+  N.social = clamp(Math.max(N.social, 62), 0, 100); N.fun = clamp(Math.max(N.fun, 58), 0, 100);
+  s.starve = null;
+}
+/* where someone is when you come back: at work if a shift is on, in bed at night, otherwise at home */
+function awayPlace(s) {
+  Object.assign(s, { goal: null, queue: [], path: [], state: 'doing', act: 'idle', pose: 'stand', dy: 0, offmap: false, workAway: false, atWork: null, boardAt: null, alightAt: null, pendingGoal: null, holdControl: false, bubble: null });
+  const d = nextDuty(s), b = d && BLD[dutyBuilding(s, d.kind)];
+  if (d && b && d.start <= G.t && G.t < d.end - 30) {
+    placeAtNode(s, b.doorIn);
+    s.work = { st: 'walking', duty: { start: d.start, end: d.end, kind: d.kind } };
+    beginDuty(s); s.work.late = 0;
+    return;
   }
-  UI.quiet = false;
-  G.sims.forEach((s) => { if (s.bubble) s.bubble = null; });
-  G.player.members.forEach((id) => { const s = G.byId[id]; if (s) { s.goal = null; s.queue = []; } });
-  return { mins, t0, t1: G.t, money: G.player.money - money0, events: G.events.filter((e) => e.t > t0), notes: G.notes.filter((n) => n.id >= seq0) };
+  if (!nodeInHome(s.node)) placeAtNode(s, HN.entrance);
+  const h = minOfDay(G.t) / 60;
+  if ((h >= 23 || h < 6.5) && !isInfant(s)) { const q = actionFor(s, 'sleep'); if (q.length) { placeAtNode(s, q[0].node); actionQueue(s, q); } }
+}
+function catchUp(mins) {
+  const t0 = G.t, t1 = t0 + mins, money0 = G.player.money, seq0 = G.noteSeq, quiet0 = UI.quiet;
+  const hh = () => G.player.members.map((id) => G.byId[id]).filter((s) => s && !s.dead);
+  const ran = performance.now(), duties = {}, credited = new Set();
+  UI.quiet = true;
+  BEDS.length = 0;
+  hh().forEach((s) => {
+    actionQueue(s, []); s.goal = null;
+    /* the end of a long life waits until you are back to see it */
+    if (s.deathAt && s.deathAt < t1 + 240) s.deathAt = t1 + 240 + Math.random() * 600;
+  });
+  /* a shift or school day that was going on when the game was left ends as an ordinary one */
+  hh().forEach((s) => { const W = s.work; if (W && W.st === 'away' && W.end > t0 && W.end <= t1) duties[s.id] = [{ at: W.end, kind: W.kind, sh: { start: W.start, end: W.end }, W }]; else if (W && W.st !== 'away') s.work = { st: 'home' }; });
+  const nx = G.nx || (G.nx = {});
+  nx.clinic = Math.max(nx.clinic || 0, t1);            // patients come in again once you are back
+  try {
+    for (let t = t0; t < t1 - 1e-6;) {
+      const prev = t; t = Math.min(t1, t + AWAY.step); G.t = t;
+      runTimers();
+      /* work, school and lectures that ended in this half hour */
+      for (const s of hh()) {
+        const kind = dutyKindOf(s), f = kind === 'school' ? schoolFor : kind === 'uni' ? uniFor : kind === 'work' ? shiftFor : null;
+        const list = duties[s.id] || [];
+        if (f) for (let d = dayOf(prev) - 1; d <= dayOf(t); d++) { const sh = f(s, d); if (sh && sh.start >= t0 && sh.end > prev && sh.end <= t) list.push({ at: sh.end, kind, sh }); }
+        delete duties[s.id];
+        for (const q of list) { const key = s.id + ':' + q.sh.start; if (credited.has(key)) continue; credited.add(key); if (awayDuty(s, q.kind, q.sh, q.W)) (G._awayDuties || (G._awayDuties = [])).push({ id: s.id, kind: q.kind }); }
+      }
+      jobReplyTick();
+      /* the neighbours' lives: gossip, friendships, the day's news */
+      if (G.t >= (nx.soc || 0)) { nx.soc = G.t + 10; npcSocial(); }
+      if (G.t >= (nx.day || 0)) { nx.day = (dayOf(G.t) + 1) * 1440 + 90; dailySocial(); }
+      wishTick();
+      /* birthdays, coming of age, retiring (not babies of our own: they wait) */
+      lifeSync();
+      const yl = yearMin();
+      for (const s of G.sims.slice()) {
+        if (s.funeralGuest) continue;
+        if (s.nb == null) lifeInit(s);
+        if (yl && !hookFirst('ageless', s)) { let g = 0; while (G.t >= s.nb && g++ < 6) birthday(s); }
+        if (s.lifePend) lifeSettle(s);
+      }
+      worldTick(t - prev);
+      hh().forEach((s) => { if (s.deathAt && s.deathAt < t1 + 240) s.deathAt = t1 + 240 + Math.random() * 600; });
+    }
+  } finally {
+    G.t = t1;
+    G.weather = weatherAt(G.t, G.seed);
+    /* nothing broke down or burned, and no emergency is half way through */
+    (G.fires || []).forEach((f) => { f.out = true; }); G.emergencies = [];
+    G.puddles = (G.puddles || []).filter((p) => !p.home);
+    G.sims.forEach((s) => { s.bubble = null; if (s.sched) snapToPlan(s); });
+    hh().forEach((s) => { awayNeeds(s); if (isInfant(s)) { s.needs.hunger = Math.max(s.needs.hunger, 70); s.needs.social = Math.max(s.needs.social, 70); } awayPlace(s); });
+    (G.player.pets || []).forEach((p) => { ['hunger', 'energy', 'fun', 'social'].forEach((k) => { if (p[k] !== undefined) p[k] = Math.max(p[k], 65); }); p.path = []; });
+    if (typeof petsRelocate === 'function') petsRelocate();
+    lifeWishTick();
+    UI.quiet = quiet0;
+  }
+  const done = G._awayDuties || []; G._awayDuties = null;
+  return { mins, t0, t1: G.t, ms: performance.now() - ran, money: G.player.money - money0, duties: done, events: G.events.filter((e) => e.t > t0), notes: G.notes.filter((n) => n.id >= seq0) };
+}
+/* back after a while: the time that went by, then (for an hour or more) what happened in it */
+function awayBack(gm) {
+  const rec = catchUp(gm);
+  camSnap(G.byId[G.player.sel]);
+  updateViews(); updateLighting(true); UI.refresh(true);
+  if (gm >= 60) UI.recap(rec); else UI.toast(`Welcome back. ${awaySpan(gm)} went by.`, 3200);
+  saveGame('auto');
+  return rec;
+}
+/* how long, in words */
+function awaySpan(mins) {
+  if (mins < 50) return `${Math.max(5, Math.round(mins / 5) * 5)} minutes`;
+  if (mins < 90) return 'About an hour';
+  if (mins < 1440 - 90) return `About ${Math.round(mins / 60)} hours`;
+  const d = mins / 1440;
+  return d >= AWAY.cap / 1440 - 0.05 ? `${Math.round(AWAY.cap / 1440)} days (the most time that goes by while you are away)` : `About ${Math.round(d * 2) / 2} day${d >= 1.25 ? 's' : ''}`;
 }
 UI.recap = function (r) {
-  const hrs = r.mins / 60;
-  const span = hrs < 1.2 ? 'About an hour' : `About ${Math.round(hrs)} hours`;
+  const span = awaySpan(r.mins);
   const items = [];
+  /* shifts, school and study days, one line each person */
+  const per = {};
+  (r.duties || []).forEach((d) => { const k = d.id + '|' + d.kind; per[k] = (per[k] || 0) + 1; });
+  Object.keys(per).forEach((k) => {
+    const [id, kind] = k.split('|'), s = G.byId[id], n = per[k];
+    if (!s) return;
+    items.push({ icon: kind === 'school' ? '🎒' : kind === 'uni' ? '🎓' : '💼', label: kind === 'school' ? `${s.first} went to school (${n} day${n > 1 ? 's' : ''})` : kind === 'uni' ? `${s.first} went to lectures (${n} study day${n > 1 ? 's' : ''})` : `${s.first} worked ${n} shift${n > 1 ? 's' : ''}`, keep: true });
+  });
   r.events.slice(-8).forEach((e) => items.push({ icon: '📰', label: e.text, keep: true }));
   r.notes.filter((n) => n.tag === 'door').forEach((n) => items.push({ icon: '🔔', label: n.title, sub: n.body, keep: true }));
   G.player.members.forEach((id) => {
@@ -17456,7 +17582,7 @@ UI.recap = function (r) {
   });
   if (r.money) items.push({ icon: '💰', label: (r.money > 0 ? 'Earned ' : 'Spent ') + money(Math.abs(r.money)), keep: true });
   if (!r.events.length) items.unshift({ icon: '🌙', label: 'A quiet stretch. Nothing much happened.', keep: true });
-  UI.sheet({ title: 'While you were away', sub: `${span} passed on Hawthorn Lane. It is now ${fmtTime(r.t1)}.`, items, tall: true });
+  UI.sheet({ title: 'While you were away', sub: `${span} passed on Hawthorn Lane. It is now ${DAYNAMES[wdOf(r.t1)]} ${fmtTime(r.t1)}.`, items, tall: true });
 };
 
 /* ---------- settings persistence ---------- */
@@ -17582,11 +17708,8 @@ document.addEventListener('visibilitychange', () => {
   const away = _hiddenAt ? (Date.now() - _hiddenAt) / 60000 : 0;
   _hiddenAt = 0;
   _last = performance.now();
-  if (MODE === 'play' && away >= 1.5 && G.speed > 0 && !UI.isPaused() && !NET.on) {
-    const rec = catchUp(Math.min(360, away * 10));
-    updateViews(); UI.refresh(true);
-    UI.recap(rec);
-  }
+  const gm = awayMinutes(away);
+  if (MODE === 'play' && gm >= AWAY.min && G.speed > 0 && !UI.isPaused() && !NET.on && !BM.on) awayBack(gm);
 });
 window.addEventListener('pagehide', () => { if (MODE === 'play' && !NET.on) saveGame('auto'); if (NET.on) netLeave(true); saveSettings(); });
 /* the browser kept the page and brings it back (Safari does this): a shared town left on the way out is
@@ -18936,12 +19059,21 @@ function dutyText(s) {
 }
 
 function bus() { return NAV.byName['bus']; }
+/* an alarm clock: someone asleep (not passed out) is woken to go to work, school or college */
+function wakeForDuty(s) {
+  if (s.act !== 'sleep' && s.act !== 'nap') return false;
+  stopCurrent(s);
+  s.queue = [];
+  say(s, '*yawn* Time to go.', 3);
+  return true;
+}
 /* off to work, school or college: on foot, through the town, into the building */
 function sendToDuty(s, auto) {
   const d = nextDuty(s);
   if (!d) return false;
-  if (s.offmap || !awake(s)) return false;
-  if (G.t > d.end - 30) { uiToast('It’s nearly over. Too late to go in now.'); return false; }
+  if (s.offmap) return false;
+  if (G.t > d.end - 30) { if (!auto) uiToast('It’s nearly over. Too late to go in now.'); return false; }
+  if (!awake(s) && !wakeForDuty(s)) return false;
   const W = s.work || (s.work = { st: 'home' });
   const b = BLD[dutyBuilding(s, d.kind)];
   if (!b) return false;
@@ -19247,12 +19379,13 @@ function careerTick(dt) {
     const auto = G.settings.freeWill && (G.settings.autoDuty || G.player.sel !== s.id);
     if (toGo <= 60 && toGo > 0 && W.notified !== key) {
       W.notified = key;
-      if (awake(s) && !s.offmap) {
+      if (!s.offmap) {
         if (auto && inOwnHome(s)) { /* leaves on its own a little later */ }
-        else notify({ title: d.kind === 'school' ? `${s.first} has school` : d.kind === 'uni' ? `${s.first} has lectures` : `${s.first} has a shift`, body: `${d.kind === 'school' ? 'Lessons' : d.kind === 'uni' ? 'University' : s.job.title} at ${fmtTime(d.start)}, at ${(TOWN.find((t) => t.id === dutyBuilding(s, d.kind)) || {}).name || 'work'}. It’s about a ${Math.max(2, Math.round(dutyWalkMins(s, d.kind)))}-minute walk.`, tag: 'door', actions: [{ label: d.kind === 'school' ? 'Go to school' : d.kind === 'uni' ? 'Go to lectures' : 'Go to work', fn: () => { sendToDuty(s); } }, { label: 'Not today', fn: () => { W.missed = d.start; } }] });
+        else notify({ title: d.kind === 'school' ? `${s.first} has school` : d.kind === 'uni' ? `${s.first} has lectures` : `${s.first} has a shift`, body: `${d.kind === 'school' ? 'Lessons' : d.kind === 'uni' ? 'University' : s.job.title} at ${fmtTime(d.start)}, at ${(TOWN.find((t) => t.id === dutyBuilding(s, d.kind)) || {}).name || 'work'}. It’s about a ${Math.max(2, Math.round(dutyWalkMins(s, d.kind)))}-minute walk.${awake(s) ? '' : ` ${s.first} is still asleep: the button wakes them.`}`, tag: 'door', actions: [{ label: d.kind === 'school' ? 'Go to school' : d.kind === 'uni' ? 'Go to lectures' : 'Go to work', fn: () => { sendToDuty(s); } }, { label: 'Not today', fn: () => { W.missed = d.start; } }] });
       }
     }
-    if (auto && toGo > 0 && toGo <= Math.min(75, dutyWalkMins(s, d.kind) + 12) && inOwnHome(s) && awake(s) && !s.offmap) { if (sendToDuty(s, true)) { if (!(typeof UI !== 'undefined' && UI.quiet)) uiToast(`${s.first} heads off to ${{ school: 'school', uni: 'university' }[d.kind] || 'work'}.`); } }
+    /* on their own: time to leave (woken if need be), or late rather than not at all */
+    if (auto && toGo <= Math.min(75, dutyWalkMins(s, d.kind) + 12) && G.t < d.start + 60 && inOwnHome(s) && !s.offmap && (awake(s) || s.act === 'sleep' || s.act === 'nap')) { if (sendToDuty(s, true)) { if (!(typeof UI !== 'undefined' && UI.quiet)) uiToast(`${s.first} heads off to ${{ school: 'school', uni: 'university' }[d.kind] || 'work'}.`); } }
     if (G.t > d.start + 100 && !(W.st === 'walking') && W.missed !== d.start) missedDuty(s, d);
   }
 }
@@ -19380,7 +19513,10 @@ function lifeTick(dt) {
     if(s.funeralGuest)continue;
     if (!netMine(s)) continue;
     if (s.nb == null) lifeInit(s);
-    if (yl && !hookFirst('ageless', s)) { let guard = 0; while (G.t >= s.nb && guard++ < 6) birthday(s); }
+    /* shared: someone whose player is away ages by their own, slower clock (15c netLifeNow) */
+    let lt = G.t;
+    if (netKeep(s)) { netAwayStart(s); lt = netLifeNow(s); }
+    if (yl && !hookFirst('ageless', s)) { let guard = 0; while (lt >= s.nb && guard++ < 6) birthday(s); }
     if (s.lifePend && !(s.work && s.work.st && s.work.st !== 'home')) lifeSettle(s);
   }
   pregTick(dt);
@@ -23436,6 +23572,7 @@ function toNeighbour(s, no) {
 }
 /* a neighbour becomes someone you play: a career and school the household way (kept from before if they had one) */
 function toPlayer(s, no, i) {
+  if (typeof netAwayReturn === 'function') netAwayReturn(s);
   if (s.sched && s.sched !== 'gen') s.sched0 = s.sched;
   s.sched = null; s.role = null; s.hid = 'player'; s.homeNo = no; s.override = null; s.planKey = ''; s.block = null;
   s.boardAt = null; s.alightAt = null; s.pendingGoal = null; s.carAway = false; s.carTrip = null; s.offmap = false;
@@ -29925,6 +30062,27 @@ const netMyLot = (no) => !NET.on || netLotOwner(no) === NET.uid;
    them out, marries them off, ends their careers or gives them babies (and nobody moves into their house) */
 const netKeepLot = (no) => NET.on && (!!NET.households[no] || !!(NET.ctlKeys[no] && NET.ctlKeys[no].uid));
 const netKeep = (s) => NET.on && !G.player.members.includes(s.id) && netKeepLot(s.homeNo);
+/* their life goes on at the away pace while their player is away: real time (AWAY.rate game minutes
+   per real minute, however fast the town runs for the others) and at most AWAY.cap, then it waits.
+   s.away = { t: town time they were left at, at: server time then }. Birthdays follow this clock;
+   dying, babies and moving never happen while they are away (11d). */
+function netLifeNow(s) {
+  const a = s.away;
+  if (!a) return G.t;
+  return Math.min(G.t, a.t + Math.min(AWAY.cap, Math.max(0, (netNow() - a.at) / 60000) * AWAY.rate));
+}
+function netAwayStart(s) { if (!s.away) s.away = { t: G.t, at: netNow() }; }
+/* back again: the town time they sat out is taken off their birthdays, a baby on the way and the end of a long life */
+function netAwayReturn(s) {
+  if (!s.away) return;
+  const held = Math.max(0, G.t - netLifeNow(s));
+  if (held > 0) {
+    if (s.nb != null) s.nb += held;
+    if (s.deathAt) s.deathAt += held;
+    if (s.preg) { s.preg.t0 += held; s.preg.due += held; }
+  }
+  s.away = null;
+}
 const netAuthOk = () => !NET.on || NET.isAuth;
 /* who plays the household on a lot, when that is somebody else ('' when nobody or you) */
 function netLotPlayer(no) {
@@ -30412,7 +30570,7 @@ function netDebugText() {
    people along the same paths and plays the same actions itself.
    ============================================================ */
 const NET_COSMETIC = new Set(['x', 'note', 'hash']);
-const NET_DELTA_FIELDS = ['money', 'age', 'stage', 'job', 'career', 'school', 'skills', 'buffs', 'mem', 'wants', 'know', 'stat', 'homeNo', 'slot', 'hIndex', 'preg', 'starve', 'petId', 'edu', 'injury', 'medic', 'lifeWish', 'novel', 'pastJobs', 'bf', 'nb', 'deathAt', 'role', 'ap', 'out', 'first', 'last', 'traits', 'pers', 'gender', 'pron', 'orient', 'work', 'mod', 'wasPlayer'];
+const NET_DELTA_FIELDS = ['money', 'age', 'stage', 'job', 'career', 'school', 'skills', 'buffs', 'mem', 'wants', 'know', 'stat', 'homeNo', 'slot', 'hIndex', 'preg', 'starve', 'petId', 'edu', 'injury', 'medic', 'lifeWish', 'novel', 'pastJobs', 'bf', 'nb', 'deathAt', 'role', 'ap', 'out', 'first', 'last', 'traits', 'pers', 'gender', 'pron', 'orient', 'work', 'mod', 'wasPlayer', 'away'];
 const NET_WORLD_FIELDS = ['cars', 'vacant', 'funerals', 'gone', 'npcSeq', 'clinic'];
 const NET_HOME_FIELDS = ['floors', 'ext', 'roofType', 'seq', 'gen', 'edited', 'lv', 'phoneV', 'v'];
 const NET_HOME_LISTS = ['rooms', 'opens', 'stairs', 'furn'];
@@ -30895,9 +31053,11 @@ function netApplyCtl(d, key) {
       if (s.sched && s.sched !== 'gen') s.sched0 = s.sched;
       s.sched = null; s.role = null; s.hid = 'remote'; s.ctl = d.uid; s.override = null; s.planKey = ''; s.block = null; s.wasPlayer = true;
       if (!s.work) s.work = { st: 'home' };
+      s.away = null;                                     // their player runs their life again (and moved their clock on)
     } else if (s.hid === 'remote' || s.ctl || !s.sched) {
       s.ctl = null;
       toNeighbour(s, lot);
+      if (netKeepLot(lot)) netAwayStart(s);              // their player has gone: their life goes on at the away pace
     }
   });
 }
