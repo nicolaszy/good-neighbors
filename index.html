@@ -187,6 +187,13 @@ b { font-weight: 800; }
 .hbadge { padding: 2px 9px; border-radius: 999px; background: var(--ink); color: var(--paper); font: 800 11px var(--f-body); }
 .hpeople { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .hpeople::-webkit-scrollbar { display: none; }
+.hcrowds { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.hcrowd { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 8px 6px 6px; border-radius: 14px; background: var(--paper); border: 1px solid var(--line); text-align: left; }
+.hcrowd .hc-ic { font-size: 18px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--track); flex: none; }
+.hcrowd .hc-t { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.hcrowd .hc-t b { font: 800 13px var(--f-body); color: var(--ink); }
+.hcrowd .hc-t em { font-style: normal; font-size: 12px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hcrowd .hc-go { flex: none; padding: 5px 10px; border-radius: 999px; background: var(--teal); color: #fff; font: 800 12px var(--f-body); }
 .hperson { flex: 0 0 auto; width: 92px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 6px; border-radius: 16px; background: var(--paper); border: 1px solid var(--line); }
 .hperson img { width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #fbe6c8, #d9b98f); }
 .hp-t { display: flex; flex-direction: column; align-items: center; line-height: 1.15; min-width: 0; max-width: 100%; }
@@ -318,6 +325,19 @@ b { font-weight: 800; }
 #bubbles .tag.pet.sel .nm { background: var(--teal); color: #fff; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7); }
 #bubbles .tag .bub { position: relative; background: #fffdf6; color: #3a2f2a; font: 700 12.5px/1.25 var(--f-body); padding: 6px 10px; border-radius: 12px; max-width: 190px; text-align: center; box-shadow: 0 3px 10px rgba(30, 20, 10, 0.3); margin-bottom: 5px; }
 #bubbles .tag .bub::after { content: ''; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-top-color: #fffdf6; border-bottom: 0; }
+/* the town from above (08l): a portrait pin over everyone outdoors, a badge over each building with people inside.
+   Both are placed by transform alone, so they must be taken out of the flow or each pin pushes the next one down. */
+#bubbles .tpin { position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: #e9dcc6 center / cover no-repeat; border: 2px solid #fff7ea; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45); pointer-events: none; will-change: transform; }
+#bubbles .tpin::after { content: ''; position: absolute; left: 50%; bottom: -6px; margin-left: -3px; border: 3px solid transparent; border-top: 4px solid #fff7ea; }
+#bubbles .tpin.mine { border-color: #2f8f8a; } #bubbles .tpin.mine::after { border-top-color: #2f8f8a; }
+#bubbles .tpin.sel, #bubbles .tpin.watch { width: 28px; height: 28px; border-color: var(--accent); z-index: 2; } #bubbles .tpin.sel::after, #bubbles .tpin.watch::after { border-top-color: var(--accent); }
+#bubbles .tbpin { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 5px; padding: 3px 4px 3px 6px; border-radius: 999px; background: rgba(28, 20, 14, 0.8); border: 1.5px solid rgba(255, 247, 234, 0.9); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); color: #fff7ea; font: 800 11.5px/1 var(--f-body); white-space: nowrap; pointer-events: none; will-change: transform; z-index: 1; }
+#bubbles .tbpin::after { content: ''; position: absolute; left: 50%; bottom: -8px; margin-left: -5px; border: 5px solid transparent; border-top: 7px solid rgba(255, 247, 234, 0.9); border-bottom: 0; }
+#bubbles .tbpin .ic { font-size: 14px; line-height: 1; }
+#bubbles .tbpin .pl { font-weight: 700; opacity: 0.92; }
+#bubbles .tbpin .n { min-width: 18px; padding: 2px 5px 3px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); text-align: center; }
+#bubbles .tbpin.fair { background: rgba(120, 30, 60, 0.85); }
+#bubbles .tbpin.fair .n { background: #ffd23f; color: #3a1020; }
 
 /* ---------- sheets + dialogue ---------- */
 .sheet { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; pointer-events: auto; }
@@ -787,8 +807,19 @@ const deg = (d) => (d * Math.PI) / 180;
    core game never reads a module's data directly. Build with
    `python3 build.py --no-vampire` and the core game runs without it.
    ============================================================ */
-const GAME = { name: 'Good Neighbors', version: '0.6.5', schema: 4, date: '2026-10-17' };
+const GAME = { name: 'Good Neighbors', version: '0.6.6', schema: 4, date: '2026-10-17' };
 const CHANGELOG = [
+  { v: '0.6.6', date: '2026-10-17', title: 'The Chilbi · Friend groups · Two more plots', notes: [
+    'The Chilbi comes to town: a Swiss fair on the far side of Park Road, past the park. Four Bahnen — the Riesenrad, the Rösslispiel (painted horses going up and down), the Kettenkarussell (chairs flung out on chains) and the Autoscooter — a Schiessbude where three hits win a prize, and three stands: Magenbrot and roasted almonds, Bratwurst and Bürli (or a Cervelat, or Raclette), Zuckerwatte and crêpes. Eat at the long beer tables in the middle.',
+    'Tap a ride, a stand or the gate to see what it costs and go. Your people get on and ride: a full turn of the wheel and off again at the bottom, a round on a horse, a flight on the chains, laps in a bumper car. Everyone who is there with you can ride together. Rides lift the mood; the little ones can only go on what suits their age.',
+    'It is here about a third of the time: three days in town, then gone for a while, open from 10:00 to midnight. A notice says when it has arrived and on its last day; the board by the gate says when it is back. Closed, the shutters are down, the rides stand still and the bulbs are dark. At night when it is open it is the brightest place in town.',
+    'The neighbours go too: families with children in the afternoon, the young and the sociable in the evening, for a ride or two, something from a stand and a wander round.',
+    'Friend groups: days side by side at work, at school or at college make people closer, and once a couple of colleagues or classmates are friendly with someone you play, they become their crowd (the Bridge House crowd, the clinic crew, the gang from class…). You get a notice when a group forms.',
+    'After a shift or a school day the crowd sometimes asks you along, in a notice like a neighbour at the door: a beer at The Lantern, coffee and cake at the café, an hour on Willow Green or Market Square, or the Chilbi when it is in town. Go along and you all head over and spend the evening together; everyone comes back closer and in a good mood. Say no and they go anyway, a little cooler. Children’s groups never go to the pub.',
+    'The People tab shows your friend groups with an Invite out button, and the interaction menu of anyone in a group has Invite the crowd out.',
+    'Two more empty plots to build on, No. 13 and No. 14, on the park side of Park Road, either side of the park and its playground.',
+    'From far above, the badges over buildings with people inside stay on their buildings again and say which building it is (🍺 The Lantern 3), with a point down to the roof. They had lost their place on the screen and drifted about as the camera moved; the little portrait pins over people outdoors are back in place too.',
+  ] },
   { v: '0.6.5', date: '2026-10-17', title: 'Groceries, leftovers · Moving like people', notes: [
     'The fridge has to be filled. What your household eats comes out of it: a meal takes a serving, a snack half. A fridge holds 60 servings (a steel fridge-freezer 90, a chest freezer 30 more), which lasts a family a week or two. Tap the fridge to see how full it is; open its door and you can see it too.',
     'Order groceries at the fridge, on the telephone or online at the computer, and choose how full: a quarter, half, three quarters or right up, at §3 a serving. The shopping comes to the front door about an hour later and someone carries it to the fridge and puts it away. You get a notice when it is running low and when it is empty; until it is filled, meals are takeaways.',
@@ -987,6 +1018,9 @@ const HOUSES = [
   /* two empty plots on the far side of Hawthorn Lane, either side of the cemetery: buy one and build */
   { no: 11, street: 'lane', side: 'S', x: 40, fam: null, style: 'plot', empty: true },
   { no: 12, street: 'lane', side: 'S', x: -40, fam: null, style: 'plot', empty: true },
+  /* and two more on the far side of Park Road, either side of the park and its playground */
+  { no: 13, street: 'park', side: 'N', x: 41, fam: null, style: 'plot', empty: true },
+  { no: 14, street: 'park', side: 'N', x: -41, fam: null, style: 'plot', empty: true },
 ];
 HOUSES.forEach((h) => {
   const st = STREET_BY_ID[h.street];
@@ -1881,7 +1915,7 @@ function buildNav() {
   const want = (stId, side, v) => { (extra[stId + side] = extra[stId + side] || []).push(Math.round(v * 10) / 10); };
   HOUSES.forEach((h) => { const [dx] = toWorld(h, 1.2, 7.4); want(h.street, h.side, dx); want(h.street, h.side, carSpot(h.no).x); });
   TOWN.forEach((b) => want(b.street, b.side, b.cx));
-  want('high', 'N', BUS_STOP.x); want('high', 'S', (SQUARE.x0 + SQUARE.x1) / 2); want('high', 'S', SQUARE.x1 - 1.6); want('high', 'N', 9.5); want('high', 'S', 7.1); want('park', 'N', -20); want('park', 'N', 24); want('lane', 'S', -11); want('park', 'S', (GREEN.x0 + GREEN.x1) / 2);
+  want('high', 'N', BUS_STOP.x); want('high', 'S', (SQUARE.x0 + SQUARE.x1) / 2); want('high', 'S', SQUARE.x1 - 1.6); want('high', 'N', 9.5); want('high', 'S', 7.1); want('park', 'N', -20); want('park', 'N', 24); want('lane', 'S', -11); want('park', 'S', (GREEN.x0 + GREEN.x1) / 2); want('park', 'N', CHILBI.gate[0]);
   STREETS.forEach((st) => {
     [-1, 1].forEach((sg) => {
       const side = sg < 0 ? 'N' : 'S', o = st.c + sg * WALK_Z;          // for a north–south street 'N' is its west pavement
@@ -2000,6 +2034,8 @@ function buildNav() {
   const bus = nAdd('bus', BUS_STOP.x, 0, BUS_STOP.z + 0.5, { out: true, bld: 'bus' });
   nEdge(bus, paveAt('high', 'N', BUS_STOP.x));
   spotAdd('bus:stop', bus);
+  /* the Chilbi past the park, on the days it is in town (11o) */
+  chilbiNav();
   /* house No. 1: the editable home */
   HOUSES.forEach((h) => lotNavInit(h.no, lotSidewalk[h.no]));
 }
@@ -2070,7 +2106,7 @@ function townNode(bid, cat, rnd) {
 function resolvePlace(place, sim, rnd) {
   const [where, cat] = place.split(':');
   if (where === 'home') return homeNode(sim.homeNo, cat, sim);
-  if (where === 'park' || where === 'cemetery' || where === 'bus' || where === 'green' || where === 'square') {
+  if (where === 'park' || where === 'cemetery' || where === 'bus' || where === 'green' || where === 'square' || where === 'chilbi') {
     const list = SPOTS[where + ':' + cat] || SPOTS[where + ':path'];
     return list[Math.floor((rnd ? rnd() : Math.random()) * list.length) % list.length];
   }
@@ -2103,7 +2139,12 @@ function segHitsRect(ax, az, bx, bz, r) {
   };
   return chk(ax, dx, r.x0, r.x1) && chk(az, dz, r.z0, r.z1);
 }
-function outdoorClear(ax, az, bx, bz) { for (const f of FOOT) if (segHitsRect(ax, az, bx, bz, f)) return false; return true; }
+function outdoorClear(ax, az, bx, bz) {
+  for (const f of FOOT) if (segHitsRect(ax, az, bx, bz, f)) return false;
+  /* the rides and stands at the Chilbi are in the way too (they are not buildings anyone goes into) */
+  for (const p of FAIR_PICKS) if (p[0] !== 'gate' && segHitsRect(ax, az, bx, bz, { x0: p[2], x1: p[3], z0: p[4], z1: p[5] })) return false;
+  return true;
+}
 function footprintAt(x, z, m) { m = m || 0; for (const f of FOOT) if (x > f.x0 - m && x < f.x1 + m && z > f.z0 - m && z < f.z1 + m) return f; return null; }
 function nearestOut(x, z) {
   let best = -1, bd = 1e9;
@@ -2455,7 +2496,8 @@ function deviate(s, day, blocks, rng) {
   if (s.id === 'leo' && wd < 6 && rng() < 0.2) {
     blocks.push({ t: 22 * 60 + 40, place: 'home:window', act: 'window' }, { t: 23 * 60 + 20, place: 'home:bed', act: 'sleep' });
   }
-  return blocks;
+  /* the days the Chilbi is in town: an afternoon or an evening at the fair (11o) */
+  return chilbiVisit(s, day, blocks, rng);
 }
 
 function blockAt(s, t) {
@@ -3049,7 +3091,7 @@ function tickWorld(dt) {
     if (hh && !NET.on) welcomeEvent();
     if (hh) { checkTrespass(); tutorialTips(); }
     withWorldRandom(['world', Math.round(G.t * 2)], () => { socialTick(dt); if (hh) careerTick(dt); lifeTick(dt); if (hh) needsTick(dt); worldTick(dt); });
-    if (hh) { petsTick(dt); chaosTick(dt); skillsTick(dt); if (G.t >= (G.nx.pantry || 0)) { G.nx.pantry = G.t + 2; pantryTick(); } if (G.t >= (G.nx.wish || 0)) { G.nx.wish = G.t + 10; lifeWishTick(); } }
+    if (hh) { petsTick(dt); chaosTick(dt); skillsTick(dt); if (G.t >= (G.nx.fair || 0)) { G.nx.fair = G.t + 15; chilbiTick(); } if (G.t >= (G.nx.pantry || 0)) { G.nx.pantry = G.t + 2; pantryTick(); } if (G.t >= (G.nx.wish || 0)) { G.nx.wish = G.t + 10; lifeWishTick(); } }
   }
 }
 function simTick(s, dt) {
@@ -5574,6 +5616,7 @@ function buildWoods(B) {
     if (x > -68 && x < 68 && z > -54 && z < 54) return false;                           // the town itself
     if (x > PARK.x0 - 3 && x < PARK.x1 + 3 && z > PARK.z0 - 3 && z < PARK.z1 + 3) return false;
     if (x > CEMETERY.x0 - 3 && x < CEMETERY.x1 + 3 && z > CEMETERY.z0 - 3 && z < CEMETERY.z1 + 3) return false;
+    if (x > CHILBI.x0 - 4 && x < CHILBI.x1 + 4 && z > CHILBI.z0 - 4 && z < CHILBI.z1 + 2) return false;     // the Chilbi's Festplatz (06zc)
     if (HOUSES.some((h) => { const [lx, lz] = toLocal(h, x, z); return Math.abs(lx) < 9.5 && lz > -19 && lz < 9; })) return false;   // nobody's garden
     if (STREETS.some((st) => st.a === 'x' ? Math.abs(z - st.c) < 8 : Math.abs(x - st.c) < 8 && z > st.from - 8 && z < st.to + 8)) return false;
     return true;
@@ -5608,6 +5651,7 @@ function buildWorld(scene) {
   HOUSES.forEach((h) => rebuildLot(h));             // each lot is its own set of meshes, so a house can be done up later (11d)
   TOWN.forEach((d) => makeTown(d));
   buildStreets(B); buildTownGround(B); buildPark(B); buildCemetery(B); buildWoods(B);
+  buildChilbi();
   const add = (b, mat, ro) => { const m = b.build(mat); if (m) { materialLibraryProcess(b, m, mat); if (ro) m.renderOrder = ro; ROOT.add(m); } return m; };
   add(B.grass, WM.grass); add(B.main, WM.main); add(B.leaf, WM.leaf); add(B.pine, WM.pine); add(B.emis, WM.emis); add(B.water, WM.water, 3); add(B.glow, WM.glow, 5);
   W.stats = { tris: [B.grass, B.main, B.leaf, B.pine, B.emis, B.water, B.glow].reduce((a, b) => a + b.tris, 0) };
@@ -11101,6 +11145,422 @@ function televisionScreenTarget(s,n){
   return {x:world[0],y:FLOOR_Y[f]+o.y,z:world[1]};
 }
 
+/* ---- 06zc-chilbi.js ---- */
+/* ============================================================
+   06zc — the Chilbi drawn (what it is and when it is open: 11o)
+
+   A gravel Festplatz behind a wooden fence, an arch of bulbs over the
+   gate, and the Bahnen. Everything that moves is a pure function of the
+   game clock (fairSeat), so the rides and whoever sits on them always
+   agree, on every screen: the wheel turns once per ride, the horses go
+   up and down, the swing chairs fly out on their chains, the bumper cars
+   drive their loops. Closed, it all stands still: shutters down, the
+   bulbs dark, the chairs hanging, the cars parked in a row.
+   ============================================================ */
+const FAIR3D = { ready: false, lamps: [], glowMat: null, wasOpen: null, gondolas: [], horses: [], chairs: [], cars: [], carW: [], statusText: '' };
+const FAIR_K = { wheelR: 7.2, wheelY: 9.2, gondolas: 12, horseR: 3.2, swingArm: 2.5, swingChain: 4.4, swingRest: 5.3, swingRun: 6.8, swingTilt: 0.85, swingTurn: 6 };
+const FAIR_TAKEN = {};          // ride -> Map(seat -> sim id): who sits where, on this screen only
+
+/* ---------- where each seat is at a moment of the game clock ---------- */
+const fairWheelAngle = (t, open) => (open ? TAU * ((t % FAIR_RIDES.wheel.mins) / FAIR_RIDES.wheel.mins) : 0.13);
+const fairCarouselAngle = (t, open) => (open ? -TAU * ((t % FAIR_RIDES.carousel.mins) / FAIR_RIDES.carousel.mins) : 0.2);
+const fairBob = (ph, k, open) => 0.22 + (open ? 0.2 * Math.sin(ph * 3 + k * 1.9) : 0);
+function fairSwingState(t, open) { return open ? { psi: TAU * ((t % FAIR_K.swingTurn) / FAIR_K.swingTurn), y: FAIR_K.swingRun, tilt: FAIR_K.swingTilt } : { psi: 0.3, y: FAIR_K.swingRest, tilt: 0 }; }
+function fairCarPath(k, t, o) {
+  const R = FAIR_RIDES.bumper, u = TAU * ((t % R.mins) / R.mins) + TAU * k / 6;
+  const P = (v) => [R.x + 3.0 * Math.sin(v) + 0.75 * Math.sin(3 * v + k * 1.3), R.z + 1.9 * Math.sin(2 * v + k * 0.9)];
+  const a = P(u), b = P(u + 0.01);
+  o.x = a[0]; o.z = a[1]; o.yaw = Math.atan2(b[0] - a[0], b[1] - a[1]);
+  return o;
+}
+function fairCarParked(k, o) { const R = FAIR_RIDES.bumper; o.x = R.x - 3.6 + k * 1.45; o.z = R.z - 2.5; o.yaw = 0; return o; }
+/* a rider's root (feet level of the sitting pose), facing, and lean, on seat k of a ride */
+function fairSeat(ride, k, t, o) {
+  o = o || {};
+  const R = FAIR_RIDES[ride], open = chilbiOpen(t);
+  o.lean = 0;
+  if (ride === 'wheel') {
+    const a = fairWheelAngle(t, open) + TAU * (k >> 1) / FAIR_K.gondolas;
+    o.x = R.x + FAIR_K.wheelR * Math.sin(a) + (k & 1 ? 0.36 : -0.36); o.y = FAIR_K.wheelY - FAIR_K.wheelR * Math.cos(a) - 1.5; o.z = R.z - 0.2; o.yaw = 0;
+  } else if (ride === 'carousel') {
+    const ph = fairCarouselAngle(t, open), a = ph + TAU * k / 8;
+    o.x = R.x + FAIR_K.horseR * Math.sin(a); o.z = R.z + FAIR_K.horseR * Math.cos(a); o.y = 0.5 + fairBob(ph, k, open) + 0.06; o.yaw = a - Math.PI / 2;
+  } else if (ride === 'swing') {
+    const S = fairSwingState(t, open), a = S.psi + TAU * k / 12, d = FAIR_K.swingChain + R.sy - 0.03, r = FAIR_K.swingArm + d * Math.sin(S.tilt);
+    o.x = R.x + r * Math.sin(a); o.z = R.z + r * Math.cos(a); o.y = S.y - d * Math.cos(S.tilt); o.yaw = a + Math.PI / 2; o.lean = -S.tilt * 0.6;      // they lean with the chains, sitting up a little
+  } else {
+    const car = FAIR3D.cars[k];
+    if (car) { o.x = car.position.x; o.z = car.position.z; o.yaw = car.rotation.y; } else if (open) fairCarPath(k, t, o); else fairCarParked(k, o);
+    o.y = 0.2;
+  }
+  return o;
+}
+/* the free seat nearest the queue when someone gets on: the gondola at the bottom, the horse by the gate */
+function fairSeatPick(ride, simId, t) {
+  const R = FAIR_RIDES[ride], taken = FAIR_TAKEN[ride] || (FAIR_TAKEN[ride] = new Map()), o = {};
+  for (const [k, id] of taken) { const sm = SIMM[id], F = sm && sm.rig && sm.rig.fair; if (!F || F.ride !== ride || F.slot !== k || !G.byId[id]) taken.delete(k); }
+  let best = 0, bd = 1e9;
+  for (let k = 0; k < R.seats; k++) {
+    if (taken.has(k)) continue;
+    if (ride === 'bumper') fairCarPath(k, t, o); else fairSeat(ride, k, t, o);
+    const d = Math.hypot(o.x - R.board[0], o.z - R.board[1]) + Math.max(0, o.y) * 2;
+    if (d < bd) { bd = d; best = k; }
+  }
+  taken.set(best, simId);
+  return best;
+}
+function fairRelease(F) { const m = F && FAIR_TAKEN[F.ride]; if (m && m.get(F.slot) === F.sim) m.delete(F.slot); }
+/* while someone rides: their body is carried by the ride (07 animChar, after the activity pose).
+   Getting on and off is a short glide between the queue and the seat. */
+function fairRidePose(T, R, s, dt) {
+  const n = NAV.nodes[s.node], doing = s.state === 'doing';
+  if (doing && s.act === 'shoot') { T.arL = T.arR = -1.45; T.foL = -0.12; T.foR = -0.28; T.armZ = -0.04; T.hdX = 0.06; T.twist = 0.12; }
+  const ride = doing && n && n.fair && FAIR_RIDE_OF_ACT[s.act] === n.fair && chilbiOpen(G.t) ? n.fair : null;
+  let F = R.fair;
+  if (!ride) {
+    if (!F) return;
+    F.k = Math.max(0, F.k - dt * 2.5);
+    fairRelease(F);
+    if (F.k <= 0) { R.fair = null; R.root.rotation.z = 0; return; }
+    const e = smooth(0, 1, F.k), p = F.last, q = R.root.position;
+    q.set(lerp(q.x, p.x, e), lerp(q.y, p.y, e), lerp(q.z, p.z, e)); R.root.rotation.z = p.lean * e;
+    return;
+  }
+  if (!F || F.node !== n.id || F.ride !== ride || F.goal !== s.goal) {
+    if (F) fairRelease(F);
+    /* the seat by the queue at the moment they got on (a screen that was not drawing then still agrees) */
+    F = R.fair = { node: n.id, ride, goal: s.goal, k: F ? F.k : 0, slot: fairSeatPick(ride, s.id, s.goal && s.goal.t0 != null ? s.goal.t0 : G.t), last: {}, sim: s.id };
+  } else if (!FAIR_TAKEN[ride] || FAIR_TAKEN[ride].get(F.slot) !== s.id) (FAIR_TAKEN[ride] || (FAIR_TAKEN[ride] = new Map())).set(F.slot, s.id);
+  if (R.activity) R.activity.transition = null;
+  F.k = Math.min(1, F.k + dt * 1.8);
+  const p = fairSeat(ride, F.slot, G.t, F.last), e = smooth(0, 1, F.k), q = R.root.position;
+  q.set(lerp(q.x, p.x, e), lerp(q.y, p.y, e), lerp(q.z, p.z, e));
+  R.root.rotation.y = lerpAngle(R.root.rotation.y, p.yaw, e); R.root.rotation.z = p.lean * e;
+  /* hands on the bar, the pole, the chains or the wheel; looking about */
+  const c = R.activity ? R.activity.clock : 0;
+  if (ride === 'wheel') { T.arL = T.arR = -0.55; T.foL = T.foR = -0.95; T.hdY = Math.sin(c * 0.45) * 0.55; T.hdX = -0.12; }
+  else if (ride === 'carousel') { T.arL = T.arR = -1.5; T.foL = T.foR = -0.5; T.hdY = Math.sin(c * 0.8) * 0.3; }
+  else if (ride === 'swing') { T.arL = T.arR = -2.55; T.foL = T.foR = -0.3; T.armZ = 0.16; T.hdX = -0.18; }
+  else { T.arL = T.arR = -1.05; T.foL = T.foR = -0.8; T.hdY = Math.sin(c * 1.7) * 0.25; T.spX = (T.spX || 0) + 0.08; }
+}
+/* where a rider is drawn (name tags and pins follow the ride, not the queue) */
+function simViewPoint(s) { const sm = SIMM[s.id], F = sm && sm.rig && sm.rig.fair; return F && F.k > 0.02 && sm.root.visible ? sm.root.position : null; }
+
+/* ---------- building it ---------- */
+/* a beam of square section between two points: the spokes, legs and arch that are not upright */
+function fairBeam(b, ax, ay, az, bx, by, bz, w, col) {
+  const dx = bx - ax, dy = by - ay, dz = bz - az, L = Math.hypot(dx, dy, dz);
+  if (L < 1e-4) return;
+  const d = [dx / L, dy / L, dz / L], up = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+  let u = [d[1] * up[2] - d[2] * up[1], d[2] * up[0] - d[0] * up[2], d[0] * up[1] - d[1] * up[0]];
+  const ul = Math.hypot(u[0], u[1], u[2]); u = u.map((v) => (v / ul) * w / 2);
+  const v = [d[1] * u[2] - d[2] * u[1], d[2] * u[0] - d[0] * u[2], d[0] * u[1] - d[1] * u[0]];
+  const P = (o, su, sv) => b.T(o[0] + u[0] * su + v[0] * sv, o[1] + u[1] * su + v[1] * sv, o[2] + u[2] * su + v[2] * sv);
+  const A = [ax, ay, az], Bp = [bx, by, bz], K = C(col), Kd = shade(col, 0.8), ring = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
+  for (let i = 0; i < 4; i++) { const [s0, t0] = ring[i], [s1, t1] = ring[(i + 1) % 4]; b.quad(P(A, s0, t0), P(A, s1, t1), P(Bp, s1, t1), P(Bp, s0, t0), i % 2 ? Kd : K); }
+}
+const FAIR_BULBS = ['#fff4c2', '#ffd23f', '#ff8a5c', '#9fe3ff'];
+function fairBulb(L, i, x, y, z, col) { L[i % 3].box(x, y - 0.065, z, 0.13, 0.13, 0.13, col || FAIR_BULBS[i % FAIR_BULBS.length], { ao: 1 }); }
+/* a little fair person (behind a counter): toy proportions, not a townsperson */
+function fairFigure(b, x, y, z, rot, shirt, k) {
+  const skin = ['#f0c8a8', '#cd8f63', '#7f4d2e', '#e4ab84'][k % 4], hair = ['#3a2a20', '#1c1917', '#c9a05a', '#6b4a33'][k % 4];
+  b.push(x, y, z, rot);
+  b.soft(-0.1, 0, 0, 0.15, 0.82, 0.17, '#2f3646', 0.05); b.soft(0.1, 0, 0, 0.15, 0.82, 0.17, '#2f3646', 0.05);
+  b.soft(0, 0.78, 0, 0.46, 0.62, 0.28, shirt, 0.1); b.soft(0, 0.8, 0.13, 0.36, 0.5, 0.04, '#f4efe2', 0.02);
+  b.soft(-0.3, 0.86, 0.05, 0.13, 0.5, 0.15, shirt, 0.05); b.soft(0.3, 0.86, 0.05, 0.13, 0.5, 0.15, shirt, 0.05);
+  b.sph(0, 1.66, 0, 0.22, skin, 10); b.sph(0, 1.76, -0.03, 0.225, hair, 10, 0.14);
+  b.box(-0.075, 1.68, 0.2, 0.05, 0.05, 0.03, '#2b2b34'); b.box(0.075, 1.68, 0.2, 0.05, 0.05, 0.03, '#2b2b34');
+  b.pop();
+}
+/* one moving part: its own mesh (and bulbs), placed every frame */
+function fairPart(fn) {
+  const b = new Batch(), L = [new Batch(), new Batch(), new Batch()];
+  b.surfaceRole = 'paint'; b.materialExterior = true;
+  fn(b, L);
+  const g = new THREE.Group(), m = b.build(WM.main);
+  if (m) { materialLibraryProcess(b, m, WM.main); g.add(m); }
+  L.forEach((lb, i) => { const lm = lb.build(FAIR3D.lamps[i]); if (lm) g.add(lm); });
+  ROOT.add(g);
+  return g;
+}
+function fairSign(text, w, hgt, bg, fg, x, y, z, rotY) { const s = labelPlane(text, w, hgt, bg, fg, { lit: true, border: fg, round: 10 }); s.position.set(x, y, z); s.rotation.y = rotY || 0; ROOT.add(s); return s; }
+
+function buildChilbi() {
+  if (typeof ROOT === 'undefined' || !ROOT || !WM.main) return;
+  FAIR3D.lamps = [0, 1, 2].map(() => new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  FAIR3D.glowMat = WM.glow.clone(); FAIR3D.glowMat.opacity = 0;
+  const rng = rngFor('chilbi-build');
+  const B = { main: new Batch(), grass: new Batch(), leaf: new Batch(), pine: new Batch(), glow: new Batch() }, L = [new Batch(), new Batch(), new Batch()];
+  Object.values(B).forEach((b) => { b.materialExterior = true; });
+  const m = B.main, X0 = CHILBI.x0, X1 = CHILBI.x1, Z0 = CHILBI.z0, Z1 = CHILBI.z1, gx = CHILBI.gate[0], gz = CHILBI.gate[1];
+  /* the Festplatz: rolled gravel, a path in from Park Road */
+  m.surfaceRole = 'soil';
+  m.ext(X0, X1, 0, 0.055, Z0, Z1, '#bdb095', { ao: 1 });
+  for (let i = 0; i < 70; i++) m.box(X0 + 1 + rng() * (X1 - X0 - 2), 0.055, Z0 + 1 + rng() * (Z1 - Z0 - 2), 0.5 + rng() * 1.6, 0.004, 0.4 + rng() * 1.2, shade('#bdb095', 0.9 + rng() * 0.14), { ao: 1 });
+  m.ext(gx - 2.6, gx + 2.6, 0, 0.06, Z1 - 0.01, -52.2, '#c4b79c', { ao: 1 });
+  m.surfaceRole = 'wood';
+  fenceLine(B, 'wood', X0, Z1, X1, Z1, [gx - 2.6 - X0, gx + 2.6 - X0], rng);
+  fenceLine(B, 'wood', X1, Z1, X1, Z0, null, rng); fenceLine(B, 'wood', X1, Z0, X0, Z0, null, rng); fenceLine(B, 'wood', X0, Z0, X0, Z1, null, rng);
+  for (let x = X0 + 2; x <= X1; x += 6.5) treeAt(B, x + rng() * 2, Z0 - 2.6 - rng() * 2, 0.95 + rng() * 0.4, rng() < 0.5 ? 'oak' : 'birch', rng);
+  for (let z = Z0 + 3; z <= Z1 - 3; z += 7) treeAt(B, X1 + 2.8 + rng() * 2, z + rng() * 2, 0.9 + rng() * 0.4, 'oak', rng);
+  /* the gate: two red posts and an arch of bulbs */
+  m.surfaceRole = 'paint';
+  [-2.4, 2.4].forEach((dx) => { m.box(gx + dx, 0, gz, 0.36, 4.6, 0.36, '#c0392b'); m.box(gx + dx, 4.55, gz, 0.5, 0.18, 0.5, '#ffd23f'); });
+  let prev = null;
+  for (let i = 0; i <= 14; i++) {
+    const a = Math.PI - (i / 14) * Math.PI, x = gx + 2.4 * Math.cos(a), y = 4.6 + 1.5 * Math.sin(a);
+    if (prev) fairBeam(m, prev[0], prev[1], gz, x, y, gz, 0.22, '#c0392b');
+    fairBulb(L, i, x, y + 0.2, gz + 0.13); prev = [x, y];
+  }
+  fairSign('CHILBI', 3.4, 0.95, '#c0392b', '#ffd23f', gx, 4.25, gz + 0.22, 0);
+  fairSign('CHILBI', 3.4, 0.95, '#c0392b', '#ffd23f', gx, 4.25, gz - 0.22, Math.PI);
+  m.box(gx - 4.6, 0, gz + 0.9, 0.09, 1.0, 0.09, '#5b4030');
+  FAIR3D.status = labelPlane('OPEN · 10–24 h', 2.0, 0.62, '#2f5d3a', '#f4efe2', { lit: true, border: '#f4efe2', round: 8 });
+  FAIR3D.status.position.set(gx - 4.6, 1.3, gz + 0.96); ROOT.add(FAIR3D.status);
+  /* string lights: poles and catenaries over the middle */
+  const poles = [[62.4, -57], [73.6, -57], [62.4, -72.6], [73.6, -72.8]];
+  poles.forEach(([x, z]) => { m.surfaceRole = 'metal'; m.cyl(x, 0, z, 0.08, 4.5, '#3b3f46', 6); m.surfaceRole = 'paint'; });
+  const strand = (a, b, h0, h1, sag, start) => {
+    const n = Math.max(4, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.85));
+    for (let i = 0; i <= n; i++) { const t = i / n; fairBulb(L, start + i, lerp(a[0], b[0], t), lerp(h0, h1, t) - sag * 4 * t * (1 - t), lerp(a[1], b[1], t)); }
+  };
+  strand([gx - 2.4, gz], poles[0], 4.7, 4.4, 0.5, 0); strand([gx + 2.4, gz], poles[1], 4.7, 4.4, 0.5, 1);
+  strand(poles[0], poles[1], 4.4, 4.4, 0.9, 2); strand(poles[0], poles[3], 4.4, 4.4, 1.0, 0); strand(poles[1], poles[2], 4.4, 4.4, 1.0, 1); strand(poles[2], poles[3], 4.4, 4.4, 0.9, 2);
+  /* warm pools of light on the gravel at night */
+  [[gx, -57, 4], [68, -67.5, 8], [56, -67, 6], [79.5, -67.5, 6.5], [56, -78.5, 6], [68, -83, 7], [55.8, -58.6, 3.5], [80.2, -58.6, 3.5], [74.5, -81.5, 3.5], [81.5, -78, 4]]
+    .forEach(([x, z, r]) => B.glow.glowDisc(x, 0.07, z, r, [0.95, 0.72, 0.38], 24));
+  /* the beer tables */
+  m.surfaceRole = 'wood';
+  FAIR_TABLES.forEach(([x, z]) => {
+    m.box(x, 0.72, z, 3.0, 0.07, 0.72, '#b5835a'); [-1.3, 1.3].forEach((dx) => { m.box(x + dx, 0.06, z, 0.07, 0.68, 0.6, '#6b4a33'); });
+    [-0.72, 0.72].forEach((dz) => { m.box(x, 0.42, z + dz, 3.0, 0.06, 0.28, '#b5835a'); [-1.3, 1.3].forEach((dx) => m.box(x + dx, 0.06, z + dz, 0.06, 0.38, 0.24, '#6b4a33')); });
+  });
+  m.surfaceRole = 'paint';
+  /* ---- the stands ---- */
+  const shut = new Batch(), vend = new Batch(); shut.surfaceRole = 'paint'; vend.surfaceRole = 'fabric';
+  Object.keys(FAIR_STANDS).forEach((id, si) => {
+    const S = FAIR_STANDS[id];
+    [m, shut, vend].concat(L).forEach((b) => b.push(S.x, 0, S.z, S.rot));
+    m.box(0, 0.06, -0.2, 3.6, 0.95, 1.9, '#f4efe2'); m.box(0, 0.06, 0.82, 3.7, 1.02, 0.18, S.col);                  // body and counter
+    m.box(-1.75, 0.06, -0.2, 0.1, 2.5, 1.9, S.col); m.box(1.75, 0.06, -0.2, 0.1, 2.5, 1.9, S.col); m.box(0, 0.06, -1.1, 3.6, 2.5, 0.1, shade(S.col, 0.85));
+    m.box(0, 2.55, -0.2, 3.9, 0.12, 2.1, '#f4efe2');
+    for (let i = 0; i < 8; i++) {                                                                                       // the striped awning
+      const x0 = -1.95 + i * 0.4875, x1 = x0 + 0.4875, c = C(i % 2 ? '#f4efe2' : S.col);
+      m.quad(m.T(x0, 2.6, 0.85), m.T(x1, 2.6, 0.85), m.T(x1, 2.15, 1.65), m.T(x0, 2.15, 1.65), c);
+    }
+    for (let i = 0; i < 9; i++) fairBulb(L, i + si, -1.9 + i * 0.475, 2.12, 1.66);
+    if (id === 'sweets') for (let i = 0; i < 6; i++) { m.box(-1.3 + i * 0.5, 1.08, 0.75, 0.28, 0.32, 0.2, i % 2 ? '#c0392b' : '#f4efe2'); m.box(-1.2 + i * 0.48, 1.7, 0.9, 0.3, 0.26, 0.04, '#b5452f'); }
+    if (id === 'wurst') { m.box(-0.8, 1.02, 0.55, 1.4, 0.1, 0.5, '#2b2b34'); for (let i = 0; i < 6; i++) m.box(-1.35 + i * 0.22, 1.12, 0.55, 0.08, 0.07, 0.42, '#9a4a2a'); L[1].box(-0.8, 1.0, 0.55, 1.3, 0.03, 0.42, '#ff6a2a', { ao: 1 }); m.box(0.9, 1.08, 0.7, 0.6, 0.25, 0.35, '#e8c27a'); }
+    if (id === 'candy') { m.cyl(-0.8, 1.02, 0.55, 0.35, 0.3, '#c9ccd2', 12); for (let i = 0; i < 4; i++) { m.box(0.3 + i * 0.32, 1.08, 0.75, 0.025, 0.4, 0.025, '#f4efe2'); m.sph(0.3 + i * 0.32, 1.6, 0.75, 0.15, i % 2 ? '#ff9fd0' : '#9fd8ff', 8); } }
+    shut.box(0, 1.08, 0.98, 3.5, 1.35, 0.06, shade(S.col, 0.75)); shut.box(0, 1.75, 1.02, 3.5, 0.06, 0.04, '#f4efe2');
+    fairFigure(vend, 0, 0.06, -0.15, 0, ['#c0392b', '#2f6b3a', '#d6589f'][si], si);
+    [m, shut, vend].concat(L).forEach((b) => b.pop());
+    const [sx, sz] = [S.x + Math.sin(S.rot) * 1.0, S.z + Math.cos(S.rot) * 1.0];
+    fairSign(S.sign, 3.2, 0.48, S.col, '#fff7e0', sx, 2.95, sz, S.rot);
+  });
+  /* ---- the Schiessbude ---- */
+  {
+    const S = FAIR_SHOOT;
+    [m, shut, vend].concat(L).forEach((b) => b.push(S.x, 0, S.z, -Math.PI / 2));
+    m.box(0, 0.06, -1.3, 6.0, 2.8, 0.15, '#2b3a5c'); m.box(-3.0, 0.06, -0.1, 0.15, 2.8, 2.5, '#2b3a5c'); m.box(3.0, 0.06, -0.1, 0.15, 2.8, 2.5, '#2b3a5c');
+    m.box(0, 0.06, 1.0, 6.0, 1.05, 0.35, '#ffd23f'); m.box(0, 2.85, -0.1, 6.3, 0.14, 2.7, '#f4efe2');
+    for (let i = 0; i < 12; i++) { const x0 = -3.15 + i * 0.525, c = C(i % 2 ? '#f4efe2' : '#2b6cb0'); m.quad(m.T(x0, 2.9, 1.2), m.T(x0 + 0.525, 2.9, 1.2), m.T(x0 + 0.525, 2.45, 1.9), m.T(x0, 2.45, 1.9), c); }
+    for (let r = 0; r < 2; r++) for (let i = 0; i < 7; i++) { const x = -2.4 + i * 0.8, y = 1.45 + r * 0.6; L[(i + r) % 3].cyl(x, y, -1.2, 0.17, 0.04, i % 2 ? '#ff5f5f' : '#f4efe2', 12); }
+    for (let i = 0; i < 5; i++) { const x = -2.2 + i * 1.1; m.sph(x, 2.25, -1.05, 0.2, ['#c9a05a', '#ff9fd0', '#9fd8ff', '#f4efe2', '#c9a05a'][i], 8); m.sph(x, 2.5, -1.05, 0.14, ['#c9a05a', '#ff9fd0', '#9fd8ff', '#f4efe2', '#c9a05a'][i], 8); }
+    for (let i = 0; i < 12; i++) fairBulb(L, i, -3.05 + i * 0.55, 2.42, 1.92);
+    shut.box(0, 1.15, 1.25, 5.9, 1.6, 0.06, '#24314f');
+    fairFigure(vend, 2.1, 0.06, 0.1, 0, '#2b6cb0', 3);
+    [m, shut, vend].concat(L).forEach((b) => b.pop());
+    fairSign('SCHIESSBUDE', 4.2, 0.55, '#2b3a5c', '#ffd23f', S.x - 1.95, 3.35, S.z, -Math.PI / 2);
+  }
+  /* ---- the Riesenrad: legs, platform, the ticket booth (the wheel turns: below) ---- */
+  {
+    const R = FAIR_RIDES.wheel, cy = FAIR_K.wheelY;
+    m.surfaceRole = 'metal';
+    [-0.95, 0.95].forEach((dz) => { [-1, 1].forEach((sx) => fairBeam(m, R.x + sx * 4.3, 0.05, R.z + dz * 1.6, R.x, cy, R.z + dz * 0.95, 0.32, '#e9ecef')); fairBeam(m, R.x - 2.15, cy / 2, R.z + dz * 1.15, R.x + 2.15, cy / 2, R.z + dz * 1.15, 0.18, '#e9ecef'); });
+    fairBeam(m, R.x, cy, R.z - 1.05, R.x, cy, R.z + 1.05, 0.4, '#8a939a');
+    m.surfaceRole = 'wood';
+    m.ext(R.x - 2.6, R.x + 2.6, 0, 0.45, R.z + 1.2, R.z + 3.0, '#8a6a4a'); m.ext(R.x - 1.0, R.x + 1.0, 0, 0.22, R.z + 3.0, R.z + 3.5, '#8a6a4a');
+    m.surfaceRole = 'paint';
+    m.box(R.x + 4.4, 0.06, R.z + 2.6, 1.5, 2.1, 1.3, '#c0392b'); m.box(R.x + 4.4, 2.16, R.z + 2.6, 1.7, 0.15, 1.5, '#ffd23f'); L[2].box(R.x + 4.4, 1.2, R.z + 3.26, 0.9, 0.5, 0.02, '#fff4c2', { ao: 1 });
+    fairSign('RIESENRAD', 3.0, 0.75, '#c0392b', '#ffd23f', R.x, cy, R.z + 1.0, 0);
+    fairSign('KASSE', 1.2, 0.36, '#ffd23f', '#c0392b', R.x + 4.4, 2.55, R.z + 3.36, 0);
+  }
+  /* ---- the Rösslispiel: its ring and step ---- */
+  {
+    const R = FAIR_RIDES.carousel;
+    m.cyl(R.x, 0, R.z, 4.8, 0.15, '#7a5a3a', 28); m.cyl(R.x, 0, R.z, 5.05, 0.08, '#6b4a33', 28);
+    m.box(R.gate[0] - 0.4, 0, R.gate[1] + 3.2, 0.09, 2.3, 0.09, '#5b4030');
+    fairSign('RÖSSLISPIEL', 2.8, 0.55, '#7d2e46', '#ffe1a8', R.gate[0] - 0.4, 2.55, R.gate[1] + 3.2, Math.PI / 2);
+  }
+  /* ---- the Kettenkarussell: base, tower and a ring fence ---- */
+  {
+    const R = FAIR_RIDES.swing;
+    m.cyl(R.x, 0, R.z, 2.4, 0.4, '#2b6cb0', 8); m.cyl(R.x, 0.4, R.z, 0.5, 4.9, '#f4efe2', 10); m.cyl(R.x, 2.2, R.z, 0.56, 0.3, '#2b6cb0', 10);
+    for (let i = 0; i < 26; i++) {
+      const a0 = (i / 26) * TAU, a1 = ((i + 1) / 26) * TAU, mid = (a0 + a1) / 2;
+      if (Math.abs(angDiff(mid, -Math.PI / 2)) < 0.3) continue;                    // the way in, on the side of the queue
+      const r = 6.6, ax = R.x + r * Math.sin(a0), az = R.z + r * Math.cos(a0), bx = R.x + r * Math.sin(a1), bz = R.z + r * Math.cos(a1);
+      fairBeam(m, ax, 0.75, az, bx, 0.75, bz, 0.07, '#2b6cb0'); m.box(ax, 0.05, az, 0.08, 0.75, 0.08, '#2b6cb0');
+    }
+    m.box(R.gate[0] + 0.5, 0, R.gate[1] - 3.0, 0.09, 2.3, 0.09, '#5b4030');
+    fairSign('KETTENKARUSSELL', 3.2, 0.55, '#2b6cb0', '#f4efe2', R.gate[0] + 0.5, 2.55, R.gate[1] - 3.0, -Math.PI / 2);
+  }
+  /* ---- the Autoscooter: the floor, the rail, the roof on its posts ---- */
+  {
+    const R = FAIR_RIDES.bumper, x0 = R.x - 5, x1 = R.x + 5, z0 = R.z - 3.5, z1 = R.z + 3.5;
+    m.surfaceRole = 'metal'; m.ext(x0, x1, 0, 0.18, z0, z1, '#5b6068', { ao: 1 });
+    for (let x = x0 + 1; x < x1; x += 1) m.ext(x - 0.01, x + 0.01, 0.18, 0.183, z0, z1, '#4b5058', { ao: 1 });
+    m.surfaceRole = 'rubber';
+    const rail = (ax, az, bx, bz) => { const w = Math.abs(bx - ax) + 0.2, d = Math.abs(bz - az) + 0.2; m.box((ax + bx) / 2, 0.18, (az + bz) / 2, w, 0.3, d, '#26262c'); m.box((ax + bx) / 2, 0.48, (az + bz) / 2, w, 0.06, d, '#ffd23f'); };
+    rail(x0, z0, x1, z0); rail(x0, z1, x1, z1); rail(x0, z0, x0, z1); rail(x1, z0, x1, R.z - 0.9); rail(x1, R.z + 0.9, x1, z1);
+    m.surfaceRole = 'metal';
+    [[x0, z0], [R.x, z0], [x1, z0], [x0, z1], [R.x, z1], [x1, z1]].forEach(([x, z]) => m.box(x, 0.18, z, 0.18, 3.7, 0.18, '#c9ccd2'));
+    /* an open lattice for a roof (the cars and their drivers stay in sight from above), the fascia round it */
+    for (let x = x0; x <= x1 + 0.01; x += 2) m.ext(x - 0.06, x + 0.06, 3.85, 4.05, z0 - 0.3, z1 + 0.3, '#3b3f46');
+    for (let z = z0; z <= z1 + 0.01; z += 1.75) m.ext(x0 - 0.3, x1 + 0.3, 3.88, 4.02, z - 0.04, z + 0.04, '#3b3f46');
+    m.surfaceRole = 'paint';
+    const fascia = [['#d64550', 0], ['#ffd23f', 1], ['#2a9d8f', 2]];
+    m.ext(x0 - 0.35, x1 + 0.35, 4.1, 4.75, z1 + 0.25, z1 + 0.35, '#d64550'); m.ext(x0 - 0.35, x1 + 0.35, 4.1, 4.75, z0 - 0.35, z0 - 0.25, '#2a9d8f');
+    m.ext(x1 + 0.25, x1 + 0.35, 4.1, 4.75, z0 - 0.35, z1 + 0.35, '#ffd23f'); m.ext(x0 - 0.35, x0 - 0.25, 4.1, 4.75, z0 - 0.35, z1 + 0.35, '#ffd23f');
+    for (let i = 0; i < 14; i++) { const x = x0 - 0.1 + i * (x1 - x0 + 0.2) / 13; fairBulb(L, i, x, 4.0, z1 + 0.42); fairBulb(L, i + 1, x, 4.0, z0 - 0.42); }
+    for (let i = 0; i < 10; i++) fairBulb(L, i, x1 + 0.42, 4.0, z0 - 0.1 + i * (z1 - z0 + 0.2) / 9);
+    void fascia;
+    fairSign('AUTOSCOOTER', 3.6, 0.5, '#26262c', '#ffd23f', x1 + 0.38, 4.42, R.z, Math.PI / 2);
+    fairSign('AUTOSCOOTER', 3.6, 0.5, '#26262c', '#ffd23f', R.x, 4.42, z1 + 0.38, 0);
+  }
+  /* static meshes */
+  const add = (b, mat, ro) => { const mm = b.build(mat); if (mm) { if (mat === WM.main || mat === WM.grass || mat === WM.leaf || mat === WM.pine) materialLibraryProcess(b, mm, mat); if (ro) mm.renderOrder = ro; ROOT.add(mm); } return mm; };
+  add(B.main, WM.main); add(B.grass, WM.grass); add(B.leaf, WM.leaf); add(B.pine, WM.pine); add(B.glow, FAIR3D.glowMat, 5);
+  L.forEach((lb, i) => add(lb, FAIR3D.lamps[i]));
+  FAIR3D.shutters = add(shut, WM.main); FAIR3D.vendors = add(vend, WM.main);
+
+  /* ---- the moving parts ---- */
+  const R = FAIR_RIDES.wheel, Rw = FAIR_K.wheelR;
+  FAIR3D.wheel = fairPart((b, Lb) => {
+    b.surfaceRole = 'metal';
+    [-0.55, 0.55].forEach((z, side) => {
+      for (let i = 0; i < 24; i++) {
+        const a0 = (i / 24) * TAU, a1 = ((i + 1) / 24) * TAU;
+        fairBeam(b, Rw * Math.sin(a0), -Rw * Math.cos(a0), z, Rw * Math.sin(a1), -Rw * Math.cos(a1), z, 0.2, '#e9ecef');
+        fairBeam(b, 3 * Math.sin(a0), -3 * Math.cos(a0), z, 3 * Math.sin(a1), -3 * Math.cos(a1), z, 0.12, '#c0392b');
+        fairBulb(Lb, i + side, (Rw + 0.16) * Math.sin(a0), -(Rw + 0.16) * Math.cos(a0) + 0.065, z * 1.12);
+      }
+      for (let k = 0; k < FAIR_K.gondolas; k++) { const a = (k / FAIR_K.gondolas) * TAU; fairBeam(b, 0, 0, z, Rw * Math.sin(a), -Rw * Math.cos(a), z, 0.13, '#e9ecef'); for (let j = 1; j < 4; j++) fairBulb(Lb, j + k, (Rw * j / 4.2) * Math.sin(a), -(Rw * j / 4.2) * Math.cos(a) + 0.065, z * 1.2, '#fff4c2'); }
+    });
+    for (let k = 0; k < FAIR_K.gondolas; k++) { const a = (k / FAIR_K.gondolas) * TAU; fairBeam(b, Rw * Math.sin(a), -Rw * Math.cos(a), -0.75, Rw * Math.sin(a), -Rw * Math.cos(a), 0.75, 0.1, '#8a939a'); }
+    b.box(0, -0.6, 0, 1.2, 1.2, 1.4, '#c0392b');
+  });
+  FAIR3D.wheel.position.set(R.x, FAIR_K.wheelY, R.z);
+  const GC = ['#d64550', '#f2c94c', '#2a9d8f', '#4a78b5'];
+  for (let k = 0; k < FAIR_K.gondolas; k++) FAIR3D.gondolas.push(fairPart((b) => {
+    const c = GC[k % 4];
+    b.box(0, -0.42, 0, 0.08, 0.42, 0.08, '#8a939a');
+    b.surfaceRole = 'paint'; b.soft(0, -0.5, 0, 1.6, 0.12, 1.25, c, 0.05);
+    [[-0.74, -0.56], [0.74, -0.56], [-0.74, 0.56], [0.74, 0.56]].forEach(([x, z]) => b.box(x, -1.5, z, 0.06, 1.0, 0.06, '#e9ecef'));
+    b.box(0, -1.62, 0, 1.55, 0.12, 1.2, shade(c, 0.8));
+    b.box(0, -1.5, 0.58, 1.5, 0.48, 0.05, c); b.box(0, -1.5, -0.58, 1.5, 0.6, 0.05, c); b.box(-0.74, -1.5, 0, 0.05, 0.5, 1.15, c); b.box(0.74, -1.5, 0, 0.05, 0.5, 1.15, c);
+    b.box(0, -1.5, -0.38, 1.4, 0.45, 0.32, '#f4efe2');
+  }));
+  /* the carousel: the platform, the column, the striped canopy turn; the horses go up and down on their own */
+  const Rc = FAIR_RIDES.carousel;
+  FAIR3D.carousel = fairPart((b, Lb) => {
+    b.surfaceRole = 'wood'; b.cyl(0, 0.15, 0, 4.5, 0.35, '#c9a679', 28);
+    b.surfaceRole = 'paint'; b.cyl(0, 0.5, 0, 0.95, 3.1, '#f4ecd8', 12);
+    for (let i = 0; i < 12; i++) { const a = (i / 12) * TAU; Lb[i % 3].box(0.98 * Math.sin(a), 2.0, 0.98 * Math.cos(a), 0.3, 0.7, 0.3, i % 2 ? '#bfe6f4' : '#fff4c2', { ao: 1 }); }
+    const N = 16;
+    for (let i = 0; i < N; i++) {
+      const a0 = (i / N) * TAU, a1 = ((i + 1) / N) * TAU, c = C(i % 2 ? '#f4efe2' : '#b8324f');
+      b.quad(b.T(4.9 * Math.sin(a0), 3.65, 4.9 * Math.cos(a0)), b.T(4.9 * Math.sin(a1), 3.65, 4.9 * Math.cos(a1)), b.T(0.35 * Math.sin(a1), 5.4, 0.35 * Math.cos(a1)), b.T(0.35 * Math.sin(a0), 5.4, 0.35 * Math.cos(a0)), c);
+      b.quad(b.T(4.9 * Math.sin(a0), 3.65, 4.9 * Math.cos(a0)), b.T(4.9 * Math.sin(a1), 3.65, 4.9 * Math.cos(a1)), b.T(4.9 * Math.sin(a1), 3.3, 4.9 * Math.cos(a1)), b.T(4.9 * Math.sin(a0), 3.3, 4.9 * Math.cos(a0)), C(i % 2 ? '#ffd23f' : '#b8324f'));
+    }
+    b.sph(0, 5.55, 0, 0.32, '#ffd23f', 10);
+    for (let i = 0; i < 32; i++) { const a = (i / 32) * TAU; fairBulb(Lb, i, 4.98 * Math.sin(a), 3.42, 4.98 * Math.cos(a)); }
+  });
+  FAIR3D.carousel.position.set(Rc.x, 0, Rc.z);
+  const HC = [['#f4efe2', '#c0392b'], ['#3b2f2a', '#2b6cb0'], ['#a8774f', '#2a9d8f'], ['#bfbfbf', '#d6a531']];
+  for (let k = 0; k < 8; k++) FAIR3D.horses.push(fairPart((b) => {
+    const [body, saddle] = HC[k % 4];
+    b.surfaceRole = 'metal'; b.cyl(0, -0.6, 0, 0.045, 3.75, '#d6a531', 6);
+    b.surfaceRole = 'paint';
+    b.soft(0, 0.55, 0, 0.36, 0.4, 1.25, body, 0.14); b.soft(0, 0.93, -0.05, 0.38, 0.06, 0.5, saddle, 0.03);
+    fairBeam(b, 0, 0.85, 0.5, 0, 1.3, 0.78, 0.22, body); b.soft(0, 1.18, 0.78, 0.2, 0.26, 0.48, body, 0.08); b.box(0, 1.36, 0.62, 0.06, 0.18, 0.28, saddle);
+    fairBeam(b, -0.12, 0.62, 0.45, -0.12, 0.25, 0.85, 0.09, body); fairBeam(b, 0.12, 0.62, 0.45, 0.12, 0.2, 0.7, 0.09, body);
+    fairBeam(b, -0.12, 0.62, -0.45, -0.12, 0.15, -0.75, 0.09, body); fairBeam(b, 0.12, 0.62, -0.45, 0.12, 0.2, -0.6, 0.09, body);
+    fairBeam(b, 0, 0.8, -0.6, 0, 0.45, -0.85, 0.08, saddle);
+  }));
+  /* the chain swing: a crown that rises and turns, twelve chairs on their chains */
+  const Rs = FAIR_RIDES.swing;
+  FAIR3D.crown = fairPart((b, Lb) => {
+    b.surfaceRole = 'paint';
+    b.cyl(0, -2.2, 0, 0.38, 2.2, '#f4efe2', 10); b.cyl(0, -0.2, 0, 2.8, 0.42, '#2b6cb0', 20);
+    const N = 14;
+    for (let i = 0; i < N; i++) { const a0 = (i / N) * TAU, a1 = ((i + 1) / N) * TAU; b.quad(b.T(3.1 * Math.sin(a0), 0.22, 3.1 * Math.cos(a0)), b.T(3.1 * Math.sin(a1), 0.22, 3.1 * Math.cos(a1)), b.T(0.2 * Math.sin(a1), 1.7, 0.2 * Math.cos(a1)), b.T(0.2 * Math.sin(a0), 1.7, 0.2 * Math.cos(a0)), C(i % 2 ? '#f4efe2' : '#2b6cb0')); }
+    b.sph(0, 1.8, 0, 0.26, '#ffd23f', 8);
+    for (let i = 0; i < 24; i++) { const a = (i / 24) * TAU; fairBulb(Lb, i, 3.12 * Math.sin(a), 0.2, 3.12 * Math.cos(a)); }
+  });
+  const SC = ['#d64550', '#ffd23f', '#2a9d8f', '#f4efe2'];
+  for (let k = 0; k < 12; k++) {
+    const g = fairPart((b) => {
+      const Lc = FAIR_K.swingChain;
+      b.surfaceRole = 'metal'; [-0.24, 0.24].forEach((z) => fairBeam(b, 0, 0, z * 0.4, 0, -Lc, z, 0.03, '#c9ccd2'));
+      b.surfaceRole = 'paint'; b.box(0, -Lc - 0.05, 0, 0.5, 0.07, 0.52, SC[k % 4]); b.box(-0.24, -Lc - 0.05, 0, 0.05, 0.55, 0.5, SC[k % 4]); b.box(0.32, -Lc - 0.32, 0, 0.05, 0.05, 0.44, '#c9ccd2');
+    });
+    g.rotation.order = 'YXZ'; FAIR3D.chairs.push(g);
+  }
+  /* the bumper cars */
+  const CC = ['#d64550', '#2a9d8f', '#ffd23f', '#4a78b5', '#7d4aa8', '#f08a4b'];
+  for (let k = 0; k < 6; k++) { FAIR3D.cars.push(fairPart((b, Lb) => {
+    b.surfaceRole = 'rubber'; b.box(0, 0.0, 0, 1.15, 0.22, 1.65, '#26262c');
+    b.surfaceRole = 'paint'; b.soft(0, 0.12, 0.05, 0.98, 0.42, 1.45, CC[k], 0.16); b.soft(0, 0.4, -0.45, 0.8, 0.4, 0.3, shade(CC[k], 0.8), 0.1);
+    b.box(0, 0.5, 0.42, 0.06, 0.18, 0.06, '#26262c'); b.box(0, 0.66, 0.38, 0.34, 0.04, 0.2, '#26262c');
+    b.surfaceRole = 'metal'; b.box(0, 0.5, -0.66, 0.05, 3.1, 0.05, '#c9ccd2'); Lb[k % 3].box(0, 3.55, -0.66, 0.16, 0.08, 0.16, '#9fe3ff', { ao: 1 });
+  })); FAIR3D.carW.push(0); }
+  FAIR3D.ready = true; FAIR3D.wasOpen = null;
+  updateChilbi(0);
+}
+
+/* ---------- every frame ---------- */
+function updateChilbi(dt) {
+  if (!FAIR3D.ready) return;
+  const t = G.t, open = chilbiOpen(t);
+  if (open !== FAIR3D.wasOpen) { FAIR3D.wasOpen = open; if (FAIR3D.shutters) FAIR3D.shutters.visible = !open; if (FAIR3D.vendors) FAIR3D.vendors.visible = open; }
+  /* the board by the gate says whether it is on, and when it is back */
+  const txt = open ? 'OPEN · TILL MIDNIGHT' : (() => { const at = chilbiNextOpen(t); return at == null ? 'CLOSED' : dayOf(at) === dayOf(t) ? 'OPENS AT 10:00' : 'CLOSED · BACK ' + DAYNAMES[wdOf(at)].toUpperCase(); })();
+  if (txt !== FAIR3D.statusText && FAIR3D.status) {
+    FAIR3D.statusText = txt;
+    const mat = FAIR3D.status.material, old = mat.map;
+    mat.map = labelTex(txt, 2.0, 0.62, open ? '#2f5d3a' : '#7a2b2b', '#f4efe2', { lit: true, border: '#f4efe2', round: 8 }); mat.needsUpdate = true;
+    if (old && old !== mat.map) old.dispose();
+  }
+  /* the wheel and its gondolas (always hanging straight down) */
+  const th = fairWheelAngle(t, open);
+  FAIR3D.wheel.rotation.z = th;
+  const Rw = FAIR_RIDES.wheel;
+  FAIR3D.gondolas.forEach((g, k) => { const a = th + TAU * k / FAIR_K.gondolas; g.position.set(Rw.x + FAIR_K.wheelR * Math.sin(a), FAIR_K.wheelY - FAIR_K.wheelR * Math.cos(a), Rw.z); });
+  /* the carousel and its horses */
+  const ph = fairCarouselAngle(t, open), Rc = FAIR_RIDES.carousel;
+  FAIR3D.carousel.rotation.y = ph;
+  FAIR3D.horses.forEach((g, k) => { const a = ph + TAU * k / 8; g.position.set(Rc.x + FAIR_K.horseR * Math.sin(a), 0.5 + fairBob(ph, k, open), Rc.z + FAIR_K.horseR * Math.cos(a)); g.rotation.y = a - Math.PI / 2; });
+  /* the swings: the crown rises and turns, the chairs fly out */
+  const S = fairSwingState(t, open), Rs = FAIR_RIDES.swing;
+  FAIR3D.crown.position.set(Rs.x, S.y, Rs.z); FAIR3D.crown.rotation.y = S.psi;
+  FAIR3D.chairs.forEach((g, k) => { const a = S.psi + TAU * k / 12; g.position.set(Rs.x + FAIR_K.swingArm * Math.sin(a), S.y, Rs.z + FAIR_K.swingArm * Math.cos(a)); g.rotation.y = a; g.rotation.x = -S.tilt; });
+  /* the bumper cars drive only with someone at the wheel; the rest wait in a row */
+  const taken = FAIR_TAKEN.bumper, kk = 1 - Math.exp(-(dt || 1) * 2.5), p = {}, q = {};
+  FAIR3D.cars.forEach((g, k) => {
+    const want = open && taken && taken.has(k) ? 1 : 0;
+    FAIR3D.carW[k] = dt ? FAIR3D.carW[k] + (want - FAIR3D.carW[k]) * kk : want;
+    const w = FAIR3D.carW[k];
+    fairCarParked(k, p); if (w > 0.001) fairCarPath(k, t, q); else Object.assign(q, p);
+    g.position.set(lerp(p.x, q.x, w), 0.2, lerp(p.z, q.z, w)); g.rotation.y = lerpAngle(p.yaw, q.yaw, w);
+  });
+  /* the bulbs chase round when it is open; at night they are the brightest thing in town */
+  const night = W.L ? 1 - W.L.dayF : 0, base = open ? 0.62 + 0.38 * night : 0.16, phase = Math.floor(_clock * 3.2) % 3;
+  FAIR3D.lamps.forEach((mat, i) => { const v = open ? base * (i === phase ? 1.18 : 0.78) : base; mat.color.setRGB(v, v, v); });
+  FAIR3D.glowMat.opacity = open ? Math.min(0.75, WM.glow.opacity * 1.5) : 0;
+}
+
 /* ---- 06zz-mishap-fx.js ---- */
 /* ============================================================
    06zz — effects for when things go wrong: flames, smoke, sparks,
@@ -11875,6 +12335,7 @@ function animChar(R, s, dt, t, spd) {
   if (treadmill) T.bY += .26 / (R.cs || 1); // Existing belt height; animation only, no navigation movement.
   foodPose(T, R, s, R.activity.clock, moving);
   activityPose(T, R, s, t, moving);
+  fairRidePose(T, R, s, dt);                       // on a ride at the Chilbi, the ride carries them (06zc)
   R.umbOn = !!R.umb && typeof umbrellaOn === 'function' && umbrellaOn(s);
   if (R.umbOn) { T.arL = -0.5; T.foL = -1.15; T.armZ = 0.12; }
   /* turning over in bed is a slow roll, not a snap */
@@ -14123,6 +14584,14 @@ function menuGuide(body) {
       'The weather changes through the day: sun, cloud, rain, storms and fog, and snow in winter. Tap the clock for the forecast. People take an umbrella in the rain and spend less time outdoors.',
       'Bills come with the Monday post: water, power and the council, more for a bigger, better-furnished house. Pay them from the notice or the Household tab. Four days late and they are collected with a fee.',
     ]),
+    sec('🎡', 'The Chilbi', [
+      'A third of the days the Chilbi is in town, on the far side of Park Road past the park: three days at a time, open 10:00 to midnight. A notice says when it arrives and on its last day; the board by the gate says when it is back.',
+      'Tap a ride (Riesenrad, Rösslispiel, Kettenkarussell, Autoscooter), the Schiessbude or a stand to go. Rides cost a few § and lift the mood; food from the stands is eaten at the beer tables. Tap the gate for everything at once, and Ride it together takes everyone who is there with you.',
+    ]),
+    sec('👥', 'Friend groups', [
+      'Working, studying or going to school with the same people makes you closer. Once a couple of them are friendly, they become a friend group: you get a notice, and the People tab lists it.',
+      'After work or school the group sometimes asks you along: a beer at The Lantern, the café, the Green or the Square, or the Chilbi when it is in town. Go along and everyone comes back closer and happier; say no and they go without you. You can invite a group out yourself from the People tab or from anyone in it.',
+    ]),
     sec('🧊', 'The fridge, groceries and leftovers', [
       'What your household eats comes out of the fridge. Tap it to see how full it is: a fridge holds 60 servings (a steel fridge-freezer 90, a chest freezer 30 more), which lasts a family a week or two. A meal takes one serving, a snack half, a big pot one a plate.',
       'Order groceries at the fridge, on the telephone or on the computer, and choose how full: a quarter, half, three quarters or right up, at §3 a serving. The shopping comes to the front door about an hour later and someone puts it away; left there a few hours, the driver brings it in. A notice says when the fridge is running low and when it is empty. With nothing in it, meals are takeaways.',
@@ -14147,7 +14616,7 @@ function menuGuide(body) {
       'Lights come on after dark where someone is awake (Settings → Lights at home).',
     ]),
     sec('🏡', 'Homes, moving and other families', [
-      'A new family is made in two steps: who they are (Create-a-Sim), then where they live. Every family starts with §36,000; a lot costs its land plus whatever stands on it, so an ordinary furnished house leaves a few thousand, the run-down No. 10 a good deal more, and an empty plot (No. 11 and No. 12, by the cemetery) nearly all of it for building.',
+      'A new family is made in two steps: who they are (Create-a-Sim), then where they live. Every family starts with §36,000; a lot costs its land plus whatever stands on it, so an ordinary furnished house leaves a few thousand, the run-down No. 10 a good deal more, and an empty plot (No. 11 and No. 12 by the cemetery, No. 13 and No. 14 by the park) nearly all of it for building.',
       'On an empty plot, open Build mode and start with a room over the front-door marker by the garden path; the rest can go anywhere on the plot. Until there is a kitchen, a bathroom and a bed, the family will feel it.',
       'Menu → Household → 🚚 Move house: pick any lot for sale. Your house is sold as it stands for nine tenths of its price, the new one bought, and everyone moves over.',
       '🔁 Play another household: pick any family in town and play them, with their jobs, school and pets. The family you leave carries on as neighbours with routines of their own; their money and records are kept for when you come back. ➕ New household makes a new family and moves them onto a free lot the same way.',
@@ -14303,7 +14772,7 @@ function menuAbout(body) {
     h('h4', null, 'In this build'),
     h('ul', null, [
       li('Lots and households: buy a house or an empty plot for a new family, move house, play any family in town or move a new one in; the others live on as neighbours.'),
-      li('A small town of three streets and three cross streets: ten houses and two empty plots, a high street, a school, a college, offices, a clinic, a garage, a park, a green, a square and a cemetery; weather and four seasons (28 days each).'),
+      li('A small town of three streets and three cross streets: ten houses and four empty plots, a high street, a school, a college, offices, a clinic, a garage, a park, a green, a square, a cemetery and, a third of the days, the Chilbi; weather and four seasons (28 days each).'),
       li('Create-a-Sim for one to four people, with looks, traits, personality and five outfits.'),
       li('Build mode for house No. 1: a shop of 58 things, placing, turning, recolouring and selling furniture and garden items; rooms you draw, resize, split, join and take down; doors, openings and windows; staircases; up to three storeys; floors, wall paint, roof shape and outside colours. Everything is undoable and priced.'),
       li('Buildings around town you can enter, with cutaway walls.'),
@@ -14706,6 +15175,7 @@ UI.socialMenu = function (me, t, tab) {
     const items = opts.filter((o) => o.def.cat === cur);
     hookItems(cur, me, t, items);
     if (typeof lifeSocialItems === 'function') lifeSocialItems(cur, me, t, items);
+    crowdSocialItems(cur, me, t, items);
     if (!items.length) list.append(h('div', { class: 'note' }, 'Nothing you could do here right now.'));
     items.forEach((o) => {
       const hint = o.why ? o.why : (o.hint !== undefined ? o.hint : socHint(me, t, o.kind));
@@ -16297,10 +16767,11 @@ function hudWork(s) {
     hudMore(met === gates.length && gates.length ? 'Promotion next shift' : gates.length ? 'What the promotion needs' : 'Career details', () => UI.characterPanel(s, 'career')));
 }
 function hudPeople(s) {
-  const rels = ciRelationships(s).filter((r) => !r.person.dead).slice(0, 5);
-  if (!rels.length) return hudEmpty('Nobody close yet. Say hello to the neighbours.');
-  return h('div', { class: 'hpeople' }, rels.map((r) => h('button', { class: 'hperson', onclick: () => { CHARACTER_INFO.peer = null; UI.characterPanel(s, 'relationships'); CHARACTER_INFO.peer = r.person.id; ciRender(true); }, title: r.type + ' · ' + r.strength },
+  const rels = ciRelationships(s).filter((r) => !r.person.dead).slice(0, 5), crowds = hudCrowds(s);
+  if (!rels.length) return crowds || hudEmpty('Nobody close yet. Say hello to the neighbours.');
+  const list = h('div', { class: 'hpeople' }, rels.map((r) => h('button', { class: 'hperson', onclick: () => { CHARACTER_INFO.peer = null; UI.characterPanel(s, 'relationships'); CHARACTER_INFO.peer = r.person.id; ciRender(true); }, title: r.type + ' · ' + r.strength },
     h('img', { src: portraitOf(r.person, 48) || '', alt: '' }), h('span', { class: 'hp-t' }, h('b', null, r.person.first), h('em', null, r.type.split(' · ')[0])), hudBar(r.r.fri * 100, 'Friendship with ' + r.person.first, r.tension.length ? 'warn' : 'good'))));
+  return crowds ? h('div', null, crowds, list) : list;
 }
 
 /* ---------- a pet's tabs ---------- */
@@ -16394,7 +16865,7 @@ Object.assign(UI, {
     else if (tab === 'skills') key = 'skills|' + SKILLS.map(([k]) => Math.floor(skillOf(s, k) * 100)).join();
     else if (tab === 'work') key = 'work|' + JSON.stringify([s.school && [Math.round(s.school.perf), s.school.hw], s.career && [s.career.level, Math.round(s.career.perf), s.career.shifts], dutyText(s), s.skills]);
     else if (tab === 'town') key = 'town|' + (townCompact() ? 'c' : 'f') + '|' + who;
-    else key = 'people|' + ciRelationships(s).slice(0, 5).map((r) => r.person.id + Math.round(r.r.fri * 100) + r.type + r.tension.join()).join();
+    else key = 'people|' + ciRelationships(s).slice(0, 5).map((r) => r.person.id + Math.round(r.r.fri * 100) + r.type + r.tension.join()).join() + '|' + crowdsOf(s).map((c) => c.id + c.members.join()).join();
     /* the Town tab folds the whole panel into one strip when compact */
     this.panel.classList.toggle('tcompact', !pet && tab === 'town' && townCompact());
     if (this._tabKey !== key) {
@@ -16550,9 +17021,9 @@ PET_INFO.close = function () { if (!this.root) return; this.root = null; this.id
    ends the watch. "Whole town" pulls the camera back over the map.
    ============================================================ */
 const WATCH = { id: null, bld: null };
-const PLACE_ICON = { school: '🏫', college: '🎓', office: '🏢', townhall: '🏛️', clinic: '🏥', health: '💪', garage: '🔧', cafe: '☕', grocery: '🛒', commhall: '🏟️', lantern: '🍺', velvet: '🎶', green: '🛝', square: '⛲', park: '🌳', cemetery: '🕯️' };
+const PLACE_ICON = { school: '🏫', college: '🎓', office: '🏢', townhall: '🏛️', clinic: '🏥', health: '💪', garage: '🔧', cafe: '☕', grocery: '🛒', commhall: '🏟️', lantern: '🍺', velvet: '🎶', chilbi: '🎡', green: '🛝', square: '⛲', park: '🌳', cemetery: '🕯️' };
 const PLACE_ORDER = Object.keys(PLACE_ICON);
-const PLACE_NAME = { green: GREEN.name, square: 'Market Square', park: 'The park', cemetery: 'Hawthorn Rest' };
+const PLACE_NAME = { green: GREEN.name, square: 'Market Square', park: 'The park', cemetery: 'Hawthorn Rest', chilbi: 'The Chilbi' };
 function placeName(id) { const t = TOWN.find((b) => b.id === id); return t ? t.name : PLACE_NAME[id] || id; }
 /* where someone is, as the Town tab groups it */
 function placeOf(s) {
@@ -16560,7 +17031,7 @@ function placeOf(s) {
   const n = NAV.nodes[s.node] || {}, f = footprintAt(s.x, s.z, 0);
   let b = (f && f.id) || n.bld || '';
   if (b === 'schoolyard') b = 'school';
-  if (s.state === 'walking' && !f && !['green', 'square', 'park', 'cemetery'].includes(b)) b = '';
+  if (s.state === 'walking' && !f && !['green', 'square', 'park', 'cemetery', 'chilbi'].includes(b)) b = '';
   if (/^h\d+$/.test(b)) return { key: 'home', label: 'At home', icon: '🏠', order: 97, bld: b };
   if (PLACE_ICON[b]) return { key: b, label: placeName(b), icon: PLACE_ICON[b], order: PLACE_ORDER.indexOf(b), bld: b };
   return { key: 'street', label: 'Out and about', icon: '🚶', order: 60 };
@@ -16729,7 +17200,7 @@ function updateTownPins(far) {
         if (f && TOWN3D[f.id]) counts[f.id] = (counts[f.id] || 0) + 1;
         continue;
       }
-      const p = screenPos(s.x, s.y + 2.2, s.z);
+      const vp = simViewPoint(s) || s, p = screenPos(vp.x, vp.y + 2.2, vp.z);
       if (!p.ok || p.x < -30 || p.x > vw + 30 || p.y < -30 || p.y > vh + 30) continue;
       const el = townPin('p:' + s.id, 'tpin');
       const mine = inHousehold(s);
@@ -16738,17 +17209,36 @@ function updateTownPins(far) {
       el.root.style.transform = `translate(${Math.round(p.x)}px,${Math.round(p.y)}px) translate(-50%,-100%)`;
       el.root.hidden = false; seen['p:' + s.id] = 1;
     }
+    /* a badge on the roof: the place, its icon and how many are inside, the point of the tail on the ridge */
+    const badge = (key, id, x, y, z, n, cls) => {
+      const p = screenPos(x, y, z);
+      if (!p.ok || p.x < -80 || p.x > vw + 80 || p.y < -40 || p.y > vh + 40) return;
+      const el = townPin(key, 'tbpin' + (cls ? ' ' + cls : '')), t = id + '|' + n;
+      if (el.t !== t) {
+        el.t = t; el.root.textContent = '';
+        el.root.append(h('span', { class: 'ic' }, PLACE_ICON[id] || '👥'), h('span', { class: 'pl' }, placeShort(id)), h('span', { class: 'n' }, String(n)));
+        el.root.title = placeName(id) + ' · ' + (typeof n === 'number' ? n + (n === 1 ? ' person' : ' people') : n);
+      }
+      el.root.style.transform = `translate(${Math.round(p.x)}px,${Math.round(p.y)}px) translate(-50%,calc(-100% - 8px))`;
+      el.root.hidden = false; seen[key] = 1;
+    };
     for (const id in counts) {
-      const f = FOOT.find((q) => q.id === id), p = f && screenPos((f.x0 + f.x1) / 2, 7.5, (f.z0 + f.z1) / 2);
-      if (!p || !p.ok) continue;
-      const el = townPin('b:' + id, 'tbpin'), t = (PLACE_ICON[id] || '👥') + ' ' + counts[id];
-      if (el.t !== t) { el.t = t; el.root.textContent = t; el.root.title = placeName(id); }
-      el.root.style.transform = `translate(${Math.round(p.x)}px,${Math.round(p.y)}px) translate(-50%,-50%)`;
-      el.root.hidden = false; seen['b:' + id] = 1;
+      const d = TOWN.find((q) => q.id === id);
+      if (d) badge('b:' + id, id, d.cx, roofTop(d), d.cz, counts[id]);
+    }
+    /* the Chilbi, while it is open: a badge over the gate counting everyone at the fair */
+    if (typeof chilbiOpen === 'function' && chilbiOpen(G.t)) {
+      const n = G.sims.filter((s) => !s.dead && !s.offmap && inChilbi(s.x, s.z)).length;
+      badge('b:chilbi', 'chilbi', CHILBI.gate[0], 6.2, CHILBI.gate[1] - 1, n || 'open', 'fair');
     }
   }
   for (const k in TOWN_PINS) if (!seen[k]) TOWN_PINS[k].root.hidden = true;
 }
+/* the top of a town building's roof (or its tower), where the badge's tail points */
+function roofTop(d) { return TOWN_FLOOR + d.h + (d.tower ? 6.2 : d.roofType === 'flat' ? 0.9 : 2.6) + 0.3; }
+/* a building's name, short enough for a badge */
+const PLACE_SHORT = { cafe: 'Café', grocery: 'Grocery', townhall: 'Town Hall', clinic: 'Clinic', health: 'Health Dept.', office: 'Bridge House', velvet: 'Velvet Room', lantern: 'The Lantern', commhall: 'Comm. Hall', college: 'College', garage: 'Garage', school: 'School', chilbi: 'Chilbi' };
+function placeShort(id) { return PLACE_SHORT[id] || placeName(id); }
 
 /* ---- 09a-interact.js ---- */
 /* ============================================================
@@ -16974,12 +17464,15 @@ function tapAt(px, py) {
   if (!roomPoint) {
     HOUSES.forEach((hs) => { const H = HOUSES3D[hs.id]; if (!H.open) test(hs.id, hs.cx, hs.cz, 6.4, 5.0, 9, 'house'); });
     TOWN.forEach((d) => { const T = TOWN3D[d.id]; if (!T.open) test(d.id, d.cx, d.cz, d.w / 2 + 0.3, 4.3, d.h + 1, 'town'); });
+    /* the rides and stands at the Chilbi (11o) */
+    const fp = chilbiPick(ray);
+    if (fp && fp.d < hd) { hd = fp.d; hit = { id: fp.id, kind: 'fair', fk: fp.kind }; }
   }
   const gp = groundPoint(px, py, 0.25);
   if (gp && !roomPoint) {   // porch zones
     HOUSES.forEach((hs) => { const pn = NAV.nodes[nId(hs.id + '.porch')]; if (Math.hypot(pn.x - gp.x, pn.z - gp.z) < 1.8 && !hit) hit = { id: hs.id, kind: 'house' }; });
   }
-  if (hit) return hit.kind === 'house' ? houseMenu(me, HOUSE_BY_NO[+hit.id.slice(1)]) : townMenu(me, TOWN.find((x) => x.id === hit.id));
+  if (hit) return hit.kind === 'house' ? houseMenu(me, HOUSE_BY_NO[+hit.id.slice(1)]) : hit.kind === 'fair' ? chilbiMenu(me, hit.fk, hit.id) : townMenu(me, TOWN.find((x) => x.id === hit.id));
   /* 4. move */
   let g = roomPoint;
   if (!g && W.focus) { g = groundPoint(px, py, W.focus.house ? FLOOR_Y[W.focus.floor] : TOWN_FLOOR); if (g && !footprintAt(g.x, g.z, 0.2)) g = null; }
@@ -17500,8 +17993,8 @@ function updateTags() {
     const nameOn = (showNames && (mine || (s.sched && isKnown(s)))) || watched;
     if (!hasB && !nameOn) continue;
     if (!simShown(s)) continue;
-    const sc = charScale(s);
-    const p = screenPos(s.x, s.y + (s.pose === 'lie' ? (s.dy || 0.5) + 0.75 : 2.0 * sc + 0.12), s.z);
+    const sc = charScale(s), vp = simViewPoint(s) || s;
+    const p = screenPos(vp.x, vp.y + (s.pose === 'lie' ? (s.dy || 0.5) + 0.75 : 2.0 * sc + 0.12), vp.z);
     if (!p.ok || p.x < -60 || p.x > vw + 60 || p.y < -20 || p.y > vh + 60) continue;
     let el = TAGS[s.id];
     if (!el) {
@@ -18161,6 +18654,7 @@ function update(dt, now) {
   TVScreens.frame(dt);
   miniatureLightingFrame(dt);
   updateTraffic(dt);
+  updateChilbi(dt);
   updatePets(dt);
   chaosFrame(dt);
   updateWeather(dt);
@@ -19390,8 +19884,261 @@ function socialTick(dt) {
   if (!G.player.members.length) return;
   apptTick();
   dropInTick();
+  if (G.t >= (G.nx.crowd || 0)) { G.nx.crowd = G.t + 2; crowdTick(); }
   wishTick();
   void dt;
+}
+
+/* ---- 10e-crowds.js ---- */
+/* ============================================================
+   10e — friend groups: the crowd from work, the gang from class
+
+   Days at work, at school or at college side by side make people
+   familiar (a little each day, more for children). Once a couple of
+   colleagues or classmates are friendly with someone you play, they
+   become that person's crowd: "the Bridge House crowd", "your class at
+   Hawthorn School". After a shift or a school day the crowd sometimes
+   asks them along — a beer at The Lantern, coffee and cake at the café,
+   an hour on Willow Green, the Chilbi when it is in town — through a
+   notice at the top, like a neighbour at the door. Going out together
+   brings everyone closer and leaves a good mood; saying no is fine, a
+   little cooler, and they go anyway. You can also invite a crowd out
+   yourself, from the People tab or from any of its members.
+
+   Kept in G.flags (saved with the game): crowds, the open invitation,
+   the outing under way. The neighbours on an outing are steered with an
+   override, the way a visitor is (10d), so it works in shared towns too.
+   ============================================================ */
+const CROWD = { min: 2, max: 4, friendly: 0.12, familiar: 0.28, cooldown: 1.2 * 1440, answer: 25 };
+const crowdList = () => G.flags.crowds || (G.flags.crowds = []);
+const crowdsOf = (s) => crowdList().filter((c) => c.sim === s.id && c.members.some((id) => G.byId[id] && !G.byId[id].dead));
+const crowdMembers = (c) => c.members.map((id) => G.byId[id]).filter((n) => n && !n.dead && n.hid !== 'away' && !inHousehold(n));
+const crowdNames = (list) => { const n = list.map((x) => x.first); return n.length < 2 ? n.join('') : n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1]; };
+function crowdName(kind, bid) {
+  if (kind === 'school') return 'the gang from class';
+  if (kind === 'uni') return 'the college crowd';
+  return { office: 'the Bridge House crowd', clinic: 'the clinic crew', townhall: 'the Town Hall lot', cafe: 'the café crew', commhall: 'the gym crowd', velvet: 'the Velvet Room crew', school: 'the staffroom', garage: 'the garage lads', lantern: 'the Lantern crew', grocery: 'the grocery crew', health: 'the Health Department lot', college: 'the college staff' }[bid] || 'the crowd from work';
+}
+const crowdTitle = (c) => c.name[0].toUpperCase() + c.name.slice(1);
+
+/* who shares the place: colleagues at the same building, or classmates close in age */
+function crowdMates(s, kind, bid) {
+  return G.sims.filter((n) => {
+    if (n === s || !n.sched || n.dead || n.hid === 'away' || inHousehold(n) || !n.job || n.job.place !== bid) return false;
+    const pupil = n.job.track === 'School';
+    if (kind === 'school') return pupil && bid === 'school' && Math.abs(n.age - s.age) <= 3;
+    if (kind === 'uni') return n.age >= 17;
+    return !pupil && n.age >= 18;
+  });
+}
+/* were they there today (their day's plan had them working or studying in that building)? */
+function crowdThereToday(n, bid) {
+  const day = dayOf(G.t), m = minOfDay(G.t);
+  return dayBlocks(n, day).some((b) => b.place.split(':')[0] === bid && b.t < m && (b.w || WORK_ACTS.has(b.act) || b.act === 'study' || b.act === 'lecture'));
+}
+
+/* ---------- the end of a shift or a school day (11-career endDuty) ---------- */
+function crowdDutyEnd(s, W) {
+  if (!s || !W || !inHousehold(s) || s.age < 6) return;
+  const kind = W.kind === 'school' ? 'school' : W.kind === 'uni' ? 'uni' : 'work', bid = dutyBuilding(s, W.kind);
+  const all = crowdMates(s, kind, bid), there = all.filter((n) => crowdThereToday(n, bid));
+  /* a day side by side: a little more familiar, a little friendlier */
+  const k = kind === 'school' ? 1.4 : 1;
+  there.forEach((n) => { bump(s, n, 'fam', 0.045 * k); bump(n, s, 'fam', 0.045 * k); bump(s, n, 'fri', 0.022 * k); bump(n, s, 'fri', 0.022 * k); });
+  /* a crowd forms (or takes someone new in) once enough of them are friendly */
+  const close = all.filter((n) => { const r = relOf(n, s); return r.fri >= CROWD.friendly || r.fam >= CROWD.familiar; })
+    .sort((a, b) => relOf(b, s).fri - relOf(a, s).fri).slice(0, CROWD.max);
+  let c = crowdList().find((x) => x.sim === s.id && x.bid === bid && x.kind === kind);
+  const need = Math.min(CROWD.min, all.length);
+  if (!c && need && close.length >= need) {
+    c = { id: 'c' + ((G.flags.crowdSeq = (G.flags.crowdSeq || 0) + 1)), sim: s.id, kind, bid, name: crowdName(kind, bid), members: close.map((n) => n.id), formed: G.t, lastOut: G.t - CROWD.cooldown + 300, outs: 0 };
+    crowdList().push(c);
+    close.forEach((n) => { remember(n, s, 'crowd', 0.2, `One of ${c.name}`, false); });
+    notify({ title: `👥 A new friend group`, body: `${crowdNames(close)} and ${s.first} have become ${c.name}. They hang out after ${kind === 'work' ? 'work' : kind === 'uni' ? 'lectures' : 'school'} now and then, and will ask ${s.first} along.`, tag: 'crowd' });
+    logEvent(`${s.first}, ${crowdNames(close)}: ${c.name}.`, { tag: 'social', sim: s.id });
+    return;
+  }
+  if (c) close.forEach((n) => { if (!c.members.includes(n.id) && c.members.length < CROWD.max) c.members.push(n.id); });
+  if (c) crowdMaybeAsk(s, c);
+}
+
+/* ---------- where to go ---------- */
+const CROWD_VENUES = {
+  lantern: { icon: '🍺', what: 'for a beer at The Lantern', label: 'A beer at The Lantern', bld: 'lantern', adults: true, len: 85, steps: [['lantern:table', 'drink', 85]], lines: ['Prost!', 'Cheers to that!', 'Another round?', 'Best part of the week.'] },
+  cafe: { icon: '☕', what: 'for coffee and cake at Moretti Café', label: 'Coffee and cake at the café', bld: 'cafe', len: 60, steps: [['cafe:table', 'drink', 60]], lines: ['This cake is unreal.', 'Sofia makes the best coffee.', 'I needed this.'] },
+  green: { icon: '🛝', what: 'to hang out on Willow Green', label: 'Hanging out on Willow Green', dry: true, len: 60, steps: [['green:bench', 'sit', 25], ['green:play', 'play', 35]], lines: ['Race you to the swings!', 'Did you see that?', 'Best day ever.'] },
+  square: { icon: '⛲', what: 'to sit out on Market Square', label: 'An evening on Market Square', dry: true, len: 55, steps: [['square:bench', 'sit', 55]], lines: ['Lovely evening.', 'Look at that sky.', 'We should do this more often.'] },
+  chilbi: { icon: '🎡', what: 'to the Chilbi', label: 'An evening at the Chilbi', fair: true, len: 95, steps: [['chilbi:wurst', 'fairBuy', 5], ['chilbi:table', 'fairEat', 20], ['chilbi:ride', null, 18], ['chilbi:path', 'fairStroll', 15], ['chilbi:ride2', null, 14]], lines: ['One more go on the Riesenrad!', 'This Bratwurst is perfect.', 'Hold my Magenbrot!', 'Look how high we are!', 'Bumper cars next!'] },
+};
+function crowdVenueOk(v, c, t) {
+  const id = Object.keys(CROWD_VENUES).find((k) => CROWD_VENUES[k] === v), wet = isWet(weatherAt(t, G.seed)) || weatherAt(t, G.seed) === 'snow';
+  const kids = crowdMembers(c).concat(G.byId[c.sim] || []).some((n) => n.age < 18);
+  if (v.adults && kids) return false;
+  if (v.dry && wet) return false;
+  if (v.bld && !townOpenNow(v.bld, t + 30)) return false;
+  if (v.fair && !(chilbiOpen(t) && chilbiOpen(t + v.len))) return false;
+  if (id === 'green' && !kids) return false;
+  if (minOfDay(t) > 22 * 60 && kids) return false;
+  return true;
+}
+function crowdPickVenue(c, t) {
+  const kids = crowdMembers(c).concat(G.byId[c.sim] || []).some((n) => n.age < 18);
+  const w = { lantern: 4, cafe: kids ? 3 : 2, green: 3, square: 1.5, chilbi: 5 };
+  const ok = Object.keys(CROWD_VENUES).filter((k) => crowdVenueOk(CROWD_VENUES[k], c, t));
+  if (!ok.length) return null;
+  return pickWeighted(ok.map((k) => [k, w[k]]));
+}
+const crowdFree = (n) => n && !n.offmap && !n.dead && awake(n) && !n.override && !n.funeralGuest && !n.medic && !n.injury && !(n.block && n.block.w && atWorkNow(n) && atWorkNow(n).deep);
+
+/* ---------- the invitation ---------- */
+function crowdMaybeAsk(s, c, force) {
+  const F = G.flags;
+  if (F.invite || F.outing || (!force && G.t - (c.lastOut || 0) < CROWD.cooldown)) return false;
+  const hr = minOfDay(G.t) / 60;
+  if (!force && (hr < 14.5 || hr > (s.age < 13 ? 18 : 21))) return false;
+  const free = crowdMembers(c).filter(crowdFree);
+  if (!free.length) return false;
+  const v = crowdPickVenue(c, G.t);
+  if (!v) return false;
+  if (!force) {
+    const like = free.reduce((a, n) => a + relOf(n, s).fri, 0) / free.length, fri = wdOf(G.t) === 4;
+    const p = 0.28 + like * 0.4 + (fri ? 0.15 : 0) + (v === 'chilbi' ? 0.15 : 0) + (s.pers[0] - 0.5) * 0.1;
+    if (Math.random() > p) return false;
+  }
+  const V = CROWD_VENUES[v], who = free.slice(0, CROWD.max), lead = who[0];
+  F.invite = { crowd: c.id, venue: v, sim: s.id, who: who.map((n) => n.id), until: G.t + CROWD.answer };
+  const ask = pickOf(V.adults ? ['Drinks after work?', 'Coming for a beer?', 'Fancy a pint?'] : v === 'chilbi' ? ['Chilbi tonight?', 'Coming to the Chilbi?'] : ['Coming along?', 'Want to hang out?']);
+  notify({ title: `${V.icon} ${crowdTitle(c)}: ${ask}`, body: `${crowdNames(who)} ${who.length > 1 ? 'are' : 'is'} heading ${V.what} and asked if ${s.first} wants to come along.`, tag: 'door',
+    actions: [{ label: 'Go along', fn: () => crowdAnswer(true) }, { label: 'Not tonight', fn: () => crowdAnswer(false) }] });
+  say(lead, pickOf(['You coming?', 'Come with us!', ask]), 4);
+  return true;
+}
+function crowdAnswer(yes) {
+  const I = G.flags.invite;
+  if (!I) return;
+  G.flags.invite = null;
+  const c = crowdList().find((x) => x.id === I.crowd), s = G.byId[I.sim];
+  if (!c || !s) return;
+  const who = I.who.map((id) => G.byId[id]).filter(crowdFree);
+  if (!yes || s.offmap || !awake(s)) {
+    who.forEach((n) => { bump(n, s, 'fri', -0.01); });
+    if (yes) uiToast(`${s.first} can’t go right now.`);
+    else if (who.length) say(who[0], pickOf(['No worries, next time!', 'Suit yourself!', 'We’ll save you a seat next time.']), 4);
+    c.lastOut = G.t;
+    if (who.length >= 2) crowdStart(c, I.venue, who, null);       // they go anyway
+    return;
+  }
+  crowdStart(c, I.venue, who, s);
+}
+
+/* ---------- the outing ---------- */
+function crowdPlan(v, c) {
+  const V = CROWD_VENUES[v], rides = FAIR_RIDE_IDS.slice(), r = rngFor('crowd', c.id, Math.round(G.t));
+  const a = rides[Math.floor(r() * rides.length)], b = rides.filter((x) => x !== a)[Math.floor(r() * (rides.length - 1))];
+  let t = G.t + 4;
+  return V.steps.map(([place, act, mins]) => {
+    let p = place, ac = act;
+    if (place === 'chilbi:ride') { p = 'chilbi:' + a; ac = FAIR_RIDES[a].act; mins = FAIR_RIDES[a].mins; }
+    if (place === 'chilbi:ride2') { p = 'chilbi:' + b; ac = FAIR_RIDES[b].act; mins = FAIR_RIDES[b].mins; }
+    const step = { at: t, place: p, act: ac, mins };
+    t += mins;
+    return step;
+  });
+}
+function crowdStart(c, v, who, s) {
+  if (!who.length && !s) return;
+  const V = CROWD_VENUES[v], steps = crowdPlan(v, c), end = steps[steps.length - 1].at + steps[steps.length - 1].mins + 4;
+  const O = G.flags.outing = { crowd: c.id, venue: v, sim: s ? s.id : null, who: who.map((n) => n.id), steps, start: G.t, end, came: {}, at: {}, said: 0 };
+  c.lastOut = G.t; c.outs = (c.outs || 0) + 1;
+  who.forEach((n) => { n.override = { until: end, onEnd: null }; });
+  if (s) {
+    /* the household member gets the same plan as an action queue, paid where it costs */
+    const q = [];
+    steps.forEach((st, i) => {
+      const [where, cat] = st.place.split(':');
+      let g;
+      if (where === 'chilbi' && FAIR_RIDES[cat]) g = fairRideGoals(s, cat)[0];
+      else if (where === 'chilbi' && FAIR_STANDS[cat]) { const f = fairFoodGoals(s, cat, 0); g = f[0]; if (f[1]) { f[1].remain = steps[i + 1] ? steps[i + 1].mins : 18; q.push(g); g = f[1]; steps[i + 1] && (steps[i + 1].skipMe = true); } }
+      else if (st.skipMe) return;
+      else { const node = resolvePlace(st.place, s); if (node == null) return; g = goal(node, st.act, st.mins, V.label, { place: st.place, cost: st.act === 'drink' ? 8 : 0 }); }
+      if (!g) return;
+      g.label = g.label || V.label;
+      const prev = g.onArrive; g.onArrive = (x) => { O.came[x.id] = true; if (prev) prev(x); };
+      q.push(g);
+    });
+    if (q.length) { tagAction(q, V.label); actionQueue(s, q); G.flags.acted = true; }
+    uiToast(`${s.first} heads off ${V.what} with ${crowdNames(who)}.`, 3200);
+  }
+  logEvent(`${crowdTitle(c)} went ${V.what}${s ? ' with ' + s.first : ''}.`, { tag: 'social', sim: s ? s.id : who[0] && who[0].id });
+}
+/* every couple of minutes: the neighbours on the outing follow the plan; someone says something; at the end, everyone is closer */
+function crowdTick() {
+  const F = G.flags;
+  if (F.invite && G.t > F.invite.until) crowdAnswer(false);
+  const O = F.outing;
+  if (!O) return;
+  const c = crowdList().find((x) => x.id === O.crowd);
+  const V = CROWD_VENUES[O.venue];
+  if (!c || !V) { F.outing = null; return; }
+  if (G.t >= O.end) return crowdEnd(c, O);
+  const step = O.steps.filter((st) => st.at <= G.t).pop() || O.steps[0], idx = O.steps.indexOf(step);
+  O.who.forEach((id) => {
+    const n = G.byId[id];
+    if (!n || n.dead || n.offmap) return;
+    if (!n.override || n.override.until < O.end) n.override = { until: O.end, onEnd: null };
+    if (O.at[id] === idx) return;
+    const node = resolvePlace(step.place, n, rngFor(id, 'crowd', step.at));
+    if (node == null) return;
+    O.at[id] = idx;
+    setGoal(n, { node, act: step.act, place: step.place, label: V.label, crowd: O.crowd });
+  });
+  /* the chatter of a group having a good time */
+  if (G.t - (O.said || 0) > 7) {
+    const here = O.who.map((id) => G.byId[id]).filter((n) => n && n.state === 'doing' && n.goal && n.goal.crowd === O.crowd);
+    if (here.length) { O.said = G.t; say(pickOf(here), pickOf(V.lines), 4); }
+  }
+  const s = O.sim && G.byId[O.sim];
+  if (s && !O.came[s.id] && s.goal && s.goal.place && O.steps.some((st) => st.place === s.goal.place) && s.state === 'doing') O.came[s.id] = true;
+}
+function crowdEnd(c, O) {
+  G.flags.outing = null;
+  const who = O.who.map((id) => G.byId[id]).filter((n) => n && !n.dead), s = O.sim && G.byId[O.sim], came = s && O.came[s.id];
+  const all = who.concat(came ? [s] : []);
+  for (let i = 0; i < all.length; i++) for (let j = 0; j < all.length; j++) if (i !== j) { bump(all[i], all[j], 'fam', 0.04); bump(all[i], all[j], 'fri', all[i] === s || all[j] === s ? 0.06 : 0.03); }
+  who.forEach((n) => { if (n.override && n.override.until <= O.end + 1) { n.override = null; n.planKey = ''; } });
+  if (came) {
+    addBuff(s, 10, 480, `Out with ${c.name}`, 'crowd');
+    who.forEach((n) => remember(n, s, 'crowd', 0.25, `A good time with ${s.first}`, false));
+    if (!(typeof UI !== 'undefined' && UI.quiet)) uiToast(`${s.first} had a great time with ${c.name}.`, 3000);
+  }
+  if (who.length) say(pickOf(who), pickOf(['Same time next week?', 'That was fun. Night, all!', 'Let’s do this again.']), 4);
+}
+
+/* ---------- inviting them yourself ---------- */
+function crowdInviteSheet(me, c) {
+  const items = Object.keys(CROWD_VENUES).map((k) => {
+    const V = CROWD_VENUES[k], ok = crowdVenueOk(V, c, G.t), free = crowdMembers(c).filter(crowdFree);
+    const why = !free.length ? `${crowdNames(crowdMembers(c))} can’t right now.` : G.flags.outing ? 'There is an outing on already.' : !ok ? (V.fair ? chilbiWhen(G.t) + '.' : V.bld ? `${placeName(V.bld)} isn’t open long enough.` : V.dry ? 'Not in this weather.' : 'Not for this group.') : '';
+    return { icon: V.icon, label: V.label, sub: why || crowdNames(free), disabled: !!why, why, fn: () => {
+      const who = crowdMembers(c).filter(crowdFree);
+      const yes = who.filter((n) => Math.random() < 0.55 + relOf(n, me).fri * 0.6);
+      if (!yes.length) { uiToast(`${crowdNames(who)} can’t make it this time.`); return; }
+      crowdStart(c, k, yes, me);
+    } };
+  });
+  UI.sheet({ title: `👥 ${crowdTitle(c)}`, sub: `Invite ${crowdNames(crowdMembers(c))} out`, items });
+}
+/* in the interaction menu of someone in one of your crowds */
+function crowdSocialItems(cat, me, t, items) {
+  if (cat !== 'friendly' || !inHousehold(me)) return;
+  crowdsOf(me).filter((c) => c.members.includes(t.id)).forEach((c) => items.push({ kind: 'crowd', def: { icon: '👥', label: `Invite ${c.name} out`, cat: 'friendly' }, hint: crowdNames(crowdMembers(c)), custom: () => crowdInviteSheet(me, c) }));
+}
+/* a line in the People tab */
+function hudCrowds(s) {
+  const cs = crowdsOf(s);
+  if (!cs.length) return null;
+  return h('div', { class: 'hcrowds' }, cs.map((c) => h('button', { class: 'hcrowd', title: 'Invite them out', onclick: () => { Sound.click(); crowdInviteSheet(s, c); } },
+    h('span', { class: 'hc-ic' }, '👥'), h('span', { class: 'hc-t' }, h('b', null, crowdTitle(c)), h('em', null, crowdNames(crowdMembers(c)))), h('span', { class: 'hc-go' }, 'Invite out'))));
 }
 
 /* ---- 11-career.js ---- */
@@ -19601,6 +20348,7 @@ function endDuty(s) {
   const porch = (lotNav(s.homeNo) || HN).porch;
   if (s.offmap) comeBack(s, { node: porch, act: 'idle', remain: 0.01, walkOnly: true });     // a shift begun before the town had workplaces
   else if (!s.goal || s.goal.dutySeg || s.goal.act === 'idle') { s.boardAt = null; s.state = 'doing'; s.act = 'idle'; s.goal = null; s.queue = []; goTo(s, porch, { label: W.kind === 'school' ? 'Walk home from school' : 'Walk home' }); }
+  try { crowdDutyEnd(s, W); } catch (e) { console.error(e); }      // the crowd from work or class (10e)
   if (W.kind === 'school') return schoolDay(s, W);
   if (W.kind === 'uni') return uniDay(s, W);
   return workShift(s, W);
@@ -24914,6 +25662,283 @@ function pantryHarvest(s, servings) {
   const F = pantryOf(s.homeNo), n = Math.max(0, Math.min(servings, Math.floor(pantryCap(s.homeNo) - F.stock)));
   F.stock += n;
   return n;
+}
+
+/* ---- 11o-chilbi.js ---- */
+/* ============================================================
+   11o — the Chilbi: a travelling fair on the far side of Park Road
+
+   A Swiss Chilbi comes to town for three days in every nine (when, the
+   world's seed decides, so every screen of a shared town agrees), open
+   from ten in the morning to midnight. Four Bahnen — the Riesenrad, the
+   Rösslispiel, the Kettenkarussell and the Autoscooter — a Schiessbude,
+   three stands (Magenbrot and roasted almonds, Bratwurst and Bürli,
+   candyfloss and crêpes) and beer tables to eat at. Everyone can go:
+   the family you play (tap a ride or a stand), the neighbours (an
+   afternoon or an evening at the fair in their day's plan, 03 deviate),
+   and friend groups on an outing (10e).
+
+   The rides move on the game clock, one turn of the wheel per ride, so
+   whoever boards at the bottom gets off at the bottom; 06zc draws them
+   and seats the riders (fairSeat). Here: the timetable, the layout, the
+   walking graph, what each thing costs and does.
+   ============================================================ */
+const FAIR = { cycle: 9, stay: 3, open: 10 * 60, close: 24 * 60 };
+const CHILBI = { id: 'chilbi', name: 'The Chilbi', x0: 50, x1: 86, z0: -90, z1: -54.5, gate: [68, -54.5] };
+const inChilbi = (x, z) => x > CHILBI.x0 && x < CHILBI.x1 && z > CHILBI.z0 && z < CHILBI.z1;
+/* the Bahnen: where they stand, where you get on, what a ride costs and how long it lasts (one full turn) */
+const FAIR_RIDES = {
+  wheel: { name: 'Riesenrad', en: 'the Ferris wheel', icon: '🎡', act: 'rideWheel', x: 68, z: -86.5, board: [68, -84.3], gate: [68, -83.4], price: 6, mins: 18, seats: 24, sy: 0.45, minAge: 3, fun: 8, line: 'Round and up, over the roofs of the town.' },
+  carousel: { name: 'Rösslispiel', en: 'the carousel', icon: '🎠', act: 'rideCarousel', x: 56, z: -67, board: [61.4, -67], gate: [62.5, -67], price: 4, mins: 10, seats: 8, sy: 0.92, minAge: 2, fun: 6, line: 'Painted horses, up and down to the organ.' },
+  swing: { name: 'Kettenkarussell', en: 'the chain swing ride', icon: '🌀', act: 'rideSwing', x: 79.5, z: -67.5, board: [73.9, -67.5], gate: [72.9, -67.5], price: 5, mins: 12, seats: 12, sy: 0.42, minAge: 7, fun: 10, line: 'Chairs on chains, flung out over the fair.' },
+  bumper: { name: 'Autoscooter', en: 'the bumper cars', icon: '🚗', act: 'rideBumper', x: 56, z: -78.5, board: [61.5, -78.5], gate: [62.5, -78.5], price: 5, mins: 10, seats: 6, sy: 0.3, minAge: 8, fun: 10, line: 'Sparks off the ceiling, bumps all round.' },
+};
+const FAIR_RIDE_IDS = Object.keys(FAIR_RIDES);
+const FAIR_RIDE_OF_ACT = {};
+FAIR_RIDE_IDS.forEach((id) => { FAIR_RIDES[id].id = id; FAIR_RIDE_OF_ACT[FAIR_RIDES[id].act] = id; });
+/* the Schiessbude, and the three stands with what they sell: [label, price, hunger, fun, minutes to eat, icon] */
+const FAIR_SHOOT = { name: 'Schiessbude', icon: '🎯', x: 81.5, z: -78, price: 4, mins: 8, minAge: 10, spots: [[79.1, -76.8], [79.1, -78], [79.1, -79.2]] };
+const FAIR_STANDS = {
+  sweets: { name: 'Magenbrot & Mandeln', icon: '🍪', x: 55.8, z: -58.6, rot: Math.PI / 2, q: [58.0, -58.6], col: '#c0392b', sign: 'MAGENBROT · MANDELN',
+    menu: [['Magenbrot', 4, 15, 10, 7, '🍪'], ['Gebrannte Mandeln', 5, 12, 12, 7, '🥜'], ['Lebkuchenherz', 8, 6, 6, 4, '💝']] },
+  wurst: { name: 'Bratwurst-Grill', icon: '🌭', x: 80.2, z: -58.6, rot: -Math.PI / 2, q: [78.0, -58.6], col: '#2f6b3a', sign: 'BRATWURST · BÜRLI',
+    menu: [['Bratwurst mit Bürli', 9, 55, 4, 16, '🌭'], ['Cervelat', 7, 45, 3, 14, '🌭'], ['Raclette', 11, 50, 6, 16, '🧀']] },
+  candy: { name: 'Zuckerwatte & Crêpes', icon: '🍭', x: 74.5, z: -81.5, rot: -Math.PI / 2, q: [72.3, -81.5], col: '#d6589f', sign: 'ZUCKERWATTE · CRÊPES',
+    menu: [['Zuckerwatte', 5, 6, 14, 6, '🍭'], ['Crêpe mit Nutella', 7, 30, 8, 10, '🥞'], ['Glace', 5, 12, 8, 6, '🍦']] },
+};
+/* two long beer tables with benches down the middle, between the carousel and the swings */
+const FAIR_TABLES = [[68, -65], [68, -70.5]];
+/* what the tap picks: [kind, id, x0, x1, z0, z1, height] */
+const FAIR_PICKS = [
+  ['ride', 'wheel', 60.5, 75.5, -88.5, -84.5, 17.5], ['ride', 'carousel', 51.2, 60.8, -71.8, -62.2, 5.6], ['ride', 'swing', 76, 83, -71, -64, 7.5],
+  ['ride', 'bumper', 50.8, 61.2, -82.2, -74.8, 4.2], ['shoot', 'shoot', 80, 83.2, -81.2, -74.8, 3.4],
+  ['stand', 'sweets', 54.6, 57, -60.6, -56.6, 3.4], ['stand', 'wurst', 79, 81.4, -60.6, -56.6, 3.4], ['stand', 'candy', 73.3, 75.7, -83.5, -79.5, 3.4],
+  ['gate', 'gate', 65, 71, -55.4, -53.6, 5.2],
+];
+
+Object.assign(ACT, {
+  rideWheel: { label: 'On the Riesenrad', pose: 'sit', anim: 'idle', fx: { fun: 60 } },
+  rideCarousel: { label: 'On the Rösslispiel', pose: 'sit', anim: 'idle', fx: { fun: 72 } },
+  rideSwing: { label: 'On the Kettenkarussell', pose: 'sit', anim: 'idle', fx: { fun: 100, energy: -3 } },
+  rideBumper: { label: 'In the bumper cars', pose: 'sit', anim: 'idle', fx: { fun: 100, energy: -3 } },
+  shoot: { label: 'At the Schiessbude', pose: 'stand', anim: 'idle', fx: { fun: 60 } },
+  fairBuy: { label: 'At a stand', pose: 'stand', anim: 'talk', fx: { social: 6 } },
+  fairEat: { label: 'Eating at the Chilbi', pose: 'sit', anim: 'eat', fx: { social: 14, fun: 12 } },
+  fairStroll: { label: 'At the Chilbi', pose: 'stand', anim: 'watch', fx: { fun: 22, social: 4 } },
+});
+STROLL_PLACES.push('chilbi:path'); STROLL_ACTS.push('fairStroll');
+
+/* ---------- when it is here ---------- */
+function chilbiDayOpen(day) {
+  if (!(day >= 0)) return false;
+  const c = Math.floor(day / FAIR.cycle);
+  /* a new town's first evening already has the fair in it; after that the seed decides */
+  const start = c === 0 ? 0 : Math.floor(rngFor('chilbi', G.seed, c)() * (FAIR.cycle - FAIR.stay + 1));
+  const k = day - c * FAIR.cycle - start;
+  return k >= 0 && k < FAIR.stay;
+}
+function chilbiOpen(t) { const m = minOfDay(t); return m >= FAIR.open && m < FAIR.close && chilbiDayOpen(dayOf(t)); }
+/* the next time it opens (now, if it is open) */
+function chilbiNextOpen(t) {
+  if (chilbiOpen(t)) return t;
+  for (let d = dayOf(t); d < dayOf(t) + 3 * FAIR.cycle; d++) { const at = d * 1440 + FAIR.open; if (at > t && chilbiDayOpen(d)) return at; }
+  return null;
+}
+/* the last day of the run it is in (or the next one) */
+function chilbiLastDay(t) { let d = dayOf(chilbiNextOpen(t) ?? t); while (chilbiDayOpen(d + 1)) d++; return d; }
+function chilbiWhen(t) {
+  if (chilbiOpen(t)) { const last = chilbiLastDay(t); return `Open until midnight${last > dayOf(t) ? ', here until ' + DAYS_LONG[wdOf(last * 1440)] : ', its last day'}`; }
+  const at = chilbiNextOpen(t);
+  if (at == null) return 'Closed';
+  const d = dayOf(at) - dayOf(t);
+  return `Closed · opens ${d === 0 ? 'at ' + fmtTime(at) : d === 1 ? 'tomorrow at 10:00' : DAYS_LONG[wdOf(at)] + ' at 10:00'}`;
+}
+
+/* ---------- the walking graph (from 02b buildNav) ---------- */
+function chilbiNav() {
+  const N = (nm, x, z, cat, o) => { const id = nAdd('fair.' + nm, x, 0, z, Object.assign({ out: true, bld: 'chilbi', audioSurface: 'pavement' }, o || {})); if (cat) spotAdd('chilbi:' + cat, id); return id; };
+  const P = {};
+  const way = [['gate', 68, -55.8], ['a0', 68, -59.5], ['a8', 68, -62.4], ['a1', 63.2, -61], ['a2', 72.8, -61], ['tAw', 65.2, -65], ['tAe', 70.8, -65], ['tBw', 65.2, -70.5], ['tBe', 70.8, -70.5],
+    ['a3', 63.2, -73.2], ['a4', 72.6, -73.6], ['a5', 77, -78], ['a6', 64, -82], ['a7', 68, -82.4]];
+  way.forEach(([nm, x, z]) => { P[nm] = N(nm, x, z, nm === 'gate' ? null : 'path'); });
+  /* the queues at the rides, then the seats (the rides themselves carry the riders: 06zc) */
+  FAIR_RIDE_IDS.forEach((id) => {
+    const R = FAIR_RIDES[id];
+    P[id] = N(id + 'Gate', R.gate[0], R.gate[1], 'queue');
+    for (let k = 0; k < R.seats; k++) {
+      const s = N(id + k, R.board[0], R.board[1], id, { pose: 'sit', sy: R.sy, face: 0, fair: id });
+      nEdge(s, P[id]);
+    }
+  });
+  FAIR_SHOOT.spots.forEach(([x, z], k) => { const s = N('shoot' + k, x, z, 'shoot', { face: Math.PI / 2 }); nEdge(s, P.a5); });
+  Object.keys(FAIR_STANDS).forEach((id) => { const S = FAIR_STANDS[id]; P[id] = N(id + 'Q', S.q[0], S.q[1], id, { face: Math.atan2(S.x - S.q[0], S.z - S.q[1]) }); });
+  /* the beer tables: two seats a side on each bench, facing the table */
+  FAIR_TABLES.forEach(([x, z], ti) => [-1, 1].forEach((side) => [-1, 1].forEach((end) => {
+    const s = N('table' + ti + (side < 0 ? 'n' : 's') + (end < 0 ? 'w' : 'e'), x + end * 1.0, z + side * 0.72, 'table', { pose: 'sit', sy: 0.46, face: side < 0 ? 0 : Math.PI });
+    nEdge(s, P[(ti ? 'tB' : 'tA') + (end < 0 ? 'w' : 'e')]);
+  })));
+  const E = (a, b) => nEdge(P[a], P[b]);
+  [['gate', 'a0'], ['a0', 'a8'], ['a0', 'a1'], ['a0', 'a2'], ['a8', 'a1'], ['a8', 'a2'], ['a1', 'sweets'], ['a2', 'wurst'], ['a1', 'carousel'], ['a1', 'tAw'], ['a2', 'tAe'], ['a2', 'swing'],
+    ['carousel', 'tAw'], ['carousel', 'tBw'], ['carousel', 'a3'], ['swing', 'tAe'], ['swing', 'tBe'], ['swing', 'a4'], ['tAw', 'tBw'], ['tAe', 'tBe'], ['tBw', 'a3'], ['tBe', 'a4'],
+    ['a3', 'a4'], ['a3', 'bumper'], ['a3', 'a6'], ['a4', 'a5'], ['a4', 'candy'], ['bumper', 'a6'], ['a6', 'a7'], ['a7', 'wheel'], ['a7', 'candy']].forEach(([a, b]) => E(a, b));
+  nEdge(P.gate, paveAt('park', 'N', CHILBI.gate[0]));
+  BLD.chilbi = { id: 'chilbi', kind: 'fair', door: P.gate, doorIn: P.a0 };
+}
+const fairNode = (nm) => NAV.byName['fair.' + nm];
+
+/* ---------- what you can do there ---------- */
+function fairCan(me, minAge, price, free) {
+  if (!chilbiOpen(G.t)) return chilbiWhen(G.t) + '.';
+  if (ageF(me) < minAge) return `${me.first} is too young for that (from ${minAge}).`;
+  if (!free && G.player.money < price) return 'Not enough money.';
+  return '';
+}
+/* a ride: walk to the queue, get on, one full turn, get off where you got on */
+function fairRideGoals(s, id, extra) {
+  const R = FAIR_RIDES[id], seat = fairNode(id + '0');
+  if (seat === undefined) return [];
+  return [goal(seat, R.act, R.mins, 'Ride the ' + R.name, Object.assign({ place: 'chilbi:' + id, cost: inHousehold(s) ? R.price : 0, until: () => !chilbiOpen(G.t),
+    onDone: (x) => { if (inHousehold(x)) { addBuff(x, R.fun, 360, 'Rode the ' + R.name, 'fair:' + id); G.flags.fairRides = (G.flags.fairRides || 0) + 1; } } }, extra || {}))];
+}
+/* the shooting gallery: a few rounds, and sometimes a prize */
+function fairShootGoals(s) {
+  const spot = fairNode('shoot0');
+  return [goal(spot, 'shoot', FAIR_SHOOT.mins, 'Shoot at the Schiessbude', { place: 'chilbi:shoot', cost: inHousehold(s) ? FAIR_SHOOT.price : 0, until: () => !chilbiOpen(G.t),
+    onDone: (x) => {
+      const p = 0.22 + (x.traits.includes('athletic') ? 0.08 : 0) + (x.traits.includes('brave') ? 0.05 : 0) + clamp(skillOf(x, 'fitness') * 0.015, 0, 0.12);
+      if (Math.random() < p) {
+        const prize = pickOf(['a giant teddy bear', 'a plastic rose', 'a goldfish in a bag', 'a fluffy unicorn', 'a keyring']);
+        say(x, `I won ${prize}!`, 5); addBuff(x, 10, 1440, 'Won a prize at the Schiessbude', 'fair:prize');
+        if (inHousehold(x) && !(typeof UI !== 'undefined' && UI.quiet)) uiToast(`${x.first} hit three in a row and won ${prize}!`, 3200);
+        logEvent(`${simName(x)} won ${prize} at the Schiessbude.`, { tag: 'family', sim: x.id });
+      } else say(x, pickOf(['So close!', 'The sights are bent, I swear.', 'Next time.']), 3);
+    } })];
+}
+/* something from a stand: bought at the counter, eaten at a beer table (or standing, when the tables are full) */
+function fairFoodGoals(s, standId, i) {
+  const S = FAIR_STANDS[standId], it = S.menu[i], q = fairNode(standId + 'Q');
+  if (q === undefined || !it) return [];
+  const [label, price, hunger, fun, mins] = it;
+  const seat = freeInteractionNode(s, (SPOTS['chilbi:table'] || []).slice().sort((a, b) => Math.hypot(NAV.nodes[a].x - S.q[0], NAV.nodes[a].z - S.q[1]) - Math.hypot(NAV.nodes[b].x - S.q[0], NAV.nodes[b].z - S.q[1])));
+  const eatAt = seat !== undefined ? seat : q;
+  return [
+    goal(q, 'fairBuy', 2, 'Buy ' + label, { place: 'chilbi:' + standId, cost: inHousehold(s) ? price : 0 }),
+    goal(eatAt, seat !== undefined ? 'fairEat' : 'snack', mins, label, { place: 'chilbi:table', onDone: (x) => {
+      x.needs.hunger = clamp(x.needs.hunger + hunger, 0, 100); x.needs.fun = clamp(x.needs.fun + fun, 0, 100);
+      if (label === 'Lebkuchenherz') addBuff(x, 6, 1440, 'A Lebkuchenherz from the Chilbi', 'fair:heart');
+      else if (inHousehold(x) && fun >= 10) addBuff(x, 4, 240, label + ' at the Chilbi', 'fair:treat');
+    } }),
+  ];
+}
+/* a wander round the fair, looking at everything */
+function fairStrollGoals(s, mins) { const p = (SPOTS['chilbi:path'] || [])[0]; return p === undefined ? [] : [goal(p, 'fairStroll', mins || 20, 'Wander round the Chilbi', { place: 'chilbi:path' })]; }
+
+/* the sheet for whatever was tapped at the fair */
+function chilbiMenu(me, kind, id) {
+  const open = chilbiOpen(G.t), items = [];
+  const sub = chilbiWhen(G.t);
+  if (!open) {
+    items.push({ icon: '🔒', label: 'Closed right now', sub, disabled: true, why: sub }, { icon: '🚶', label: 'Walk over anyway', fn: () => walkTo(me, fairNode('a0')) });
+    return UI.sheet({ title: kind === 'ride' ? FAIR_RIDES[id].name : kind === 'stand' ? FAIR_STANDS[id].name : kind === 'shoot' ? FAIR_SHOOT.name : 'The Chilbi', sub, items });
+  }
+  const mates = G.player.members.map((x) => G.byId[x]).filter((m) => m && m !== me && !m.offmap && awake(m) && !isInfant(m) && Math.hypot(m.x - me.x, m.z - me.z) < 30);
+  const rideItem = (rid) => {
+    const R = FAIR_RIDES[rid], why = fairCan(me, R.minAge, R.price);
+    return { icon: R.icon, label: `Ride the ${R.name}`, sub: `${money(R.price)} · ${R.line}`, disabled: !!why, why, fn: () => run(me, fairRideGoals(me, rid), 'Ride the ' + R.name) };
+  };
+  if (kind === 'ride') {
+    const R = FAIR_RIDES[id];
+    items.push(rideItem(id));
+    /* everyone who is here with you gets on too */
+    const go = mates.filter((m) => ageF(m) >= R.minAge);
+    if (go.length) items.push({ icon: '👨‍👩‍👧', label: `Ride it together (${go.length + 1})`, sub: money(R.price * (go.length + 1)) + ' for ' + [me].concat(go).map((m) => m.first).join(', '), disabled: !!fairCan(me, R.minAge, R.price * (go.length + 1)), why: fairCan(me, R.minAge, R.price * (go.length + 1)),
+      fn: () => [me].concat(go).forEach((m) => run(m, fairRideGoals(m, id), 'Ride the ' + R.name)) });
+    return UI.sheet({ title: `${R.icon} ${R.name}`, sub: `${R.en[0].toUpperCase() + R.en.slice(1)} · ${R.mins} minutes · ${sub}`, items });
+  }
+  if (kind === 'shoot') {
+    const why = fairCan(me, FAIR_SHOOT.minAge, FAIR_SHOOT.price);
+    items.push({ icon: '🎯', label: 'Try your luck', sub: `${money(FAIR_SHOOT.price)} · three hits win a prize`, disabled: !!why, why, fn: () => run(me, fairShootGoals(me), 'Schiessbude') });
+    return UI.sheet({ title: '🎯 Schiessbude', sub: 'Shooting gallery · ' + sub, items });
+  }
+  if (kind === 'stand') {
+    const S = FAIR_STANDS[id];
+    S.menu.forEach(([label, price, hunger, , , icon], i) => {
+      const why = fairCan(me, 2, price);
+      items.push({ icon, label, sub: `${money(price)}${hunger >= 30 ? ' · a proper meal' : hunger >= 12 ? ' · a snack' : ''}`, disabled: !!why, why, fn: () => run(me, fairFoodGoals(me, id, i), label) });
+    });
+    return UI.sheet({ title: `${S.icon} ${S.name}`, sub, items });
+  }
+  /* the gate: everything at once */
+  FAIR_RIDE_IDS.forEach((rid) => items.push(rideItem(rid)));
+  items.push({ icon: '🎯', label: 'Schiessbude', sub: money(FAIR_SHOOT.price), disabled: !!fairCan(me, FAIR_SHOOT.minAge, FAIR_SHOOT.price), why: fairCan(me, FAIR_SHOOT.minAge, FAIR_SHOOT.price), fn: () => run(me, fairShootGoals(me), 'Schiessbude') });
+  items.push({ icon: '🌭', label: 'Something to eat…', sub: 'Bratwurst, Magenbrot, Zuckerwatte', fn: () => chilbiMenu(me, 'stand', me.needs.hunger < 50 ? 'wurst' : 'sweets') });
+  items.push({ icon: '🚶', label: 'Wander round the fair', sub: 'Free, and fun to watch', fn: () => run(me, fairStrollGoals(me, 25)) });
+  return UI.sheet({ title: '🎡 The Chilbi', sub, items });
+}
+/* a tap on the fair: the nearest ride, stand or gate along the ray, or nothing */
+function chilbiPick(ray) {
+  const box = new THREE.Box3(), pt = new THREE.Vector3();
+  let best = null, bd = 1e9;
+  for (const [kind, id, x0, x1, z0, z1, h0] of FAIR_PICKS) {
+    box.min.set(x0, 0, z0); box.max.set(x1, h0, z1);
+    if (ray.intersectBox(box, pt)) { const d = pt.distanceTo(ray.origin); if (d < bd) { bd = d; best = { kind, id, d }; } }
+  }
+  return best;
+}
+
+/* ---------- the neighbours' days at the fair (03 deviate) ----------
+   On a day it is here, some go: families with children in the afternoon, the young and the
+   sociable in the evening. A visit is a few blocks: something to eat, a ride or two, a wander. */
+function chilbiVisit(s, day, blocks, rng) {
+  if (!chilbiDayOpen(day) || !s.sched || s.age < 4 || s.id === 'adrian') return blocks;
+  const wd = ((day % 7) + 7) % 7, wk = wd >= 5, kid = s.age < 13;
+  const kidsAtHome = !kid && G.sims.some((o) => o.homeNo === s.homeNo && o !== s && o.sched && o.age >= 4 && o.age < 13);
+  let p = 0.16 + 0.22 * (s.pers[0] - 0.5) + 0.2 * (s.pers[3] - 0.5) + (wk ? 0.16 : 0) + (kidsAtHome || kid ? 0.12 : 0) + (s.age >= 16 && s.age < 30 ? 0.08 : 0);
+  if (s.age >= 65) p *= 0.5;
+  /* a family goes together: the household rolls once, so parents and children turn up at the same time */
+  const fam = rngFor('chilbi-home', G.seed, s.homeNo, day);
+  const together = (kidsAtHome || kid) && fam() < clamp(p, 0, 0.75);
+  if (!together && rng() >= clamp(p, 0, 0.6)) return blocks;
+  const afternoon = (kid || kidsAtHome) && (wk || together) ? true : s.age >= 16 && rng() < 0.75 ? false : wk;
+  const from = together ? (wk ? 14 * 60 : 16 * 60 + 20) + Math.floor(fam() * 4) * 10 : afternoon ? 14 * 60 + Math.floor(rng() * 8) * 10 : 18 * 60 + 50 + Math.floor(rng() * 7) * 10;
+  const len = kid ? 110 : 100 + Math.floor(rng() * 50);
+  const to = Math.min(from + len, FAIR.close - 15);
+  /* only into free time: nothing but home, and no work or school, in the window */
+  const before = blocks.filter((b) => b.t < from).sort((a, b) => a.t - b.t).pop();
+  const inWin = blocks.filter((b) => b.t >= from && b.t < to);
+  if (!before || !before.place.startsWith('home:') || before.act === 'sleep' || !inWin.every((b) => b.place.startsWith('home:') && b.act !== 'sleep')) return blocks;
+  const r2 = together ? fam : rng, rides = FAIR_RIDE_IDS.filter((id) => s.age >= FAIR_RIDES[id].minAge && (s.age < 60 || id === 'wheel' || id === 'carousel'));
+  const ride = () => rides[Math.floor(r2() * rides.length)];
+  const plan = [['chilbi:path', 'fairStroll', 12], ['chilbi:' + ride(), null, 14], [s.age >= 10 && r2() < 0.5 ? 'chilbi:wurst' : 'chilbi:sweets', 'fairBuy', 4], ['chilbi:table', 'fairEat', 18], ['chilbi:' + ride(), null, 14], [s.age >= 10 && r2() < 0.3 ? 'chilbi:shoot' : 'chilbi:path', null, 12]];
+  const resume = inWin.length ? inWin[inWin.length - 1] : before;
+  blocks = blocks.filter((b) => !(b.t >= from && b.t < to));
+  let t = from;
+  for (const [place, act, mins] of plan) {
+    if (t >= to - 6) break;
+    const id = place.split(':')[1];
+    blocks.push({ t, place, act: act || (FAIR_RIDES[id] ? FAIR_RIDES[id].act : id === 'shoot' ? 'shoot' : 'fairStroll') });
+    t += mins;
+  }
+  blocks.push({ t: to, place: resume.place, act: resume.act });
+  return blocks;
+}
+
+/* ---------- news: the fair has come to town, and its last day ---------- */
+function chilbiTick() {
+  if (!G.player.members.length) return;
+  const d = dayOf(G.t), F = G.flags;
+  if (!chilbiOpen(G.t) || F.fairSaid === d) return;
+  F.fairSaid = d;
+  const first = !chilbiDayOpen(d - 1), last = !chilbiDayOpen(d + 1);
+  if (!first && !last) return;
+  notify({ title: first ? '🎡 The Chilbi is in town!' : '🎡 Last day of the Chilbi',
+    body: first ? `The fair has set up past the park on Park Road: the Riesenrad, the Rösslispiel, the Kettenkarussell, bumper cars, a Schiessbude, Magenbrot and Bratwurst. Open 10:00 to midnight, until ${DAYS_LONG[wdOf(chilbiLastDay(G.t) * 1440)]}.` : 'The rides come down tonight at midnight. One more go on the Riesenrad?',
+    tag: 'fair', actions: [{ label: 'Go to the Chilbi', fn: () => { const s = G.byId[G.player.sel]; if (s && !s.offmap) walkTo(s, fairNode('a0')); } }, { label: 'Show me', fn: () => chilbiLook() }] });
+}
+/* the camera over the fair */
+function chilbiLook() {
+  if (typeof WATCH !== 'undefined') WATCH.id = null;
+  CAM.follow = false; CAM.tx = 68; CAM.tz = -72; CAM.ty = 0; CAM.distT = clamp(Math.max(CAM.distT, 42), CAMERA_LIMITS.minDistance, CAMERA_LIMITS.maxDistance); CAM.pitchT = Math.max(CAM.pitchT, 0.7);
 }
 
 /* ---- 12-anim.js ---- */
